@@ -58,18 +58,36 @@ export const approve = async (contract: any, address: string, tokenAddress: stri
 		...(await gas()),
 	});
 
-export const upgrade = async (contract: any, amount: string, address: string) =>
-	contract.methods.upgrade(amount).send({
-		from: address,
-		...(await gas()),
+export const upgrade = async (contract: any, amount: string, address: string) => {
+	const config = await prepareWriteContract({
+		address: contract?.address as `0x${string}`,
+		abi: superTokenABI,
+		functionName: 'upgrade',
+		args: [amount],
+		overrides: {
+			from: address as `0x${string}`,
+		},
 	});
+	console.log({ config });
+	const data = await writeContract(config);
+	console.log({ data });
+	return data;
+};
 
 export const upgradeMatic = async (contract: any, amount: string, address: string) => {
-	contract.methods.upgradeByETH().send({
-		from: address,
-		value: amount,
-		...(await gas()),
+	const config = await prepareWriteContract({
+		address: contract?.address as `0x${string}`,
+		abi: superTokenABI,
+		functionName: 'upgradeByETH',
+		overrides: {
+			from: address as `0x${string}`,
+			value: ethers.BigNumber.from(amount),
+		},
 	});
+	console.log({ config });
+	const data = await writeContract(config);
+	console.log({ data });
+	return data;
 };
 
 export const stopFlow = async (exchangeAddress: string, inputTokenAddress: string) => {

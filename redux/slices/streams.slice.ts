@@ -4,7 +4,6 @@ import { transformError } from '@richochet/utils/transformError';
 import { getAccount, getContract } from '@wagmi/core';
 import { idaABI, superTokenABI } from 'constants/abis';
 import { idaAddress, MATICxAddress } from 'constants/polygon_config';
-import { ethers } from 'ethers';
 import { downgrade, downgradeMatic, upgradeMatic } from './../../pages/api/ethereum';
 
 const streamApi = createApi({
@@ -93,14 +92,12 @@ const streamApi = createApi({
 			queryFn: async (payload: any): Promise<any | undefined> => {
 				try {
 					const { tokenAddress, value } = payload;
-					const amountBigNumber = ethers.utils.parseUnits(value, 'wei');
-					const amount = ethers.utils.formatUnits(amountBigNumber, 'ether');
 					const { address } = getAccount();
 					const contract = await getContract({ address: tokenAddress, abi: superTokenABI });
 					const tx =
 						tokenAddress === MATICxAddress
-							? await upgradeMatic(contract, amount, address!)
-							: await upgrade(contract, amount, address!);
+							? await upgradeMatic(contract, value, address!)
+							: await upgrade(contract, value, address!);
 					console.log({ tx });
 					return { data: tx };
 				} catch (e) {
