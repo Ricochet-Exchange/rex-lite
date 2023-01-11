@@ -81,7 +81,7 @@ export const upgradeMatic = async (contract: any, amount: string, address: strin
 		functionName: 'upgradeByETH',
 		overrides: {
 			from: address as `0x${string}`,
-			value: ethers.BigNumber.from(amount),
+			value: parseFloat(amount),
 		},
 	});
 	console.log({ config });
