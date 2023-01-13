@@ -15,7 +15,6 @@ import { getSFFramework } from '@richochet/utils/fluidsdkConfig';
 import { formatCurrency } from '@richochet/utils/helperFunctions';
 import Big, { BigSource } from 'big.js';
 import { ConnectKitButton } from 'connectkit';
-import { Coin } from 'constants/coins';
 import { flowConfig, FlowEnum, FlowTypes, InvestmentFlow } from 'constants/flowConfig';
 import {
 	DAIxAddress,
@@ -224,24 +223,26 @@ export default function Home({ locale }: any): JSX.Element {
 	}, [isConnected, tokenPrice, tokenPriceIsSuccess]);
 
 	const getNetFlowRate = async () => {
-		const framework = await getSFFramework();
-		//load the token you'd like to use like this
-		//note that tokens may be loaded by symbol or by address
-		const ric = await framework.loadSuperToken(Coin.RIC);
-		let flowRate = await ric.getNetFlow({
-			account: address!,
-			providerOrSigner: provider,
+		await getSFFramework().then(async (framework) => {
+			await framework.cfaV1
+				.getNetFlow({
+					superToken: RICAddress,
+					account: address!,
+					providerOrSigner: provider,
+				})
+				.then((flowRate) => {
+					const flowRateBigNumber = new Big(flowRate);
+					const usdFlowRate = flowRateBigNumber
+						.times(new Big('2592000'))
+						.div(new Big('10e17'))
+						.times(usdPrice as BigSource)
+						.toFixed(2);
+					setUsdFlowRate(usdFlowRate);
+				});
 		});
-		const flowRateBigNumber = new Big(flowRate);
-		const usdFlowRate = flowRateBigNumber
-			.times(new Big('2592000'))
-			.div(new Big('10e17'))
-			.times(usdPrice as BigSource)
-			.toFixed(2);
-		setUsdFlowRate(usdFlowRate);
 	};
 	useEffect(() => {
-		if (usdPrice) {
+		if (isConnected && usdPrice) {
 			getNetFlowRate();
 		}
 	}, [isConnected, usdPrice]);
