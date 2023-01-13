@@ -67,7 +67,7 @@ export const Balances = (): JSX.Element => {
 							});
 							return {
 								token: token.coin,
-								amount: token.coin === Coin.RIC ? 'N/A' : Number(balance?.formatted).toFixed(2),
+								amount: token.coin === Coin.RIC ? 'N/A' : parseFloat(balance?.formatted).toFixed(2),
 								color: colors[token.coin],
 								dollarVal: parseFloat((geckoPriceList as any)[geckoMapping[token.coin]].usd),
 							};
