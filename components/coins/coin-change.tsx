@@ -18,7 +18,7 @@ interface Props {
 	type: DataType;
 }
 
-export const CoinChange: NextPage<Props> = ({ coinA, coinB, token, type }) => {
+export const CoinChange: NextPage<Props> = ({ coinA, coinB, token, type }): JSX.Element => {
 	if (type === DataType.Position && coinA && coinB) {
 		return (
 			<>
@@ -79,4 +79,5 @@ export const CoinChange: NextPage<Props> = ({ coinA, coinB, token, type }) => {
 			</>
 		);
 	}
+	return <></>;
 };
