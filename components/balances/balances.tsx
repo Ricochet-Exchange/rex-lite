@@ -19,7 +19,7 @@ export interface TokenData {
 	dollarVal: number;
 }
 
-const geckoMapping = {
+const geckoMapping: Record<string, string> = {
 	USDC: 'usd-coin',
 	MATIC: 'matic-network',
 	ETH: 'ethereum',
@@ -69,7 +69,7 @@ export const Balances = (): JSX.Element => {
 								token: token.coin,
 								amount: token.coin === Coin.RIC ? 'N/A' : Number(balance?.formatted).toFixed(2),
 								color: colors[token.coin],
-								dollarVal: parseFloat((geckoPriceList as any)[(geckoMapping as any)[token.coin]].usd),
+								dollarVal: parseFloat((geckoPriceList as any)[geckoMapping[token.coin]].usd),
 							};
 						})
 					);
