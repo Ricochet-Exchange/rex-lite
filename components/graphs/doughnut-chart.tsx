@@ -1,6 +1,7 @@
 import { formatCurrency } from '@richochet/utils/helperFunctions';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
+import { useEffect, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import { TokenData } from '../balances';
 
@@ -16,19 +17,27 @@ interface ChartData {
 
 export const DoughnutChart: NextPage<Props> = ({ tokens }): JSX.Element => {
 	const { t } = useTranslation('home');
-	const data: ChartData[] = [];
-	tokens
-		.filter((token) => !!token.color)
-		.map((token) => {
-			data.push({
-				name: token.token,
-				color: token.color,
-				value: token.dollarVal,
+	const [total, setTotal] = useState<number>(0);
+	const [chartData, setChartData] = useState<ChartData[]>([]);
+	useEffect(() => {
+		const data: ChartData[] = [];
+		tokens
+			.filter((token) => !!token.color)
+			.map((token) => {
+				data.push({
+					name: token.token,
+					color: token.color,
+					value: token.dollarVal,
+				});
 			});
-		});
-	const total: number = tokens
-		.filter((token) => !!token.dollarVal)
-		.reduce((accumulator, current) => accumulator + current.dollarVal, 0);
+		setChartData(data);
+	}, [tokens]);
+	useEffect(() => {
+		const total: number = tokens
+			.filter((token) => !!token.amount && token.amount !== 'N/A')
+			.reduce((accumulator, current) => accumulator + parseFloat(current.amount), 0);
+		setTotal(total);
+	}, [tokens]);
 	return (
 		<div className='h-52 w-52'>
 			<ResponsiveContainer height='100%' width='100%'>
@@ -40,14 +49,14 @@ export const DoughnutChart: NextPage<Props> = ({ tokens }): JSX.Element => {
 						{formatCurrency(total)}
 					</text>
 					<Pie
-						data={data}
+						data={chartData}
 						innerRadius={80}
 						outerRadius={100}
 						fill='#81a8ce'
 						paddingAngle={0}
 						nameKey='name'
 						dataKey='value'>
-						{data.map((entry) => (
+						{chartData.map((entry) => (
 							<Cell key={`cell-${entry.name}`} fill={entry.color} />
 						))}
 					</Pie>
