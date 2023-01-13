@@ -221,7 +221,7 @@ export default function Home({ locale }: any): JSX.Element {
 		if (tokenPriceIsError) {
 			console.error(tokenPriceError);
 		}
-	}, [isConnected, tokenPrice, tokenPriceIsLoading, tokenPriceIsSuccess]);
+	}, [isConnected, tokenPrice, tokenPriceIsSuccess]);
 
 	const getNetFlowRate = async () => {
 		const framework = await getSFFramework();
@@ -241,10 +241,10 @@ export default function Home({ locale }: any): JSX.Element {
 		setUsdFlowRate(usdFlowRate);
 	};
 	useEffect(() => {
-		if (isConnected && usdPrice) {
+		if (usdPrice) {
 			getNetFlowRate();
 		}
-	}, [isConnected, usdPrice, tokenPriceIsLoading, tokenPriceIsSuccess]);
+	}, [isConnected, usdPrice]);
 	const { data: balance } = useBalance({
 		address: address,
 		chainId: polygon.id,
