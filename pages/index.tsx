@@ -12,6 +12,7 @@ import { useIsMounted } from '@richochet/hooks/useIsMounted';
 import { buildFlowQuery } from '@richochet/utils/buildFlowQuery';
 import calculateStreamedSoFar from '@richochet/utils/calculateStreamedSoFar';
 import { getSFFramework } from '@richochet/utils/fluidsdkConfig';
+import { getFlowUSDValue } from '@richochet/utils/getFlowUsdValue';
 import { formatCurrency } from '@richochet/utils/helperFunctions';
 import Big, { BigSource } from 'big.js';
 import { ConnectKitButton } from 'connectkit';
@@ -57,7 +58,6 @@ const coingeckoIds = new Map<string, string>([
 	[StIbAlluoUSDAddress, 'usd-coin'],
 	[StIbAlluoBTCAddress, 'wrapped-bitcoin'],
 ]);
-const ids = [...coingeckoIds.values()];
 const exchangeContractsAddresses = flowConfig.map((f) => f.superToken);
 
 export default function Home({ locale }: any): JSX.Element {
@@ -94,14 +94,31 @@ export default function Home({ locale }: any): JSX.Element {
 	const [positions, setPositions] = useState<InvestmentFlow[]>([]);
 	const [positionTotal, setPositionTotal] = useState<number>(0);
 	const [results, setResults] = useState<{ flowsOwned: Flow[]; flowsReceived: Flow[] }[]>([]);
-	const {
-		data: coingeckoPrices,
-		isLoading: coingeckoIsLoading,
-		isSuccess: coingeckoIsSuccess,
-	} = coingeckoApi.useGetPricesQuery(ids.join(','));
+	const [coingeckoPrices, setCoingeckoPrices] = useState<Map<string, number>>(new Map());
+	const [coingeckoPricesTrigger] = coingeckoApi.useLazyGetPricesQuery();
 	const [queryFlows] = superfluidSubgraphApi.useQueryFlowsMutation();
 	const [queryStreams] = superfluidSubgraphApi.useQueryStreamsMutation();
 	const [queryReceived] = superfluidSubgraphApi.useQueryReceivedMutation();
+
+	useEffect(() => {
+		const ids = [...coingeckoIds.values()];
+		const prices = coingeckoPricesTrigger(ids.join(','));
+		prices.then((res: any) => {
+			const tokenAddresses = [...coingeckoIds.keys()];
+			const priceMap: Map<string, number> = new Map();
+			tokenAddresses.forEach((tokenAddress) => {
+				const id = coingeckoIds?.get(tokenAddress);
+				const tokenData = res?.data?.filter((res: any) => res.id === id!);
+				if (tokenData === undefined) {
+					priceMap.set(tokenAddress, 0);
+					console.warn('Could not fetch price for token ', tokenAddress);
+				} else {
+					priceMap.set(tokenAddress, tokenData[0]?.current_price);
+				}
+			});
+			setCoingeckoPrices(priceMap);
+		});
+	}, [isMounted]);
 
 	useEffect(() => {
 		const results = exchangeContractsAddresses.map(
@@ -193,25 +210,16 @@ export default function Home({ locale }: any): JSX.Element {
 	}, [queries, isConnected]);
 
 	useEffect(() => {
-		if (!coingeckoIsSuccess) {
-			return;
-		}
-		if (coingeckoIsSuccess && coingeckoPrices && queries.size > 0) {
+		if (coingeckoPrices.size > 0 && queries.size > 0) {
 			let list = flowConfig.filter((each) => each.type === FlowTypes.market);
 			let sortList = list.sort((a, b) => {
-				const totalVolumeA = parseFloat(getFlowUSDValue(a));
-				const totalVolumeB = parseFloat(getFlowUSDValue(b));
+				const totalVolumeA = parseFloat(getFlowUSDValue(b, queries, coingeckoPrices));
+				const totalVolumeB = parseFloat(getFlowUSDValue(b, queries, coingeckoPrices));
 				return totalVolumeB - totalVolumeA;
 			});
 			setSortedList(sortList);
 		}
-	}, [queries, coingeckoPrices, coingeckoIsLoading, coingeckoIsSuccess]);
-
-	const getFlowUSDValue = (flow: InvestmentFlow, toFixed: number = 0) => {
-		return (
-			coingeckoPrices ? parseFloat(queries.get(flow.flowKey)?.flowsOwned!) * coingeckoPrices[flow.tokenA] : 0
-		).toFixed(toFixed);
-	};
+	}, [queries, coingeckoPrices]);
 
 	useEffect(() => {
 		if (isConnected && tokenPrice && tokenPriceIsSuccess) {
@@ -321,7 +329,7 @@ export default function Home({ locale }: any): JSX.Element {
 								<CardContainer
 									content={
 										isConnected ? (
-											<Positions positions={positions} queries={queries} />
+											<Positions coingeckoPrices={coingeckoPrices} positions={positions} queries={queries} />
 										) : (
 											<div className='flex flex-col items-center justify-center space-y-4 h-96'>
 												<p className='text-primary-500'>{t('connect-for-positions')}.</p>
