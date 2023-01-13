@@ -83,7 +83,6 @@ const streamApi = createApi({
 				} catch (e) {
 					console.error(e);
 					const error = transformError(e);
-					console.log('error', error);
 					return { error };
 				}
 			},
@@ -104,7 +103,7 @@ const streamApi = createApi({
 							: await downgrade(contract, amount, address!);
 					console.log({ tx });
 					return { data: tx };
-				} catch (e) {
+				} catch (e: any) {
 					console.error(e);
 					const error = transformError(e);
 					return { error };
