@@ -67,9 +67,15 @@ export const CoinChange: NextPage<Props> = ({ coinA, coinB, token, type }) => {
 	if (type === DataType.ViewPosition && coinA && coinB) {
 		return (
 			<>
-				<Image width='40' height='40' src={iconsCoin[coinA as Coin]!} alt={coinA} />
+				<span className='flex items-center space-x-2'>
+					<Image width='40' height='40' src={iconsCoin[coinA as Coin]!} alt={coinA} />{' '}
+					<span className='font-medium text-slate-100 '>{coinA}</span>
+				</span>
 				<ArrowLongRightIcon className='h-10 w-16' />
-				<Image width='30' height='30' src={iconsCoin[coinB as Coin]!} alt={coinB} />
+				<span className='flex items-center space-x-2'>
+					<Image width='30' height='30' src={iconsCoin[coinB as Coin]!} alt={coinB} />{' '}
+					<span className='font-medium text-slate-100 '>{coinB}</span>
+				</span>
 			</>
 		);
 	}
