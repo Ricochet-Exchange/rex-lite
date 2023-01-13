@@ -4,7 +4,8 @@ import { transformError } from '@richochet/utils/transformError';
 import { getAccount, getContract } from '@wagmi/core';
 import { idaABI, superTokenABI } from 'constants/abis';
 import { idaAddress, MATICxAddress } from 'constants/polygon_config';
-import { downgrade, downgradeMatic, upgradeMatic } from './../../pages/api/ethereum';
+import { PositionData } from './../../components/positions/positions';
+import { downgrade, downgradeMatic, stopFlow, upgradeMatic } from './../../pages/api/ethereum';
 
 const streamApi = createApi({
 	keepUnusedDataFor: 60, // 60 seconds (default)
@@ -61,6 +62,28 @@ const streamApi = createApi({
 				} catch (e) {
 					console.error(e);
 					const error = transformError(e);
+					return { error };
+				}
+			},
+		}),
+		stopStream: builder.query<PositionData | null, PositionData>({
+			queryFn: async (payload: any): Promise<any | undefined> => {
+				try {
+					const { superToken, tokenA } = payload;
+					const streamTx = stopFlow(superToken, tokenA);
+					console.log({ streamTx });
+					streamTx
+						.then((data) => {
+							data;
+						})
+						.then((error) => {
+							error;
+						});
+					return { data: streamTx };
+				} catch (e) {
+					console.error(e);
+					const error = transformError(e);
+					console.log('error', error);
 					return { error };
 				}
 			},
