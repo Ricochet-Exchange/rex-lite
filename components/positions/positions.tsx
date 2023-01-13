@@ -18,6 +18,7 @@ import { ViewPosition } from './view-position';
 export interface PositionData extends InvestmentFlow {
 	positions: number;
 	timeLeft: number;
+	endDate: string;
 	input: string;
 	output: number;
 	avgPrice: string;
@@ -45,7 +46,7 @@ const positionTitles = ['symbols', 'positions', 'time left', 'input', 'output', 
 export const Positions: NextPage<Props> = ({ positions, queries }) => {
 	const { t } = useTranslation('home');
 	const [positionList, setPositionList] = useState<PositionData[]>([]);
-	const [balances, setBalances] = useState<string[]>([]);
+	const [balances, setBalances] = useState<Map<string, string>>(new Map());
 	const [newPosition, newPositionClosed] = useState(true);
 	const [selectedPosition, setSelectedPosition] = useState<PositionData>();
 	const [closePosition, setClosePosition] = useState(true);
@@ -75,13 +76,13 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 				receivedSoFar?: number;
 			}
 		>,
-		currentBalances: any
+		currentBalances: Map<string, string>
 	) => {
 		const flow = flowConfig.find((flow_) => flow_.flowKey === flowKey);
 		const sameCoinAFlows = flowConfig.filter((flow_) => flow_.coinA === flow?.coinA);
 		const outgoing = sameCoinAFlows.map((flow_) => queries.get(flow_.flowKey)?.placeholder || '0');
 		const outgoingSum = outgoing.reduce(sumStrings, 0);
-		const bal = parseFloat((currentBalances && currentBalances[flow?.tokenA || '']) || '0');
+		const bal = parseFloat((currentBalances && currentBalances.get(flow?.tokenA || '')) || '0');
 		return endDate(bal, outgoingSum);
 	};
 	const computeStreamEnds = (
@@ -98,7 +99,7 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 				receivedSoFar?: number;
 			}
 		>,
-		currentBalances: any
+		currentBalances: Map<string, string>
 	) => {
 		const streamEnds: Map<string, string> = new Map();
 		Object.values(FlowEnum).forEach((flowEnum: FlowEnum) => {
@@ -122,17 +123,18 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 		};
 	};
 	useEffect(() => {
-		const currBalances = tokenArray.map(
-			async (token) =>
-				await fetchBalance({
-					address: address!,
-					chainId: polygon.id,
-					token: token as `0x${string}`,
-				})
-		);
+		const currBalances = tokenArray.map(async (token) => {
+			const balance = await fetchBalance({
+				address: address!,
+				chainId: polygon.id,
+				token: token as `0x${string}`,
+			}).then((res) => res?.formatted);
+			return { token, balance };
+		});
 		Promise.all(currBalances).then((res) => {
-			const balances = res.map((r) => r?.formatted);
-			setBalances(balances);
+			const balanceMap: Map<string, string> = new Map();
+			res.map((r) => balanceMap.set(r?.token, r?.balance));
+			setBalances(balanceMap);
 		});
 	}, [address, isConnected]);
 	useEffect(() => {
@@ -154,6 +156,11 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 						input: queries.get(r?.position?.flowKey)?.placeholder!,
 						output: queries.get(r?.position?.flowKey)?.streamedSoFar || 0,
 						timeLeft: timeLeft.days,
+						endDate: new Date(streamEnds.get(r?.position?.flowKey)!).toLocaleDateString('en-us', {
+							year: 'numeric',
+							month: 'long',
+							day: 'numeric',
+						}),
 						avgPrice: r?.sushiPrice || '0',
 					});
 				});
