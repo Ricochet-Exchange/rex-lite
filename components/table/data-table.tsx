@@ -68,9 +68,15 @@ export const DataTable: NextPage<Props> = ({
 											<td className='px-6 py-4 whitespace-nowrap'>
 												{data.timeLeft} {t('days')}
 											</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{formatCurrency(parseFloat(data.input))}</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{formatCurrency(data.output)}</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{formatCurrency(parseFloat(data.avgPrice))}</td>
+											<td className='px-6 py-4 whitespace-nowrap'>
+												{data.input.toFixed(3)} {data.coinA}x
+											</td>
+											<td className='px-6 py-4 whitespace-nowrap'>
+												{parseFloat(data.output).toFixed(3)} {data.coinA}x ({formatCurrency(parseFloat(data.usdValue))})
+											</td>
+											<td className='px-6 py-4 whitespace-nowrap'>
+												{parseFloat(data.avgPrice).toFixed(3)} {data.coinA} / {data.coinB}
+											</td>
 										</>
 									) : isMarketData(data) ? (
 										<>
@@ -78,7 +84,7 @@ export const DataTable: NextPage<Props> = ({
 												<CoinChange coinA={data.coinA} coinB={data.coinB} type={DataType.Market} />
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
-												{formatCurrency(data.total)} / {t('month')}
+												{data.total} {data.coinA}x
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.posAmt}</td>
 										</>

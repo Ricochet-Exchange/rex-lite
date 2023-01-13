@@ -70,10 +70,11 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 						<CoinChange coinA={position.coinA} coinB={position.coinB} type={DataType.ViewPosition} />
 					</span>
 					<p className='text-slate-100 my-2'>
-						<span className='text-slate-400'>{t('input')}:</span> {formatCurrency(parseFloat(position.input))}
+						<span className='text-slate-400'>{t('input')}:</span> {position.input.toFixed(3)} {position.coinA}x
 					</p>
 					<p className='text-slate-100 my-2'>
-						<span className='text-slate-400'>{t('output')}:</span> {formatCurrency(position.output)}
+						<span className='text-slate-400'>{t('output')}:</span> {parseFloat(position.output).toFixed(3)}{' '}
+						{position.coinA}x
 					</p>
 					<p className='text-slate-100 my-2'>
 						<span className='text-slate-400'>{t('time-left')}:</span> {position.timeLeft} {t('days')}
