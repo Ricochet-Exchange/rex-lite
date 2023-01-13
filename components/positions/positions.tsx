@@ -1,4 +1,5 @@
 import { PlusSmallIcon } from '@heroicons/react/24/solid';
+import { getFlowUSDValue } from '@richochet/utils/getFlowUsdValue';
 import { polygon } from '@wagmi/chains';
 import { fetchBalance } from '@wagmi/core';
 import { flowConfig, FlowEnum, InvestmentFlow } from 'constants/flowConfig';
@@ -19,8 +20,9 @@ export interface PositionData extends InvestmentFlow {
 	positions: number;
 	timeLeft: number;
 	endDate: string;
-	input: string;
-	output: number;
+	usdValue: string;
+	input: number;
+	output: string;
 	avgPrice: string;
 }
 
@@ -39,11 +41,12 @@ interface Props {
 			receivedSoFar?: number;
 		}
 	>;
+	coingeckoPrices: Map<string, number>;
 }
 
 const positionTitles = ['symbols', 'positions', 'time left', 'input', 'output', 'average price'];
 
-export const Positions: NextPage<Props> = ({ positions, queries }) => {
+export const Positions: NextPage<Props> = ({ coingeckoPrices, positions, queries }) => {
 	const { t } = useTranslation('home');
 	const [positionList, setPositionList] = useState<PositionData[]>([]);
 	const [balances, setBalances] = useState<Map<string, string>>(new Map());
@@ -153,8 +156,9 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 					positions.push({
 						...r?.position,
 						positions: queries.get(r?.position?.flowKey)?.totalFlows || 0,
-						input: queries.get(r?.position?.flowKey)?.placeholder!,
-						output: queries.get(r?.position?.flowKey)?.streamedSoFar || 0,
+						usdValue: getFlowUSDValue(r?.position, queries, coingeckoPrices, 2),
+						input: queries.get(r?.position?.flowKey)?.streamedSoFar || 0,
+						output: queries.get(r?.position?.flowKey)?.placeholder!,
 						timeLeft: timeLeft.days,
 						endDate: new Date(streamEnds.get(r?.position?.flowKey)!).toLocaleDateString('en-us', {
 							year: 'numeric',
