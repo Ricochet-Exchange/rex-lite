@@ -27,7 +27,7 @@ interface Props {
 	>;
 }
 
-const marketTitles = ['market', 'total', 'amount of positions'];
+const marketTitles = ['market', 'total monthly', 'amount of positions'];
 
 export const Markets: NextPage<Props> = ({ sortedList, queries }) => {
 	const { t } = useTranslation('home');
