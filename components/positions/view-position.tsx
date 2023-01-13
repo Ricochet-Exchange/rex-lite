@@ -1,7 +1,8 @@
 import { combineClasses, formatCurrency } from '@richochet/utils/helperFunctions';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import coingeckoApi from 'redux/slices/coingecko.slice';
 import { CoinChange, DataType } from '../coins/coin-change';
 import { AreaGraph } from '../graphs/area-graph';
 import { EditPosition } from './edit-position';
@@ -13,9 +14,37 @@ interface Props {
 	position: PositionData;
 }
 
+const geckoMapping: Record<string, string> = {
+	USDC: 'usd-coin',
+	MATIC: 'matic-network',
+	ETH: 'ethereum',
+	WBTC: 'wrapped-bitcoin',
+	DAI: 'dai',
+	RIC: 'richochet',
+	StIbAlluoETH: 'ethereum',
+	StIbAlluoBTC: 'wrapped-bitcoin',
+	StIbAlluoUSD: 'usd-coin',
+};
+
 export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 	const { t } = useTranslation('home');
 	const [edit, setEdit] = useState(false);
+	const [usdPrice, setUsdPrice] = useState<number>(0);
+	const {
+		data: tokenPrice,
+		isLoading: tokenPriceIsLoading,
+		isSuccess: tokenPriceIsSuccess,
+		isError: tokenPriceIsError,
+		error: tokenPriceError,
+	} = coingeckoApi.useGetTokenPriceQuery(geckoMapping[position.coinB]);
+	useEffect(() => {
+		if (tokenPrice && tokenPriceIsSuccess) {
+			setUsdPrice(tokenPrice?.[geckoMapping[position.coinB]]?.usd);
+		}
+		if (tokenPriceIsError) {
+			console.error(tokenPriceError);
+		}
+	}, [tokenPrice, tokenPriceIsSuccess]);
 	return (
 		<>
 			<div className='flex items-center justify-start border-b border-slate-600 space-x-4 mb-6 lg:mb-12 pb-2'>
@@ -41,27 +70,31 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 						<CoinChange coinA={position.coinA} coinB={position.coinB} type={DataType.ViewPosition} />
 					</span>
 					<p className='text-slate-100 my-2'>
-						<span className='text-slate-400'>{t('input')}:</span> {position.input}
+						<span className='text-slate-400'>{t('input')}:</span> {formatCurrency(parseFloat(position.input))}
 					</p>
 					<p className='text-slate-100 my-2'>
-						<span className='text-slate-400'>{t('output')}:</span> {position.output}
+						<span className='text-slate-400'>{t('output')}:</span> {formatCurrency(position.output)}
 					</p>
-					<p className='text-slate-100'>
-						<span className='text-slate-400'>{t('time-left')}:</span> {position.timeLeft}
+					<p className='text-slate-100 my-2'>
+						<span className='text-slate-400'>{t('time-left')}:</span> {position.timeLeft} {t('days')}
+					</p>
+					<p className='text-slate-100 my-2'>
+						<span className='text-slate-400'>{t('end-date')}:</span> {position.endDate}
 					</p>
 				</div>
 				{!edit && (
 					<div className='w-full md:w-1/2'>
 						<AreaGraph />
 						<p className='text-slate-100 my-2'>
-							<span className='text-slate-400'>{t('average-buy-price')}:</span> 1 ETH = {formatCurrency(1456.78)}
+							<span className='text-slate-400'>{t('average-buy-price')}:</span> 1 {position.coinB} ={' '}
+							{formatCurrency(usdPrice)}
 						</p>
 						<div>
 							<span className='text-slate-400'>
 								{t('average-buy-price')} &#62;&#60; {t('current-price')}:{' '}
 							</span>
 							<p className='text-slate-100'>
-								{formatCurrency(1456.78)} &#62;&#60; {formatCurrency(1889.45)}
+								{formatCurrency(usdPrice)} &#62;&#60; {formatCurrency(usdPrice)}
 							</p>
 						</div>
 					</div>
