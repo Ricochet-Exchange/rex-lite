@@ -1,27 +1,7 @@
 import { Coin } from './coins';
 import {
-	MATICxAddress,
-	USDCxAddress,
-	WETHxAddress,
-	WBTCxAddress,
-	RICAddress,
 	DAIAddress,
-	DAIxAddress,
-	MKRAddress,
-	MKRxAddress,
-	USDCAddress,
-	WETHAddress,
-	WBTCAddress,
-	SUSHIAddress,
-	SUSHIxAddress,
-	IDLEAddress,
-	IDLExAddress,
-	IbAlluoETHAddress,
-	StIbAlluoETHAddress,
-	IbAlluoUSDAddress,
-	StIbAlluoUSDAddress,
-	IbAlluoBTCAddress,
-	StIbAlluoBTCAddress,
+	DAIxAddress, IbAlluoBTCAddress, IbAlluoETHAddress, IbAlluoUSDAddress, MATICxAddress, RICAddress, StIbAlluoBTCAddress, StIbAlluoETHAddress, StIbAlluoUSDAddress, USDCAddress, USDCxAddress, WBTCAddress, WBTCxAddress, WETHAddress, WETHxAddress
 } from './polygon_config';
 
 type Transformer = {
@@ -93,29 +73,5 @@ export const tokenCoinTransformer: Transformer[] = [
 	{
 		token: DAIxAddress,
 		coin: Coin.DAIx,
-	},
-	{
-		token: MKRAddress,
-		coin: Coin.MKR,
-	},
-	{
-		token: MKRxAddress,
-		coin: Coin.MKRx,
-	},
-	{
-		token: SUSHIAddress,
-		coin: Coin.SUSHI,
-	},
-	{
-		token: SUSHIxAddress,
-		coin: Coin.SUSHIx,
-	},
-	{
-		token: IDLEAddress,
-		coin: Coin.IDLE,
-	},
-	{
-		token: IDLExAddress,
-		coin: Coin.IDLEx,
 	},
 ];
