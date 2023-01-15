@@ -7,8 +7,8 @@ import Image from 'next/image';
 import { Dispatch, Fragment, SetStateAction } from 'react';
 
 interface Props {
-	value: Coin;
 	coins: Coin[];
+	value: Coin;
 	classNames?: string;
 	handleChange?: Dispatch<SetStateAction<Coin>>;
 }
@@ -18,9 +18,11 @@ const TokenList: NextPage<Props> = ({ classNames, value, coins, handleChange }):
 		<div className={combineClasses(classNames ? classNames : 'relative w-full z-10')}>
 			<Listbox.Button className='relative w-full cursor-default rounded-lg bg-slate-700 py-2 pl-3 pr-10 text-left text-slate-200 shadow-md focus:outline-none focus-visible:border-slate-500 focus-visible:ring-2 focus-visible:ring-slate-100 focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-300 sm:text-sm'>
 				<div className='flex items-center whitespace-nowrap space-x-2'>
-					<span>
-						<Image width='22' height='22' src={iconsCoin[value as Coin]!} alt={value} />
-					</span>
+					{value !== Coin.SELECT && (
+						<span>
+							<Image width='22' height='22' src={iconsCoin[value as Coin]!} alt={value} />
+						</span>
+					)}
 					<span className='block truncate'>{value}</span>
 				</div>
 				<span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
@@ -41,9 +43,11 @@ const TokenList: NextPage<Props> = ({ classNames, value, coins, handleChange }):
 							{({ selected }) => (
 								<>
 									<div className='flex items-center whitespace-nowrap space-x-2'>
-										<span>
-											<Image width='22' height='22' src={iconsCoin[coin as Coin]!} alt={coin} />
-										</span>
+										{coin !== Coin.SELECT && (
+											<span>
+												<Image width='22' height='22' src={iconsCoin[coin as Coin]!} alt={coin} />
+											</span>
+										)}
 										<span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{coin}</span>
 									</div>
 									{selected ? (

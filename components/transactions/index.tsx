@@ -28,52 +28,54 @@ const coins = [...namesCoin, ...namesCoinX];
 export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 	const { t } = useTranslation('home');
 	const [state, dispatch] = useContext(AlertContext);
-	const [selectedToken, setSelectedToken] = useState<Coin>(type === BalanceAction.Withdraw ? Coin.WETHx : Coin.ETH);
-	const [swapFrom, setSwapFrom] = useState<Coin>(Coin.BTC);
-	const [swapTo, setSwapTo] = useState<Coin>(Coin.ETH);
-	const [amount, setAmount] = useState('');
-	const [slippageTolerance, setSlippageTolerance] = useState(tolerance[0]);
+	const [selectedToken, setSelectedToken] = useState<Coin>(Coin.SELECT);
+	const [swapFrom, setSwapFrom] = useState<Coin>(Coin.SELECT);
+	const [swapTo, setSwapTo] = useState<Coin>(Coin.SELECT);
+	const [amount, setAmount] = useState<string>('');
+	const [slippageTolerance, setSlippageTolerance] = useState<string>();
 	const [upgradeTrigger] = streamApi.useLazyUpgradeQuery();
 	const [downgradeTrigger] = streamApi.useLazyDowngradeQuery();
 	const handleSubmit = (event: any) => {
 		event?.preventDefault();
-		dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
-		if (type === BalanceAction.Withdraw) {
-			const token = downgradeTokensList.find((token) => token.coin === selectedToken);
-			console.log({ token });
-			const downgrade = downgradeTrigger({ value: amount, tokenAddress: token?.tokenAddress! });
-			console.log({ downgrade });
-			downgrade
-				.then((response) => {
-					if (response.isSuccess) {
-						dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
-					}
-					if (response.isError) {
-						dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
-					}
-					setTimeout(() => {
-						dispatch(AlertAction.hideAlert());
-					}, 5000);
-				})
-				.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
-		} else if (type === BalanceAction.Deposit) {
-			const token = upgradeTokensList.find((token) => token.coin === selectedToken);
-			console.log({ token });
-			const upgrade = upgradeTrigger({ value: amount, tokenAddress: token?.tokenAddress! });
-			console.log({ upgrade });
-			upgrade
-				.then((response) => {
-					if (response.isSuccess) {
-						dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
-					}
-					if (response.isError) {
-						dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
-					}
-					setTimeout(() => {
-						dispatch(AlertAction.hideAlert());
-					}, 5000);
-				})
-				.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+		if (selectedToken !== Coin.SELECT) {
+			dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
+			if (type === BalanceAction.Withdraw) {
+				const token = downgradeTokensList.find((token) => token.coin === selectedToken);
+				console.log({ token });
+				const downgrade = downgradeTrigger({ value: amount, tokenAddress: token?.tokenAddress! });
+				console.log({ downgrade });
+				downgrade
+					.then((response) => {
+						if (response.isSuccess) {
+							dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+						}
+						if (response.isError) {
+							dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+						}
+						setTimeout(() => {
+							dispatch(AlertAction.hideAlert());
+						}, 5000);
+					})
+					.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+			} else if (type === BalanceAction.Deposit) {
+				const token = upgradeTokensList.find((token) => token.coin === selectedToken);
+				console.log({ token });
+				const upgrade = upgradeTrigger({ value: amount, tokenAddress: token?.tokenAddress! });
+				console.log({ upgrade });
+				upgrade
+					.then((response) => {
+						if (response.isSuccess) {
+							dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+						}
+						if (response.isError) {
+							dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+						}
+						setTimeout(() => {
+							dispatch(AlertAction.hideAlert());
+						}, 5000);
+					})
+					.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+			}
 		}
 	};
 	return (
@@ -117,7 +119,13 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 					value={amount}
 					step='any'
 					onChange={(e) => setAmount(e.target.value)}
-					placeholder={type === BalanceAction.Swap ? `${t('amount-in')!} ${swapFrom}` : t('amount')!}
+					placeholder={
+						type === BalanceAction.Swap
+							? `${swapFrom !== Coin.SELECT ? t('amount-in')! : t('amount')} ${
+									swapFrom !== Coin.SELECT ? swapFrom : ''
+							  }`
+							: t('amount')!
+					}
 				/>
 				{type === BalanceAction.Swap && (
 					<>
@@ -125,7 +133,9 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 						<Listbox value={slippageTolerance} onChange={setSlippageTolerance}>
 							<div className='relative w-full z-10'>
 								<Listbox.Button className='relative w-full cursor-default rounded-lg bg-slate-700 py-2 pl-3 pr-10 text-left text-slate-200 shadow-md focus:outline-none focus-visible:border-slate-500 focus-visible:ring-2 focus-visible:ring-slate-100 focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-300 sm:text-sm'>
-									<span className='block truncate'>{slippageTolerance}</span>
+									<span className='block truncate'>
+										{slippageTolerance ? slippageTolerance : 'Select slippage tolerance'}
+									</span>
 									<span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
 										<ChevronUpDownIcon className='h-5 w-5 text-slate-100' aria-hidden='true' />
 									</span>
@@ -162,7 +172,7 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 							</div>
 						</Listbox>
 						<p className='text-slate-100'>
-							{t('min-output-amt')}: ...{swapTo}
+							{t('min-output-amt')}: ...{swapTo !== Coin.SELECT ? swapTo : ''}
 						</p>
 					</>
 				)}

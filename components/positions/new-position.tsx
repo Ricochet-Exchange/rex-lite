@@ -2,13 +2,13 @@ import { Listbox, Transition } from '@headlessui/react';
 import { ArrowLongRightIcon, CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid';
 import AlertAction from '@richochet/utils/alertAction';
 import { getShareScaler } from '@richochet/utils/getShareScaler';
-import { Coin, namesCoin, namesCoinX } from 'constants/coins';
+import { Coin } from 'constants/coins';
 import { flowConfig, FlowTypes } from 'constants/flowConfig';
 import { AlertContext } from 'contexts/AlertContext';
 import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
-import { Fragment, useContext, useState } from 'react';
+import { Fragment, useContext, useEffect, useState } from 'react';
 import streamApi from 'redux/slices/streams.slice';
 import { RoundedButton } from '../button';
 import { AreaGraph } from '../graphs';
@@ -21,12 +21,16 @@ interface Props {
 	setClose: Function;
 }
 
-const coins = [...namesCoin, ...namesCoinX];
-
 export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	const { t } = useTranslation('home');
-	const [from, setFrom] = useState<Coin>(Coin.BTC);
-	const [to, setTo] = useState<Coin>(Coin.RIC);
+	const [coinsFrom, SetCoinsFrom] = useState<Coin[]>(
+		flowConfig.map((flow) => flow.coinA).filter((coin, index, self) => self.indexOf(coin) === index)
+	);
+	const [coinsTo, SetCoinsTo] = useState<Coin[]>(
+		flowConfig.map((flow) => flow.coinB).filter((coin, index, self) => self.indexOf(coin) === index)
+	);
+	const [from, setFrom] = useState<Coin>(Coin.SELECT);
+	const [to, setTo] = useState<Coin>(Coin.SELECT);
 	const [amount, setAmount] = useState<string>('0');
 	const [state, dispatch] = useContext(AlertContext);
 	const [shareScaler, setShareScaler] = useState(1e3);
@@ -36,50 +40,83 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 		return await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
 	};
 
-	const handleSubmit = (event: any) => {
-		//to do: figure out how to pass down the correct values.
-		event?.preventDefault();
-		const config = flowConfig.find((flow) => flow.coinA === from && flow.coinB === to);
-		if (config) {
-			console.log({ config });
-			const exchangeKey = config?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
-			fetchShareScaler(exchangeKey, config.tokenA, config.tokenB);
-			// Need to call hook here to start a new stream.
-			dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
-			if (shareScaler) {
-				const newAmount =
-					config?.type === FlowTypes.market
-						? (
-								((Math.floor(((parseFloat(amount) / 2592000) * 1e18) / shareScaler) * shareScaler) / 1e18) *
-								2592000
-						  ).toString()
-						: amount;
-				console.log({ newAmount, config });
-				//@ts-ignore
-				const stream = startStreamTrigger({ amount: newAmount, config });
-				stream
-					.then((response) => {
-						if (response.isSuccess) {
-							dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
-						}
-						if (response.isError) {
-							dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
-						}
-						setTimeout(() => {
-							dispatch(AlertAction.hideAlert());
-						}, 5000);
-					})
-					.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
-			}
+	useEffect(() => {
+		if (from !== Coin.SELECT) {
+			const flows = flowConfig
+				.filter((flow) => flow.coinA === from)
+				.map((flow) => flow.coinB)
+				.filter((coin, index, self) => self.indexOf(coin) === index);
+			SetCoinsTo([Coin.SELECT, ...flows]);
 		} else {
-			dispatch(
-				AlertAction.showErrorAlert('Oops!', 'We were unable to find the selected position. Please try another one.')
-			);
-			setTimeout(() => {
-				dispatch(AlertAction.hideAlert());
-			}, 5000);
+			const flows = flowConfig.map((flow) => flow.coinB).filter((coin, index, self) => self.indexOf(coin) === index);
+			SetCoinsTo([Coin.SELECT, ...flows]);
+		}
+	}, [from]);
+
+	useEffect(() => {
+		if (to !== Coin.SELECT) {
+			const flows = flowConfig
+				.filter((flow) => flow.coinB === to)
+				.map((flow) => flow.coinA)
+				.filter((coin, index, self) => self.indexOf(coin) === index);
+			SetCoinsFrom([Coin.SELECT, ...flows]);
+		} else {
+			const flows = flowConfig.map((flow) => flow.coinB).filter((coin, index, self) => self.indexOf(coin) === index);
+			SetCoinsFrom([Coin.SELECT, ...flows]);
+		}
+	}, [to]);
+
+	const handleSubmit = (event: any) => {
+		event?.preventDefault();
+		if (to !== Coin.SELECT && from !== Coin.SELECT) {
+			//to do: figure out how to pass down the correct values.
+			const config = flowConfig.find((flow) => flow.coinA === from && flow.coinB === to);
+			if (config) {
+				console.log({ config });
+				const exchangeKey = config?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
+				fetchShareScaler(exchangeKey, config.tokenA, config.tokenB)
+					.then((res) => {
+						setShareScaler(res);
+						// Need to call hook here to start a new stream.
+						dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
+						if (shareScaler) {
+							const newAmount =
+								config?.type === FlowTypes.market
+									? (
+											((Math.floor(((parseFloat(amount) / 2592000) * 1e18) / shareScaler) * shareScaler) / 1e18) *
+											2592000
+									  ).toString()
+									: amount;
+							console.log({ newAmount, config });
+							//@ts-ignore
+							const stream = startStreamTrigger({ amount: newAmount, config });
+							stream
+								.then((response) => {
+									if (response.isSuccess) {
+										dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+									}
+									if (response.isError) {
+										dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+									}
+									setTimeout(() => {
+										dispatch(AlertAction.hideAlert());
+									}, 5000);
+								})
+								.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+						}
+					})
+					.catch((error) => console.error(error));
+			} else {
+				dispatch(
+					AlertAction.showErrorAlert('Oops!', 'We were unable to find the selected position. Please try another one.')
+				);
+				setTimeout(() => {
+					dispatch(AlertAction.hideAlert());
+				}, 5000);
+			}
 		}
 	};
+
 	return (
 		<>
 			<p className='text-primary-500 uppercase'>{t('your-positions')}</p>
@@ -90,9 +127,9 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 					onSubmit={handleSubmit}>
 					<label className='text-slate-100'>{t('token-action')}?</label>
 					<div className='flex items-center space-x-4 w-full lg:w-auto'>
-						<TokenList value={from} coins={coins} handleChange={setFrom} />
+						<TokenList value={from} coins={coinsFrom} handleChange={setFrom} />
 						<ArrowLongRightIcon className='h-10 w-16' />
-						<TokenList value={to} coins={coins} handleChange={setTo} />
+						<TokenList value={to} coins={coinsTo} handleChange={setTo} />
 					</div>
 					<label className='text-slate-100'>{t('position-amount')}?</label>
 					<input

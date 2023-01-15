@@ -18,6 +18,7 @@ import usdt from '@richochet/assets/images/coins/tetherUsdt.svg';
 import usdc from '@richochet/assets/images/coins/usdCoin.svg';
 
 export enum Coin {
+	SELECT = 'Select Coin',
 	WBTC = 'WBTC',
 	IDLE = 'IDLE',
 	BTC = 'BTC',
