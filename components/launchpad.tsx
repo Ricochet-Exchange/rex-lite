@@ -12,7 +12,7 @@ export const LaunchPad = () => {
 			</div>
 			<p className='text-slate-100'>{t('start-a-position')}</p>
 			<SolidButton type='button' primary={true} action={t('start-20-position')} />
-			<SolidButton type='button' primary={false} action={t('buy-ric')} />
+			<SolidButton type='button' primary={false} action={`${t('buy')} 100,000 RIC`} />
 		</div>
 	);
 };
