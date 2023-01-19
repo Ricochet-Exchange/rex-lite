@@ -1,4 +1,5 @@
 import { Alert } from '@richochet/components/alert';
+import { BalanceDisplay } from '@richochet/components/balance-display';
 import { Balances } from '@richochet/components/balances';
 import { OutlineButton } from '@richochet/components/button';
 import { Card, CardContainer, CardWithBackground, CardWithOutline, SmallCard } from '@richochet/components/cards';
@@ -35,7 +36,7 @@ import { useEffect, useState } from 'react';
 import coingeckoApi from 'redux/slices/coingecko.slice';
 import superfluidSubgraphApi from 'redux/slices/superfluidSubgraph.slice';
 import { Flow } from 'types/flow';
-import { useAccount, useBalance, useProvider } from 'wagmi';
+import { useAccount, useProvider } from 'wagmi';
 import { polygon } from 'wagmi/chains';
 
 export async function getStaticProps({ locale }: any): Promise<Object> {
@@ -254,12 +255,6 @@ export default function Home({ locale }: any): JSX.Element {
 			getNetFlowRate();
 		}
 	}, [isConnected, usdPrice]);
-	const { data: balance } = useBalance({
-		address: address,
-		chainId: polygon.id,
-		token: RICAddress,
-	});
-
 	if (!isMounted) {
 		return <></>;
 	}
@@ -306,8 +301,7 @@ export default function Home({ locale }: any): JSX.Element {
 										<>
 											<h6 className='font-light uppercase tracking-widest text-primary-500 mb-2'>{t('ric-balance')}</h6>
 											<p className='text-slate-100 font-light text-2xl space-x-1'>
-												<span>{Number(balance?.formatted).toFixed(2)}</span>
-												<span>{balance?.symbol}</span>
+												<BalanceDisplay tokenAddress={RICAddress} showSymbol={true} />
 											</p>
 										</>
 									}

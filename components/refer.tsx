@@ -1,15 +1,21 @@
 import { UsersIcon } from '@heroicons/react/24/solid';
 import { useTranslation } from 'next-i18next';
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
+import { useAccount } from 'wagmi';
 import { SolidButton } from './button';
 
 export const Refer = () => {
 	const { t } = useTranslation('home');
-	const [refURL, setRefURL] = useState('');
+	const { address } = useAccount();
+	const [refURL, setRefURL] = useState('app.ricochet.exchange/#/ref/');
+	const [currentReferralId, setCurrentReferralId] = useState<string | undefined>(address?.toLowerCase().slice(0, 10));
+	const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const { value } = event.target;
+		setCurrentReferralId(value);
+	};
 	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event?.preventDefault();
-		console.log(refURL);
-		setRefURL('');
+		console.log(refURL + currentReferralId);
 	};
 	return (
 		<div className='flex flex-col items-center space-y-4'>
@@ -19,14 +25,21 @@ export const Refer = () => {
 			</div>
 			<p className='text-slate-100'>{t('apply-refer')}</p>
 			<p className='text-slate-400'>{t('customize-url')}:</p>
-			<form onSubmit={handleSubmit} className='space-y-4'>
-				<input
-					type='text'
-					className='input-outline'
-					value={refURL}
-					onChange={(e) => setRefURL(e.target.value)}
-					placeholder='app.ricochet.exchange/#/ref/'
-				/>
+			<form onSubmit={handleSubmit} className='w-full space-y-4'>
+				<div className='inline-flex py-2 pl-3 w-full border border-primary-500 rounded-lg'>
+					<div className='w-2/3 text-primary-700'>
+						<span>{refURL}</span>
+					</div>
+					<input
+						type='text'
+						minLength={2}
+						maxLength={32}
+						defaultValue={currentReferralId}
+						onChange={(e) => handleChange(e)}
+						className='w-1/3 pl-1 pr-3 text-primary-100 placeholder-primary-500 bg-transparent focus:outline-none dark:placeholder-primary-500 '
+						placeholder={`${t('referral-url')}`}
+					/>
+				</div>
 				<SolidButton type='submit' primary={true} action={t('register-url')} />
 			</form>
 			<a

@@ -14,14 +14,13 @@ import { RoundedButton } from '../button';
 import { AreaGraph } from '../graphs';
 import TokenList from '../token-list';
 
-const postionTypes = ['annually', 'bi-weekly', 'continuous', 'weekly'];
-
 interface Props {
 	close: boolean;
 	setClose: Function;
 }
 
 export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
+	const postionTypes = ['continuous'];
 	const { t } = useTranslation('home');
 	const [coinsFrom, SetCoinsFrom] = useState<Coin[]>(
 		flowConfig.map((flow) => flow.coinA).filter((coin, index, self) => self.indexOf(coin) === index)
@@ -35,7 +34,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	const [state, dispatch] = useContext(AlertContext);
 	const [shareScaler, setShareScaler] = useState(1e3);
 	const [startStreamTrigger] = streamApi.useLazyStartStreamQuery();
-	const [positionType, setPositionType] = useState(postionTypes[2]);
+	const [positionType, setPositionType] = useState(postionTypes[0]);
 	const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
 		return await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
 	};
@@ -125,11 +124,11 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 					id='new-position-form'
 					className='flex flex-col items-start lg:p-8 w-full lg:w-1/2 space-y-6'
 					onSubmit={handleSubmit}>
-					<label className='text-slate-100'>{t('token-action')}?</label>
+					<label className='text-slate-100'>{t('position-token')}?</label>
 					<div className='flex items-center space-x-4 w-full lg:w-auto'>
-						<TokenList value={from} coins={coinsFrom} handleChange={setFrom} />
+						<TokenList classNames='relative w-full z-20' value={from} coins={coinsFrom} handleChange={setFrom} />
 						<ArrowLongRightIcon className='h-10 w-16' />
-						<TokenList value={to} coins={coinsTo} handleChange={setTo} />
+						<TokenList classNames='relative w-full z-20' value={to} coins={coinsTo} handleChange={setTo} />
 					</div>
 					<label className='text-slate-100'>{t('position-amount')}?</label>
 					<input

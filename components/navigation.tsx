@@ -14,7 +14,11 @@ import { RoundedButton } from './button';
 export default function Navigation(): JSX.Element {
 	const { disconnect } = useDisconnect();
 	const { address, isConnected } = useAccount();
-	const { data, isError, isLoading } = useBalance({
+	const {
+		data: balance,
+		isError,
+		isLoading,
+	} = useBalance({
 		address: address,
 		chainId: polygon.id,
 		token: RICAddress,
@@ -51,7 +55,7 @@ export default function Navigation(): JSX.Element {
 							{isError && <></>}
 							{!isLoading && !isError && isConnected && (
 								<p>
-									{data?.formatted} {data?.symbol}
+									{Number(balance?.formatted).toFixed(2)} {balance?.symbol}
 								</p>
 							)}
 							<ConnectKitButton.Custom>
@@ -91,6 +95,9 @@ export default function Navigation(): JSX.Element {
 								<div className='mt-3 space-y-1 px-2'>
 									<Disclosure.Button
 										as='a'
+										href='https://staging.ricochet.exchange/#/recent-activity'
+										rel='noreferrer'
+										target='_blank'
 										className='block rounded-md px-3 py-2 text-base font-medium text-slate-400 hover:bg-slate-700 hover:text-slate-100 cursor-pointer'>
 										{t(`your-activity`)}
 									</Disclosure.Button>
@@ -119,7 +126,7 @@ export default function Navigation(): JSX.Element {
 						{isError && <></>}
 						{!isLoading && !isError && isConnected && (
 							<p>
-								{Number(data?.formatted).toFixed(2)} {data?.symbol}
+								{Number(balance?.formatted).toFixed(2)} {balance?.symbol}
 							</p>
 						)}
 						<ConnectKitButton.Custom>
@@ -167,6 +174,9 @@ export default function Navigation(): JSX.Element {
 															<Menu.Item>
 																{({ active }) => (
 																	<a
+																		href='https://staging.ricochet.exchange/#/recent-activity'
+																		rel='noreferrer'
+																		target='_blank'
 																		className={combineClasses(
 																			active ? 'bg-slate-100' : '',
 																			'block px-4 py-2 text-sm text-slate-600 cursor-pointer'

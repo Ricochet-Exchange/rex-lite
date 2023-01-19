@@ -66,9 +66,6 @@ export const DataTable: NextPage<Props> = ({
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.positions}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
-												{data.timeLeft} {t('days')}
-											</td>
-											<td className='px-6 py-4 whitespace-nowrap'>
 												{data.input.toFixed(3)} {data.coinA}x
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
@@ -93,7 +90,8 @@ export const DataTable: NextPage<Props> = ({
 											<td className='flex items-center px-6 py-4 whitespace-nowrap space-x-2'>
 												<CoinChange token={data.token} type={DataType.Balances} />
 											</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{data.amount}</td>
+											<td className='px-6 py-4 whitespace-nowrap'>{data.walletAmount}</td>
+											<td className='px-6 py-4 whitespace-nowrap'>{data.ricAmount}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{formatCurrency(data.dollarVal)}</td>
 										</>
 									) : (

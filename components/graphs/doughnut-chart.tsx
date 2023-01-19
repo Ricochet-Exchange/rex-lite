@@ -34,8 +34,8 @@ export const DoughnutChart: NextPage<Props> = ({ tokens }): JSX.Element => {
 	}, [tokens]);
 	useEffect(() => {
 		const total: number = tokens
-			.filter((token) => !!token.amount && token.amount !== 'N/A')
-			.reduce((accumulator, current) => accumulator + parseFloat(current.amount), 0);
+			.filter((token) => !!token.walletAmount && token.walletAmount !== 'N/A')
+			.reduce((accumulator, current) => accumulator + parseFloat(current.walletAmount), 0);
 		setTotal(total);
 	}, [tokens]);
 	return (

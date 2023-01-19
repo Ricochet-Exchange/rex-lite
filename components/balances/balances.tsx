@@ -1,3 +1,4 @@
+import { getSuperTokenBalances } from '@richochet/utils/getSuperTokenBalances';
 import { fetchBalance } from '@wagmi/core';
 import { Coin } from 'constants/coins';
 import { upgradeTokensList } from 'constants/upgradeConfig';
@@ -14,7 +15,8 @@ import { BalanceTabs } from './balance-tabs';
 
 export interface TokenData {
 	token: string;
-	amount: string;
+	walletAmount: string;
+	ricAmount: string;
 	color: string;
 	dollarVal: number;
 }
@@ -31,7 +33,7 @@ const geckoMapping: Record<string, string> = {
 	StIbAlluoUSD: 'usd-coin',
 };
 
-const headerTitles = ['token', 'amount', 'dollar-value'];
+const headerTitles = ['token', 'wallet-balance', 'ricochet-balance', 'dollar-value'];
 
 export const Balances = (): JSX.Element => {
 	const { t } = useTranslation('home');
@@ -49,9 +51,12 @@ export const Balances = (): JSX.Element => {
 		//@ts-ignore
 	} = coingeckoApi.useGetUpgradedTokensListQuery();
 	const [sortedUpgradeTokensList, setSortedUpgradeTokensList] = useState(upgradeTokensList);
-
+	const [balanceList, setBalanceList] = useState<Record<string, string>>({});
 	const [geckoPriceList, setGeckoPriceList] = useState<Object>();
 	const [tokenList, setTokenList] = useState<TokenData[]>([]);
+	useEffect(() => {
+		getSuperTokenBalances(address!).then((res) => setBalanceList(res));
+	}, [address]);
 	useEffect(() => {
 		if (isConnected) {
 			if (tokens && isSuccess) setGeckoPriceList(tokens);
@@ -67,20 +72,21 @@ export const Balances = (): JSX.Element => {
 							});
 							return {
 								token: token.coin,
-								amount: token.coin === Coin.RIC ? 'N/A' : parseFloat(balance?.formatted).toFixed(2),
+								ricAmount: parseFloat(balanceList[token.superTokenAddress]).toFixed(2),
+								walletAmount: token.coin === Coin.RIC ? 'N/A' : parseFloat(balance?.formatted).toFixed(2),
 								color: colors[token.coin],
 								dollarVal: parseFloat((geckoPriceList as any)[geckoMapping[token.coin]].usd),
 							};
 						})
 					);
 					// sort array by dollar value in descending order
-					const sortedTokens = tokens.sort((a, b) => b.dollarVal - a.dollarVal);
+					const sortedTokens = tokens.sort((a, b) => parseFloat(b.walletAmount) - parseFloat(a.walletAmount));
 					if (sortedTokens.length > 0) setTokenList(sortedTokens);
 				}
 			};
 			getTokenData();
 		}
-	}, [tokens, geckoPriceList, sortedUpgradeTokensList]);
+	}, [tokens, balanceList, geckoPriceList, sortedUpgradeTokensList]);
 	return (
 		<>
 			<p className='font-light uppercase tracking-widest text-primary-500'>{t('your-balances')}</p>

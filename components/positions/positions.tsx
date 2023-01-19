@@ -44,7 +44,7 @@ interface Props {
 	coingeckoPrices: Map<string, number>;
 }
 
-const positionTitles = ['symbols', 'positions', 'time left', 'input', 'output', 'average price'];
+const positionTitles = ['symbols', 'positions', 'total invested', 'investment rate', 'average price'];
 
 export const Positions: NextPage<Props> = ({ coingeckoPrices, positions, queries }) => {
 	const { t } = useTranslation('home');
