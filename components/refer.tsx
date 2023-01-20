@@ -1,21 +1,89 @@
-import { UsersIcon } from '@heroicons/react/24/solid';
+import { ClipboardDocumentIcon, UsersIcon } from '@heroicons/react/24/solid';
+import { AFFILIATE_STATUS, filterValidationErrors, getAffiliateStatus } from '@richochet/utils/getAffiliateStatus';
+import { combineClasses } from '@richochet/utils/helperFunctions';
+import { prepareWriteContract, writeContract } from '@wagmi/core';
+import { ConnectKitButton } from 'connectkit';
+import { referralABI } from 'constants/abis';
+import { rexReferralAddress } from 'constants/polygon_config';
 import { useTranslation } from 'next-i18next';
-import { ChangeEvent, useState } from 'react';
+import Link from 'next/link';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
-import { SolidButton } from './button';
+import { OutlineButton, SolidButton } from './button';
 
 export const Refer = () => {
 	const { t } = useTranslation('home');
-	const { address } = useAccount();
+	const { address, isConnected } = useAccount();
+	const [copy, setCopy] = useState('Copy');
 	const [refURL, setRefURL] = useState('app.ricochet.exchange/#/ref/');
-	const [currentReferralId, setCurrentReferralId] = useState<string | undefined>(address?.toLowerCase().slice(0, 10));
+	const [status, setStatus] = useState<AFFILIATE_STATUS | undefined>();
+	const [validationErrors, setValidationErrors] = useState<string[]>([]);
+	const [currentReferralId, setCurrentReferralId] = useState<string | undefined>();
+	useEffect(() => {
+		setCurrentReferralId(address?.toLowerCase().slice(0, 10));
+	}, [address, isConnected]);
+	useEffect(() => {
+		(async () => {
+			if (address && isConnected) {
+				const affiliateStatus = await getAffiliateStatus(address);
+				setStatus(affiliateStatus);
+			}
+		})();
+	}, [address, isConnected]);
+	useEffect(() => {
+		if (status === AFFILIATE_STATUS.REGISTERING && address && isConnected) {
+			const interval = setInterval(async () => {
+				const affiliateStatus = await getAffiliateStatus(address, setCurrentReferralId);
+				setStatus(affiliateStatus);
+			}, 5000);
+			return () => clearInterval(interval);
+		}
+	}, [status, address, isConnected]);
+	const handleCopy = () => {
+		navigator.clipboard
+			.writeText(`${refURL}${currentReferralId}`)
+			.then(() => {
+				setCopy('Copied!');
+				setTimeout(() => {
+					setCopy('Copy');
+				}, 3000);
+			})
+			.catch();
+	};
 	const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const { value } = event.target;
 		setCurrentReferralId(value);
+		setValidationErrors(filterValidationErrors(value));
 	};
-	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event?.preventDefault();
-		console.log(refURL + currentReferralId);
+		const config = await prepareWriteContract({
+			address: rexReferralAddress as `0x${string}`,
+			abi: referralABI,
+			functionName: 'applyForAffiliate',
+			args: [currentReferralId, currentReferralId],
+		});
+		const data = await writeContract(config);
+		console.log({ data });
+		if (data) {
+			setStatus(AFFILIATE_STATUS.REGISTERING);
+			(async () => {
+				const config = await prepareWriteContract({
+					address: rexReferralAddress as `0x${string}`,
+					abi: referralABI,
+					functionName: 'applyForAffiliate',
+					args: [currentReferralId, currentReferralId],
+					overrides: {
+						from: address as `0x${string}`,
+					},
+				});
+				const data = await writeContract(config);
+				console.log({ data });
+			})();
+		} else {
+			setStatus(AFFILIATE_STATUS.INACTIVE);
+			setValidationErrors(['Error registering this url: possible duplicate. Please try another url']);
+		}
 	};
 	return (
 		<div className='flex flex-col items-center space-y-4'>
@@ -24,24 +92,73 @@ export const Refer = () => {
 				<p className='uppercase tracking-widest'>{t('refer')}</p>
 			</div>
 			<p className='text-slate-100'>{t('apply-refer')}</p>
-			<p className='text-slate-400'>{t('customize-url')}:</p>
-			<form onSubmit={handleSubmit} className='w-full space-y-4'>
-				<div className='inline-flex py-2 pl-3 w-full border border-primary-500 rounded-lg'>
-					<div className='w-2/3 text-primary-700'>
-						<span>{refURL}</span>
-					</div>
-					<input
-						type='text'
-						minLength={2}
-						maxLength={32}
-						defaultValue={currentReferralId}
-						onChange={(e) => handleChange(e)}
-						className='w-1/3 pl-1 pr-3 text-primary-100 placeholder-primary-500 bg-transparent focus:outline-none dark:placeholder-primary-500 '
-						placeholder={`${t('referral-url')}`}
-					/>
+			{isConnected && status === AFFILIATE_STATUS.INACTIVE && (
+				<>
+					<p className='text-slate-400'>{t('customize-url')}:</p>
+					<form onSubmit={handleSubmit} className='w-full space-y-4'>
+						<div
+							className={combineClasses(
+								validationErrors.length > 0 ? 'border-red-700' : 'border-primary-500',
+								'inline-flex py-2 pl-3 w-full border rounded-lg'
+							)}>
+							<div className='w-2/3 text-primary-700'>
+								<span>{refURL}</span>
+							</div>
+							<input
+								type='text'
+								defaultValue={currentReferralId}
+								onChange={(e) => handleChange(e)}
+								className='w-1/3 pl-1 pr-3 text-primary-100 placeholder-primary-500 bg-transparent focus:outline-none dark:placeholder-primary-500 '
+								placeholder={`${t('referral-url')}`}
+							/>
+						</div>
+						{validationErrors.map((each) => (
+							<p className='text-red-700 text-xs italic' key={each}>
+								{t(each)}
+							</p>
+						))}
+						<SolidButton type='submit' primary={true} action={t('register-url')} />
+					</form>
+				</>
+			)}
+			{!isConnected && (
+				<div className='flex flex-col items-center justify-center space-y-4'>
+					<p className='text-primary-500'>{t('connect-for-referrals')}.</p>
+					<ConnectKitButton.Custom>
+						{({ isConnected, show }) => (
+							<>
+								{!isConnected && (
+									<OutlineButton action={`${t('connect-wallet')}`} type='button' handleClick={show}></OutlineButton>
+								)}
+							</>
+						)}
+					</ConnectKitButton.Custom>
 				</div>
-				<SolidButton type='submit' primary={true} action={t('register-url')} />
-			</form>
+			)}
+			{isConnected && status === AFFILIATE_STATUS.AWAITING_VERIFICATION && (
+				<div>
+					<p>
+						{t('Awaiting verification. Come back later or ping us on our discord:')}
+						<br />
+						<Link
+							className='text-slate-200 underline'
+							href='https://discord.gg/mss4t2ED3y'
+							target='_blank'
+							rel='noreferrer'>
+							https://discord.gg/mss4t2ED3y
+						</Link>
+					</p>
+				</div>
+			)}
+			{isConnected && status === AFFILIATE_STATUS.ENABLED && (
+				<div className='flex flex-col justify-start items-center gap-1'>
+					<p>{t('your-referral-url')}</p>
+					<p>{refURL + currentReferralId}</p>
+					<button className='flex justify-center items-center gap-1' onClick={handleCopy}>
+						<ClipboardDocumentIcon className='h-5 w-5' /> {t(copy)}
+					</button>
+				</div>
+			)}
 			<a
 				className='inline-flex items-center space-x-1 text-primary-400'
 				href='https://docs.ricochet.exchange/readme/referral-program'
