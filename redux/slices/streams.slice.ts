@@ -4,8 +4,9 @@ import { transformError } from '@richochet/utils/transformError';
 import { getAccount, getContract } from '@wagmi/core';
 import { idaABI, superTokenABI } from 'constants/abis';
 import { idaAddress, MATICxAddress } from 'constants/polygon_config';
+import { ethers } from 'ethers';
 import { PositionData } from './../../components/positions/positions';
-import { downgrade, downgradeMatic, stopFlow, upgradeMatic } from './../../pages/api/ethereum';
+import { approve, downgrade, downgradeMatic, stopFlow, upgradeMatic } from './../../pages/api/ethereum';
 
 const streamApi = createApi({
 	keepUnusedDataFor: 60, // 60 seconds (default)
@@ -120,6 +121,33 @@ const streamApi = createApi({
 						tokenAddress === MATICxAddress
 							? await upgradeMatic(contract, value, address!)
 							: await upgrade(contract, value, address!);
+					console.log({ tx });
+					return { data: tx };
+				} catch (e) {
+					console.error(e);
+					const error = transformError(e);
+					return { error };
+				}
+			},
+		}),
+		approve: builder.query<
+			{ tokenAddress: string; superTokenAddress: string } | null,
+			{ tokenAddress: string; superTokenAddress: string }
+		>({
+			queryFn: async (payload: any): Promise<any | undefined> => {
+				try {
+					const { tokenAddress, superTokenAddress } = payload;
+					console.log({ payload });
+					const { address } = getAccount();
+					// Allow max instead of amount
+					const amount = ethers.BigNumber.from('2')
+						.pow(ethers.BigNumber.from('256'))
+						.sub(ethers.BigNumber.from('1'))
+						.toString();
+					console.log({ amount });
+					const contract = await getContract({ address: tokenAddress, abi: superTokenABI });
+					console.log({ contract });
+					const tx = await approve(contract, address!, superTokenAddress, amount);
 					console.log({ tx });
 					return { data: tx };
 				} catch (e) {

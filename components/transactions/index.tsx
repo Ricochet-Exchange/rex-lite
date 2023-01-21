@@ -1,6 +1,8 @@
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid';
 import AlertAction from '@richochet/utils/alertAction';
+import { checkForApproval } from '@richochet/utils/checkForApproval';
+import { getSuperTokenBalances } from '@richochet/utils/getSuperTokenBalances';
 import { Coin, namesCoin, namesCoinX } from 'constants/coins';
 import { downgradeTokensList } from 'constants/downgradeConfig';
 import { upgradeTokensList } from 'constants/upgradeConfig';
@@ -10,6 +12,7 @@ import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { Fragment, useContext, useState } from 'react';
 import streamApi from 'redux/slices/streams.slice';
+import { useAccount } from 'wagmi';
 import { RoundedButton } from '../button';
 import TokenList from '../token-list';
 
@@ -27,6 +30,7 @@ const coins = [...namesCoin, ...namesCoinX];
 
 export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 	const { t } = useTranslation('home');
+	const { address } = useAccount();
 	const [state, dispatch] = useContext(AlertContext);
 	const [selectedToken, setSelectedToken] = useState<Coin>(Coin.SELECT);
 	const [swapFrom, setSwapFrom] = useState<Coin>(Coin.SELECT);
@@ -34,47 +38,69 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 	const [amount, setAmount] = useState<string>('');
 	const [slippageTolerance, setSlippageTolerance] = useState<string>();
 	const [upgradeTrigger] = streamApi.useLazyUpgradeQuery();
+	const [approveTrigger] = streamApi.useLazyApproveQuery();
 	const [downgradeTrigger] = streamApi.useLazyDowngradeQuery();
 	const handleSubmit = (event: any) => {
 		event?.preventDefault();
 		if (selectedToken !== Coin.SELECT) {
 			dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
 			if (type === BalanceAction.Withdraw) {
-				const token = downgradeTokensList.find((token) => token.coin === selectedToken);
-				console.log({ token });
-				const downgrade = downgradeTrigger({ value: amount, tokenAddress: token?.tokenAddress! });
-				console.log({ downgrade });
-				downgrade
-					.then((response) => {
-						if (response.isSuccess) {
-							dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
-						}
-						if (response.isError) {
-							dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
-						}
-						setTimeout(() => {
-							dispatch(AlertAction.hideAlert());
-						}, 5000);
-					})
-					.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+				getSuperTokenBalances(address!).then((balances) => {
+					const token = downgradeTokensList.find((token) => token.coin === selectedToken);
+					console.log({ token });
+					if (Number(amount) <= 0 || (balances && Number(balances[token?.tokenAddress!]) === 0)) {
+						return;
+					}
+					const downgrade = downgradeTrigger({ value: amount, tokenAddress: token?.tokenAddress! });
+					console.log({ downgrade });
+					downgrade
+						.then((response) => {
+							if (response.isSuccess) {
+								dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+							}
+							if (response.isError) {
+								dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+							}
+							setTimeout(() => {
+								dispatch(AlertAction.hideAlert());
+							}, 5000);
+						})
+						.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+				});
 			} else if (type === BalanceAction.Deposit) {
-				const token = upgradeTokensList.find((token) => token.coin === selectedToken);
-				console.log({ token });
-				const upgrade = upgradeTrigger({ value: amount, tokenAddress: token?.tokenAddress! });
-				console.log({ upgrade });
-				upgrade
-					.then((response) => {
-						if (response.isSuccess) {
-							dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+				getSuperTokenBalances(address!).then((balances) => {
+					const upgradeConfig = upgradeTokensList.find((token) => token.coin === selectedToken);
+					console.log({ upgradeConfig });
+					if (Number(amount) < 0 || (balances && upgradeConfig && Number(balances[upgradeConfig.tokenAddress]) === 0)) {
+						return;
+					}
+					checkForApproval(upgradeConfig?.tokenAddress!, upgradeConfig?.superTokenAddress!).then((hasApprove) => {
+						if (hasApprove) {
+							const upgrade = upgradeTrigger({ value: amount, tokenAddress: upgradeConfig?.tokenAddress! });
+							console.log({ upgrade });
+							upgrade
+								.then((response: any) => {
+									console.log({ response });
+									if (response.isSuccess) {
+										dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+									}
+									if (response.isError) {
+										dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+									}
+									setTimeout(() => {
+										dispatch(AlertAction.hideAlert());
+									}, 5000);
+								})
+								.catch((error: any) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+						} else {
+							const approve = approveTrigger({
+								tokenAddress: upgradeConfig?.tokenAddress!,
+								superTokenAddress: upgradeConfig?.superTokenAddress!,
+							});
+							approve.then((res) => console.log({ res }));
 						}
-						if (response.isError) {
-							dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
-						}
-						setTimeout(() => {
-							dispatch(AlertAction.hideAlert());
-						}, 5000);
-					})
-					.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+					});
+				});
 			}
 		}
 	};

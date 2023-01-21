@@ -101,7 +101,7 @@ export const Refer = () => {
 								validationErrors.length > 0 ? 'border-red-700' : 'border-primary-500',
 								'inline-flex py-2 pl-3 w-full border rounded-lg'
 							)}>
-							<div className='w-2/3 text-primary-700'>
+							<div className='w-2/3 text-primary-700 truncate'>
 								<span>{refURL}</span>
 							</div>
 							<input

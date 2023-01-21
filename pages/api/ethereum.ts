@@ -4,8 +4,8 @@ import { Signer } from '@ethersproject/abstract-signer';
 import { getSFFramework } from '@richochet/utils/fluidsdkConfig';
 import { Framework } from '@superfluid-finance/sdk-core';
 import Operation from '@superfluid-finance/sdk-core/dist/main/Operation';
-import { fetchSigner, getAccount, getProvider, prepareWriteContract, writeContract } from '@wagmi/core';
-import { superTokenABI } from 'constants/abis';
+import { fetchSigner, getAccount, getProvider, prepareWriteContract, readContract, writeContract } from '@wagmi/core';
+import { erc20ABI, superTokenABI } from 'constants/abis';
 import { indexIDA } from 'constants/flowConfig';
 import {
 	MATICxAddress,
@@ -27,6 +27,7 @@ export const downgrade = async (contract: any, amount: string, address: string) 
 		args: [amount],
 		overrides: {
 			from: address as `0x${string}`,
+			gasLimit: ethers.BigNumber.from(6000000),
 		},
 	});
 	console.log({ config });
@@ -43,20 +44,40 @@ export const downgradeMatic = async (contract: any, amount: string, address: str
 		args: [amount],
 		overrides: {
 			from: address as `0x${string}`,
+			gasLimit: ethers.BigNumber.from(6000000),
 		},
 	});
 	const data = await writeContract(config);
 	return data;
 };
 
-export const allowance = (contract: any, address: string, superTokenAddress: string) =>
-	contract.methods.allowance(address, superTokenAddress).call();
-
-export const approve = async (contract: any, address: string, tokenAddress: string, amount: string) =>
-	contract.methods.approve(tokenAddress, amount).send({
-		from: address,
-		...(await gas()),
+export const allowance = async (contract: any, address: string, superTokenAddress: string) => {
+	const allowance: any = await readContract({
+		address: contract?.address as `0x${string}`,
+		abi: erc20ABI,
+		functionName: 'allowance',
+		args: [address.toLowerCase(), superTokenAddress],
 	});
+	console.log({ allowance });
+	return allowance;
+};
+
+export const approve = async (contract: any, address: string, tokenAddress: string, amount: string) => {
+	const config = await prepareWriteContract({
+		address: contract?.address as `0x${string}`,
+		abi: superTokenABI,
+		functionName: 'approve',
+		args: [tokenAddress, amount],
+		overrides: {
+			from: address as `0x${string}`,
+			gasLimit: ethers.BigNumber.from(6000000),
+		},
+	});
+	console.log({ config });
+	const data = await writeContract(config);
+	console.log({ data });
+	return data;
+};
 
 export const upgrade = async (contract: any, amount: string, address: string) => {
 	const config = await prepareWriteContract({
@@ -66,6 +87,7 @@ export const upgrade = async (contract: any, amount: string, address: string) =>
 		args: [amount],
 		overrides: {
 			from: address as `0x${string}`,
+			gasLimit: ethers.BigNumber.from(6000000),
 		},
 	});
 	console.log({ config });
@@ -82,6 +104,7 @@ export const upgradeMatic = async (contract: any, amount: string, address: strin
 		overrides: {
 			from: address as `0x${string}`,
 			value: parseFloat(amount),
+			gasLimit: ethers.BigNumber.from(6000000),
 		},
 	});
 	console.log({ config });
@@ -167,21 +190,26 @@ export const startFlow = async (
 		const { maxFeePerGas, maxPriorityFeePerGas } = await gas();
 		console.log({ maxFeePerGas, maxPriorityFeePerGas });
 		if (web3Subscription.approved) {
-			const transactionData = {
-				superToken: inputTokenAddress,
-				sender: address!,
-				receiver: exchangeAddress,
-				flowRate: amount.toString(),
-				overrides: {
-					gasLimit: 6000000,
-				},
-			};
-			console.log({ transactionData });
-			const tx =
-				Number(userFlow.flowRate) !== 0
-					? await framework.cfaV1.updateFlow(transactionData).exec(signer as Signer)
-					: await framework.cfaV1.createFlow(transactionData).exec(signer as Signer);
-			return tx;
+			try {
+				const transactionData = {
+					superToken: inputTokenAddress,
+					sender: address!,
+					receiver: exchangeAddress,
+					flowRate: amount.toString(),
+					overrides: {
+						gasLimit: 6000000,
+					},
+				};
+				console.log({ transactionData });
+				const tx =
+					Number(userFlow.flowRate) !== 0
+						? await framework.cfaV1.updateFlow(transactionData).exec(signer as Signer)
+						: await framework.cfaV1.createFlow(transactionData).exec(signer as Signer);
+				return tx;
+			} catch (e: any) {
+				console.error(e);
+				throw new Error(e);
+			}
 		} else {
 			const userData = referralId ? ethers.utils.solidityPack(['string'], [referralId]) : '0x';
 			if (
@@ -189,18 +217,31 @@ export const startFlow = async (
 				exchangeAddress === ricRexShirtLaunchpadAddress ||
 				exchangeAddress == ricRexHatLaunchpadAddress
 			) {
-				const operations = [
-					await framework.idaV1.approveSubscription({
-						superToken: outputTokenAddress,
-						indexId: '0',
-						publisher: exchangeAddress,
-						userData,
-						overrides: {
-							maxFeePerGas,
-							maxPriorityFeePerGas,
-						},
-					}),
-					await framework.cfaV1.createFlow({
+				try {
+					const operations = [
+						await framework.idaV1.approveSubscription({
+							superToken: outputTokenAddress,
+							indexId: '0',
+							publisher: exchangeAddress,
+							userData,
+							overrides: {
+								maxFeePerGas,
+								maxPriorityFeePerGas,
+							},
+						}),
+						await framework.cfaV1.createFlow({
+							superToken: inputTokenAddress,
+							sender: address!,
+							receiver: exchangeAddress,
+							flowRate: amount.toString(),
+							userData,
+							overrides: {
+								maxFeePerGas,
+								maxPriorityFeePerGas,
+							},
+						}),
+					];
+					console.log({
 						superToken: inputTokenAddress,
 						sender: address!,
 						receiver: exchangeAddress,
@@ -211,62 +252,104 @@ export const startFlow = async (
 							maxPriorityFeePerGas,
 						},
 					}),
-				];
-				console.log({
-					superToken: inputTokenAddress,
-					sender: address!,
-					receiver: exchangeAddress,
-					flowRate: amount.toString(),
-					userData,
-					overrides: {
-						maxFeePerGas,
-						maxPriorityFeePerGas,
-					},
-				}),
-					await executeBatchOperations(operations, framework, signer as Signer);
+						await executeBatchOperations(operations, framework, signer as Signer);
+				} catch (e: any) {
+					console.error(e);
+					throw new Error(e);
+				}
 			} else if (outputTokenAddress === rexLPETHAddress) {
-				const operations = [
-					await framework.idaV1.approveSubscription({
-						superToken: outputTokenAddress,
-						indexId: '0',
-						publisher: exchangeAddress,
-						userData,
-						overrides: {
-							maxFeePerGas,
-							maxPriorityFeePerGas,
-						},
-					}),
-					await framework.idaV1.approveSubscription({
-						superToken: RICAddress,
-						indexId: '1',
-						publisher: exchangeAddress,
-						userData,
-						overrides: {
-							maxFeePerGas,
-							maxPriorityFeePerGas,
-						},
-					}),
-					/* await framework.idaV1.approveSubscription({
-						superToken: WETHxAddress,
-						indexId: '2',
-						publisher: exchangeAddress,
-						userData,
-						overrides: {
-							maxFeePerGas,
-							maxPriorityFeePerGas,
-						},
-					}), */
-					await framework.idaV1.approveSubscription({
-						superToken: MATICxAddress,
-						indexId: '3',
-						publisher: exchangeAddress,
-						userData,
-						overrides: {
-							maxFeePerGas,
-							maxPriorityFeePerGas,
-						},
-					}),
-					await framework.cfaV1.createFlow({
+				try {
+					const operations = [
+						await framework.idaV1.approveSubscription({
+							superToken: outputTokenAddress,
+							indexId: '0',
+							publisher: exchangeAddress,
+							userData,
+							overrides: {
+								maxFeePerGas,
+								maxPriorityFeePerGas,
+							},
+						}),
+						await framework.idaV1.approveSubscription({
+							superToken: RICAddress,
+							indexId: '1',
+							publisher: exchangeAddress,
+							userData,
+							overrides: {
+								maxFeePerGas,
+								maxPriorityFeePerGas,
+							},
+						}),
+						/* await framework.idaV1.approveSubscription({
+							superToken: WETHxAddress,
+							indexId: '2',
+							publisher: exchangeAddress,
+							userData,
+							overrides: {
+								maxFeePerGas,
+								maxPriorityFeePerGas,
+							},
+						}), */
+						await framework.idaV1.approveSubscription({
+							superToken: MATICxAddress,
+							indexId: '3',
+							publisher: exchangeAddress,
+							userData,
+							overrides: {
+								maxFeePerGas,
+								maxPriorityFeePerGas,
+							},
+						}),
+						await framework.cfaV1.createFlow({
+							superToken: inputTokenAddress,
+							sender: address!,
+							receiver: exchangeAddress,
+							flowRate: amount.toString(),
+							userData,
+							overrides: {
+								maxFeePerGas,
+								maxPriorityFeePerGas,
+							},
+						}),
+					];
+					await executeBatchOperations(operations, framework, signer as Signer);
+				} catch (e: any) {
+					console.error(e);
+					throw new Error(e);
+				}
+			} else if (config.subsidy) {
+				try {
+					const operations = [
+						await framework.idaV1.approveSubscription({
+							superToken: config.output,
+							indexId: config.outputIndex.toString(),
+							publisher: exchangeAddress,
+							userData,
+							overrides: {
+								gasLimit: 6000000,
+							},
+						}),
+						await framework.idaV1.approveSubscription({
+							superToken: config.subsidy,
+							indexId: config.subsidyIndex?.toString() || '0',
+							publisher: exchangeAddress,
+							userData,
+							overrides: {
+								gasLimit: 6000000,
+							},
+						}),
+						await framework.cfaV1.createFlow({
+							superToken: config.input,
+							sender: address!,
+							receiver: exchangeAddress,
+							flowRate: amount.toString(),
+							userData,
+							overrides: {
+								gasLimit: 6000000,
+							},
+						}),
+					];
+					console.log({
 						superToken: inputTokenAddress,
 						sender: address!,
 						receiver: exchangeAddress,
@@ -277,65 +360,38 @@ export const startFlow = async (
 							maxPriorityFeePerGas,
 						},
 					}),
-				];
-				await executeBatchOperations(operations, framework, signer as Signer);
-			} else if (config.subsidy) {
-				const operations = [
-					await framework.idaV1.approveSubscription({
-						superToken: config.output,
-						indexId: config.outputIndex.toString(),
-						publisher: exchangeAddress,
-						userData,
-						overrides: {
-							gasLimit: 6000000,
-						},
-					}),
-					await framework.idaV1.approveSubscription({
-						superToken: config.subsidy,
-						indexId: config.subsidyIndex?.toString() || '0',
-						publisher: exchangeAddress,
-						userData,
-						overrides: {
-							gasLimit: 6000000,
-						},
-					}),
-					await framework.cfaV1.createFlow({
-						superToken: config.input,
-						sender: address!,
-						receiver: exchangeAddress,
-						flowRate: amount.toString(),
-						userData,
-						overrides: {
-							gasLimit: 6000000,
-						},
-					}),
-				];
-				console.log({
-					superToken: inputTokenAddress,
-					sender: address!,
-					receiver: exchangeAddress,
-					flowRate: amount.toString(),
-					userData,
-					overrides: {
-						maxFeePerGas,
-						maxPriorityFeePerGas,
-					},
-				}),
-					await executeBatchOperations(operations, framework, signer as Signer);
+						await executeBatchOperations(operations, framework, signer as Signer);
+				} catch (e: any) {
+					console.error(e);
+					throw new Error(e);
+				}
 			} else {
-				const operations = [
-					await framework.idaV1.approveSubscription({
-						superToken: config.output,
-						indexId: config.outputIndex.toString(),
-						publisher: exchangeAddress,
-						userData,
-						overrides: {
-							maxFeePerGas,
-							maxPriorityFeePerGas,
-						},
-					}),
-					await framework.cfaV1.createFlow({
-						superToken: config.input,
+				try {
+					const operations = [
+						await framework.idaV1.approveSubscription({
+							superToken: config.output,
+							indexId: config.outputIndex.toString(),
+							publisher: exchangeAddress,
+							userData,
+							overrides: {
+								maxFeePerGas,
+								maxPriorityFeePerGas,
+							},
+						}),
+						await framework.cfaV1.createFlow({
+							superToken: config.input,
+							sender: address!,
+							receiver: exchangeAddress,
+							flowRate: amount.toString(),
+							userData,
+							overrides: {
+								maxFeePerGas,
+								maxPriorityFeePerGas,
+							},
+						}),
+					];
+					console.log({
+						superToken: inputTokenAddress,
 						sender: address!,
 						receiver: exchangeAddress,
 						flowRate: amount.toString(),
@@ -345,19 +401,11 @@ export const startFlow = async (
 							maxPriorityFeePerGas,
 						},
 					}),
-				];
-				console.log({
-					superToken: inputTokenAddress,
-					sender: address!,
-					receiver: exchangeAddress,
-					flowRate: amount.toString(),
-					userData,
-					overrides: {
-						maxFeePerGas,
-						maxPriorityFeePerGas,
-					},
-				}),
-					await executeBatchOperations(operations, framework, signer as Signer);
+						await executeBatchOperations(operations, framework, signer as Signer);
+				} catch (e: any) {
+					console.error(e);
+					throw new Error(e);
+				}
 			}
 		}
 	} catch (e: any) {

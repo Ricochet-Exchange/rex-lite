@@ -63,7 +63,7 @@ export const Alert = () => {
 					<div className='md:ml-2'>
 						{alertType !== AlertTypes.LOADING && <span className='font-medium'>{title}</span>} {message}
 					</div>
-					{alertType === AlertTypes.LOADING && (
+					{alertType === AlertTypes.LOADING && hash && (
 						<a className='font-medium text-slate-800 underline md:ml-auto' href={`https://polygonscan.com/tx/${hash}`}>
 							check status
 						</a>

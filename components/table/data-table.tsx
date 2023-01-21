@@ -69,7 +69,8 @@ export const DataTable: NextPage<Props> = ({
 												{data.input.toFixed(3)} {data.coinA}x
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
-												{parseFloat(data.output).toFixed(3)} {data.coinA}x ({formatCurrency(parseFloat(data.usdValue))})
+												{parseFloat(data.output).toFixed(3)} {data.coinA}x
+												{/* ({formatCurrency(parseFloat(data.usdValue))}) */}
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
 												{parseFloat(data.avgPrice).toFixed(3)} {data.coinA} / {data.coinB}
