@@ -9,11 +9,13 @@ import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
 import { useTranslation } from 'next-i18next';
 import { useContext, useState } from 'react';
 import streamApi from 'redux/slices/streams.slice';
+import { useAccount } from 'wagmi';
 import { SolidButton } from './button';
 
 export const LaunchPad = () => {
 	const { t } = useTranslation('home');
 	const [state, dispatch] = useContext(AlertContext);
+	const { address, isConnected } = useAccount();
 	const [shareScaler, setShareScaler] = useState(1e3);
 	const [startStreamTrigger] = streamApi.useLazyStartStreamQuery();
 	const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
@@ -72,7 +74,9 @@ export const LaunchPad = () => {
 				<p className='uppercase tracking-widest'>Rexpro</p>
 			</div>
 			<p className='text-slate-100'>{t('start-a-position')}</p>
-			<SolidButton type='button' primary={true} action={t('start-20-position')} handleClick={handleStartPosition} />
+			{isConnected && (
+				<SolidButton type='button' primary={true} action={t('start-20-position')} handleClick={handleStartPosition} />
+			)}
 			<SolidButton type='button' primary={false} action={`${t('buy')} 100,000 RIC`} handleClick={navigateToUniswap} />
 		</div>
 	);

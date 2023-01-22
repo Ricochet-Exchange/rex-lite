@@ -48,7 +48,7 @@ const streamApi = createApi({
 					//amount: number, // (part of config) from user input
 					//web3: Web3,  //Initialized in line 17, WEB3 object
 					//referralId?: string, //this comes from state
-					const streamTx = await startFlow(
+					const tx = await startFlow(
 						idaContract,
 						config.superToken,
 						config.tokenA,
@@ -56,10 +56,12 @@ const streamApi = createApi({
 						normalizedAmount,
 						config.referralId
 					);
-					console.log('Transaction Results: ', streamTx);
-					return {
-						data: streamTx,
-					};
+					console.log('Transaction Results: ', tx);
+					return tx?.wait(1).then((res) => {
+						return {
+							data: res,
+						};
+					});
 				} catch (e) {
 					console.error(e);
 					const error = transformError(e);
@@ -71,16 +73,17 @@ const streamApi = createApi({
 			queryFn: async (payload: any): Promise<any | undefined> => {
 				try {
 					const { superToken, tokenA } = payload;
-					const streamTx = stopFlow(superToken, tokenA);
-					console.log({ streamTx });
-					streamTx
+					const tx = stopFlow(superToken, tokenA);
+					console.log({ tx });
+					return tx
 						.then((data) => {
-							data;
+							return {
+								data,
+							};
 						})
 						.then((error) => {
-							error;
+							return { error };
 						});
-					return { data: streamTx };
 				} catch (e) {
 					console.error(e);
 					const error = transformError(e);
@@ -103,7 +106,11 @@ const streamApi = createApi({
 							? await downgradeMatic(contract, amount, address!)
 							: await downgrade(contract, amount, address!);
 					console.log({ tx });
-					return { data: tx };
+					return tx.wait(1).then((res) => {
+						return {
+							data: res,
+						};
+					});
 				} catch (e: any) {
 					console.error(e);
 					const error = transformError(e);
@@ -122,7 +129,11 @@ const streamApi = createApi({
 							? await upgradeMatic(contract, value, address!)
 							: await upgrade(contract, value, address!);
 					console.log({ tx });
-					return { data: tx };
+					return tx.wait(1).then((res) => {
+						return {
+							data: res,
+						};
+					});
 				} catch (e) {
 					console.error(e);
 					const error = transformError(e);
@@ -149,7 +160,11 @@ const streamApi = createApi({
 					console.log({ contract });
 					const tx = await approve(contract, address!, superTokenAddress, amount);
 					console.log({ tx });
-					return { data: tx };
+					return tx.wait(1).then((res) => {
+						return {
+							data: res,
+						};
+					});
 				} catch (e) {
 					console.error(e);
 					const error = transformError(e);

@@ -10,7 +10,7 @@ import { AlertContext } from 'contexts/AlertContext';
 import { BalanceAction } from 'enumerations/balanceActions.enum';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
-import { Fragment, useContext, useState } from 'react';
+import { Fragment, useContext, useEffect, useState } from 'react';
 import streamApi from 'redux/slices/streams.slice';
 import { useAccount } from 'wagmi';
 import { RoundedButton } from '../button';
@@ -24,14 +24,34 @@ interface Props {
 	setClose: Function;
 }
 
-const downgradeTokens = downgradeTokensList.map((token) => token.coin);
-const upgradeTokens = upgradeTokensList.map((token) => token.coin);
+const downgradeTokens = downgradeTokensList.map((token) => token.coin).filter((coin) => coin !== Coin.RIC);
+const upgradeTokens = upgradeTokensList.map((token) => token.coin).filter((coin) => coin !== Coin.RIC);
 const coins = [...namesCoin, ...namesCoinX];
 
 export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 	const { t } = useTranslation('home');
 	const { address } = useAccount();
 	const [state, dispatch] = useContext(AlertContext);
+	const [hasApprove, setHasApprove] = useState<boolean>(false);
+	const [upgradeConfig, setUpgradeConfig] = useState<{
+		coin: Coin;
+		tokenAddress: string;
+		superTokenAddress: string;
+		multi: number;
+		key:
+			| 'hasIbAlluoUSDApprove'
+			| 'hasIbAlluoETHApprove'
+			| 'hasIbAlluoBTCApprove'
+			| 'hasWethApprove'
+			| 'hasUsdcApprove'
+			| 'hasWbtcApprove'
+			| 'hasDaiApprove'
+			| 'hasMaticApprove';
+	}>();
+	const [downgradeConfig, setDowngradeConfig] = useState<{
+		coin: Coin;
+		tokenAddress: string;
+	}>();
 	const [selectedToken, setSelectedToken] = useState<Coin>(Coin.SELECT);
 	const [swapFrom, setSwapFrom] = useState<Coin>(Coin.SELECT);
 	const [swapTo, setSwapTo] = useState<Coin>(Coin.SELECT);
@@ -40,18 +60,42 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 	const [upgradeTrigger] = streamApi.useLazyUpgradeQuery();
 	const [approveTrigger] = streamApi.useLazyApproveQuery();
 	const [downgradeTrigger] = streamApi.useLazyDowngradeQuery();
+	useEffect(() => {
+		if (type === BalanceAction.Withdraw && selectedToken !== Coin.SELECT) {
+			const token = downgradeTokensList.find((token) => token.coin === selectedToken);
+			setDowngradeConfig(token);
+		} else if (type === BalanceAction.Deposit && selectedToken !== Coin.SELECT) {
+			const upgradeConfig = upgradeTokensList.find((token) => token.coin === selectedToken);
+			checkForApproval(upgradeConfig?.tokenAddress!, upgradeConfig?.superTokenAddress!).then((hasApprove) =>
+				setHasApprove(hasApprove)
+			);
+			setUpgradeConfig(upgradeConfig);
+		}
+	}, [selectedToken]);
+	const handleApprove = () => {
+		if (upgradeConfig) {
+			const approve = approveTrigger({
+				tokenAddress: upgradeConfig?.tokenAddress!,
+				superTokenAddress: upgradeConfig?.superTokenAddress!,
+			});
+			approve.then((res) => {
+				console.log({ res });
+				checkForApproval(upgradeConfig?.tokenAddress!, upgradeConfig?.superTokenAddress!).then((hasApprove) =>
+					setHasApprove(hasApprove)
+				);
+			});
+		}
+	};
 	const handleSubmit = (event: any) => {
 		event?.preventDefault();
 		if (selectedToken !== Coin.SELECT) {
 			dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
 			if (type === BalanceAction.Withdraw) {
 				getSuperTokenBalances(address!).then((balances) => {
-					const token = downgradeTokensList.find((token) => token.coin === selectedToken);
-					console.log({ token });
-					if (Number(amount) <= 0 || (balances && Number(balances[token?.tokenAddress!]) === 0)) {
+					if (Number(amount) <= 0 || (balances && Number(balances[downgradeConfig?.tokenAddress!]) === 0)) {
 						return;
 					}
-					const downgrade = downgradeTrigger({ value: amount, tokenAddress: token?.tokenAddress! });
+					const downgrade = downgradeTrigger({ value: amount, tokenAddress: downgradeConfig?.tokenAddress! });
 					console.log({ downgrade });
 					downgrade
 						.then((response) => {
@@ -69,37 +113,27 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 				});
 			} else if (type === BalanceAction.Deposit) {
 				getSuperTokenBalances(address!).then((balances) => {
-					const upgradeConfig = upgradeTokensList.find((token) => token.coin === selectedToken);
-					console.log({ upgradeConfig });
 					if (Number(amount) < 0 || (balances && upgradeConfig && Number(balances[upgradeConfig.tokenAddress]) === 0)) {
 						return;
 					}
-					checkForApproval(upgradeConfig?.tokenAddress!, upgradeConfig?.superTokenAddress!).then((hasApprove) => {
-						if (hasApprove) {
-							const upgrade = upgradeTrigger({ value: amount, tokenAddress: upgradeConfig?.tokenAddress! });
-							console.log({ upgrade });
-							upgrade
-								.then((response: any) => {
-									console.log({ response });
-									if (response.isSuccess) {
-										dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
-									}
-									if (response.isError) {
-										dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
-									}
-									setTimeout(() => {
-										dispatch(AlertAction.hideAlert());
-									}, 5000);
-								})
-								.catch((error: any) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
-						} else {
-							const approve = approveTrigger({
-								tokenAddress: upgradeConfig?.tokenAddress!,
-								superTokenAddress: upgradeConfig?.superTokenAddress!,
-							});
-							approve.then((res) => console.log({ res }));
-						}
-					});
+					if (hasApprove) {
+						const upgrade = upgradeTrigger({ value: amount, tokenAddress: upgradeConfig?.tokenAddress! });
+						console.log({ upgrade });
+						upgrade
+							.then((response: any) => {
+								console.log({ response });
+								if (response.isSuccess) {
+									dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+								}
+								if (response.isError) {
+									dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+								}
+								setTimeout(() => {
+									dispatch(AlertAction.hideAlert());
+								}, 5000);
+							})
+							.catch((error: any) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+					}
 				});
 			}
 		}
@@ -206,7 +240,15 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 					<button type='button' className='text-slate-100 underline' onClick={() => setClose(!close)}>
 						{t('cancel')}
 					</button>
-					<RoundedButton type='submit' action={`${t('confirm')} ${t(type)}`} />
+					{(type === BalanceAction.Withdraw || type === BalanceAction.Swap) && (
+						<RoundedButton type='submit' action={`${t('confirm')} ${t(type)}`} />
+					)}
+					{hasApprove && type === BalanceAction.Deposit && (
+						<RoundedButton type='submit' action={`${t('confirm')} ${t(type)}`} />
+					)}
+					{!hasApprove && type === BalanceAction.Deposit && (
+						<RoundedButton type='button' action={`${t('approve')}`} handleClick={handleApprove} />
+					)}
 				</div>
 			</form>
 		</div>

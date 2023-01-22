@@ -128,8 +128,7 @@ export const stopFlow = async (exchangeAddress: string, inputTokenAddress: strin
 				sender: address!,
 				receiver: exchangeAddress,
 				overrides: {
-					maxFeePerGas,
-					maxPriorityFeePerGas,
+					gasLimit: 6000000,
 				},
 			})
 			.exec(signer as Signer);
