@@ -312,7 +312,7 @@ export default function Home({ locale }: any): JSX.Element {
 											<h6 className='font-light uppercase tracking-widest text-primary-500 mb-2'>
 												{t('rewards-earned')}
 											</h6>
-											<p className='text-slate-100 font-light text-2xl'>{formatCurrency(2556.789)}</p>
+											<p className='text-slate-100 font-light text-2xl'>{formatCurrency(0.0)}</p>
 										</>
 									}
 								/>
