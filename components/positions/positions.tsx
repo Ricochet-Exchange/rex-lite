@@ -21,6 +21,7 @@ export interface PositionData extends InvestmentFlow {
 	timeLeft: number;
 	endDate: string;
 	usdValue: string;
+	feePercent: string;
 	input: number;
 	output: string;
 	avgPrice: string;
@@ -44,7 +45,7 @@ interface Props {
 	coingeckoPrices: Map<string, number>;
 }
 
-const positionTitles = ['symbols', 'positions', 'total invested', 'investment rate', 'average price'];
+const positionTitles = ['symbols', 'positions', 'fee percent', 'total invested', 'investment rate', 'average price'];
 
 export const Positions: NextPage<Props> = ({ coingeckoPrices, positions, queries }) => {
 	const { t } = useTranslation('home');
@@ -159,6 +160,7 @@ export const Positions: NextPage<Props> = ({ coingeckoPrices, positions, queries
 						usdValue: getFlowUSDValue(r?.position, queries, coingeckoPrices, 2),
 						input: queries.get(r?.position?.flowKey)?.streamedSoFar || 0,
 						output: queries.get(r?.position?.flowKey)?.placeholder!,
+						feePercent: r?.position?.coinA.includes('IbAlluo') ? '0.5%' : '2%',
 						timeLeft: timeLeft.days,
 						endDate: new Date(streamEnds.get(r?.position?.flowKey)!).toLocaleDateString('en-us', {
 							year: 'numeric',

@@ -8,6 +8,7 @@ import { DataTable } from '../table/data-table';
 
 export interface MarketData extends InvestmentFlow {
 	total: number;
+	feePercent: string;
 	posAmt: number;
 }
 interface Props {
@@ -27,7 +28,7 @@ interface Props {
 	>;
 }
 
-const marketTitles = ['market', 'total monthly', 'amount of positions'];
+const marketTitles = ['market', 'fee percent', 'total monthly', 'amount of positions'];
 
 export const Markets: NextPage<Props> = ({ sortedList, queries }) => {
 	const { t } = useTranslation('home');
@@ -41,6 +42,7 @@ export const Markets: NextPage<Props> = ({ sortedList, queries }) => {
 				marketData.push({
 					...item,
 					total: parseFloat(queries.get(item.flowKey)?.flowsOwned!) || 0,
+					feePercent: item.coinA.includes('IbAlluo') ? '0.5%' : '2%',
 					posAmt: queries.get(item.flowKey)?.totalFlows || 0,
 				})
 			);

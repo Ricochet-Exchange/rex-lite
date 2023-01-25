@@ -92,7 +92,7 @@ export const Refer = () => {
 				<p className='uppercase tracking-widest'>{t('refer')}</p>
 			</div>
 			<p className='text-slate-100'>{t('apply-refer')}</p>
-			{isConnected && status === AFFILIATE_STATUS.INACTIVE && (
+			{isConnected && (status === AFFILIATE_STATUS.INACTIVE || status === AFFILIATE_STATUS.REGISTERING) && (
 				<>
 					<p className='text-slate-400'>{t('customize-url')}:</p>
 					<form onSubmit={handleSubmit} className='w-full space-y-4'>

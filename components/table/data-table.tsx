@@ -65,6 +65,7 @@ export const DataTable: NextPage<Props> = ({
 												<CoinChange coinA={data.coinA} coinB={data.coinB} type={DataType.Position} />
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.positions}</td>
+											<td className='px-6 py-4 whitespace-nowrap'>{data.feePercent}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
 												{data.input.toFixed(3)} {data.coinA}x
 											</td>
@@ -81,6 +82,7 @@ export const DataTable: NextPage<Props> = ({
 											<td className='flex items-center px-6 py-4 whitespace-nowrap space-x-2'>
 												<CoinChange coinA={data.coinA} coinB={data.coinB} type={DataType.Market} />
 											</td>
+											<td className='px-6 py-4 whitespace-nowrap'>{data.feePercent}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
 												{data.total} {data.coinA}x
 											</td>
