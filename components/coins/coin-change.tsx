@@ -30,7 +30,7 @@ export const CoinChange: NextPage<Props> = ({ coinA, coinB, token, type }): JSX.
 	}
 	if (type === DataType.Market && coinA && coinB) {
 		return (
-			<>
+			<div className='flex flex-wrap items-center justify-between lg:space-x-2'>
 				<span className='flex items-center space-x-2'>
 					<Image width='24' height='24' src={iconsCoin[coinA as Coin]!} alt={coinA} /> <span>{coinA}</span>
 				</span>
@@ -38,7 +38,7 @@ export const CoinChange: NextPage<Props> = ({ coinA, coinB, token, type }): JSX.
 				<span className='flex items-center space-x-2'>
 					<Image width='24' height='24' src={iconsCoin[coinB as Coin]!} alt={coinB} /> <span>{coinB}</span>
 				</span>
-			</>
+			</div>
 		);
 	}
 	if (type === DataType.Balances && token) {
