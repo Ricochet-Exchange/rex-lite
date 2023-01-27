@@ -7,7 +7,10 @@ import { store } from 'redux/store';
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import {
 	arbitrum,
-	arbitrumGoerli, goerli, mainnet, optimism,
+	arbitrumGoerli,
+	goerli,
+	mainnet,
+	optimism,
 	optimismGoerli,
 	polygon,
 	polygonMumbai
@@ -17,12 +20,18 @@ import { InjectedConnector } from 'wagmi/connectors/injected';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
+import { infuraProvider } from 'wagmi/providers/infura';
 import { publicProvider } from 'wagmi/providers/public';
 import '../styles/globals.css';
 
 const { chains, provider, webSocketProvider } = configureChains(
 	[mainnet, goerli, arbitrum, arbitrumGoerli, polygon, polygonMumbai, optimism, optimismGoerli],
-	[alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_ID! }), publicProvider()]
+	[
+		infuraProvider({ priority: 0, apiKey: process.env.INFURA_ID! }),
+		alchemyProvider({ priority: 1, apiKey: process.env.ALCHEMY_ID! }),
+		publicProvider({ priority: 2 }),
+	],
+	{ stallTimeout: 5000 }
 );
 const client = createClient({
 	autoConnect: true,
