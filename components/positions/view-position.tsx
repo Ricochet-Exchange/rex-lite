@@ -70,11 +70,12 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 						<CoinChange coinA={position.coinA} coinB={position.coinB} type={DataType.ViewPosition} />
 					</span>
 					<p className='text-slate-100 my-2'>
-						<span className='text-slate-400'>{t('total-input')}:</span> {position.input.toFixed(3)} {position.coinA}x
+						<span className='text-slate-400'>{t('total-invested')}:</span> {position.input.toFixed(3)} {position.coinA}x
+						({formatCurrency(parseFloat(position.streamedUsdValue))})
 					</p>
 					<p className='text-slate-100 my-2'>
-						<span className='text-slate-400'>{t('total-output')}:</span> {parseFloat(position.output).toFixed(3)}{' '}
-						{position.coinB}x
+						<span className='text-slate-400'>{t('investment-rate')}:</span> {parseFloat(position.output).toFixed(3)}{' '}
+						{position.coinB}x ({formatCurrency(parseFloat(position.rateUsdValue))})
 					</p>
 					<p className='text-slate-100 my-2'>
 						<span className='text-slate-400'>{t('time-left')}:</span> {position.timeLeft} {t('days')}
@@ -88,7 +89,7 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 						<AreaGraph />
 						<p className='text-slate-100 my-2'>
 							<span className='text-slate-400'>{t('average-buy-price')}:</span> 1 {position.coinB} ={' '}
-							{formatCurrency(usdPrice)}
+							{position.avgBuy.toFixed(3)} {position.coinA}
 						</p>
 						{/* <div>
 							<span className='text-slate-400'>

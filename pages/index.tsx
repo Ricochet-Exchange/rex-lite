@@ -275,28 +275,33 @@ export default function Home({ locale }: any): JSX.Element {
 
 	const getNetFlowRate = async () => {
 		await getSFFramework().then(async (framework) => {
-			await framework.cfaV1
-				.getNetFlow({
-					superToken: RICAddress,
-					account: address!,
-					providerOrSigner: provider,
-				})
-				.then((flowRate) => {
-					const flowRateBigNumber = new Big(flowRate);
+			if (positions.length > 0) {
+				const flowRates = positions.map(
+					async (position) =>
+						await framework.cfaV1.getNetFlow({
+							superToken: position.tokenA,
+							account: address!,
+							providerOrSigner: provider,
+						})
+				);
+				Promise.all(flowRates).then((rates) => {
+					const totalRate = rates.reduce((acc, curr) => acc + parseFloat(curr), 0).toFixed(0);
+					const flowRateBigNumber = new Big(totalRate);
 					const usdFlowRate = flowRateBigNumber
 						.times(new Big('2592000'))
 						.div(new Big('10e17'))
 						.times(usdPrice as BigSource)
-						.toFixed(2);
+						.toFixed(0);
 					setUsdFlowRate(usdFlowRate);
 				});
+			}
 		});
 	};
 	useEffect(() => {
 		if (isConnected && usdPrice) {
 			getNetFlowRate();
 		}
-	}, [isConnected, usdPrice]);
+	}, [isConnected, positions, usdPrice]);
 	if (!isMounted) {
 		return <></>;
 	}
@@ -385,7 +390,9 @@ export default function Home({ locale }: any): JSX.Element {
 										)
 									}
 								/>
-								<CardContainer content={<Markets sortedList={sortedList} queries={queries} />} />
+								<CardContainer
+									content={<Markets coingeckoPrices={coingeckoPrices} sortedList={sortedList} queries={queries} />}
+								/>
 							</div>
 							<div className='space-y-10'>
 								<Card

@@ -52,7 +52,9 @@ export const CoinChange: NextPage<Props> = ({ coinA, coinB, token, type }): JSX.
 							: token === Coin.WBTC
 							? 'bg-btc text-slate-800 px-1 py-0'
 							: token === Coin.RIC
-							? 'bg-ric text-slate-800 px-1 py-0'
+							? 'bg-ric text-slate-200 px-1 py-0'
+							: token === Coin.USDC
+							? 'bg-usdc text-slate-200 px-1 py-0'
 							: token === Coin.StIbAlluoETH
 							? 'bg-stIbAlluoEth text-slate-800 px-1 py-0'
 							: token === Coin.StIbAlluoUSD

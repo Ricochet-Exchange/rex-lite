@@ -1,4 +1,5 @@
 import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
+import { getFlowUSDValue } from '@richochet/utils/getFlowUsdValue';
 import { InvestmentFlow } from 'constants/flowConfig';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
@@ -8,10 +9,12 @@ import { DataTable } from '../table/data-table';
 
 export interface MarketData extends InvestmentFlow {
 	total: number;
+	usdValue: string;
 	feePercent: string;
 	posAmt: number;
 }
 interface Props {
+	coingeckoPrices: Map<string, number>;
 	sortedList: InvestmentFlow[];
 	queries: Map<
 		string,
@@ -28,9 +31,9 @@ interface Props {
 	>;
 }
 
-const marketTitles = ['market', 'fee percent', 'total monthly', 'amount of positions'];
+const marketTitles = ['market', 'fee percent', 'total value streaming', 'amount of positions'];
 
-export const Markets: NextPage<Props> = ({ sortedList, queries }) => {
+export const Markets: NextPage<Props> = ({ coingeckoPrices, sortedList, queries }) => {
 	const { t } = useTranslation('home');
 	const [search, setSearch] = useState('');
 	const [marketList, setMarketList] = useState<MarketData[]>([]);
@@ -42,6 +45,7 @@ export const Markets: NextPage<Props> = ({ sortedList, queries }) => {
 				marketData.push({
 					...item,
 					total: parseFloat(queries.get(item.flowKey)?.flowsOwned!) || 0,
+					usdValue: getFlowUSDValue(item, queries, coingeckoPrices),
 					feePercent: item.coinA.includes('IbAlluo') ? '0.5%' : '2%',
 					posAmt: queries.get(item.flowKey)?.totalFlows || 0,
 				})
@@ -49,7 +53,7 @@ export const Markets: NextPage<Props> = ({ sortedList, queries }) => {
 			const sortedData = marketData.sort((a, b) => b.total - a.total);
 			setMarketList(sortedData);
 		}
-	}, [queries, sortedList]);
+	}, [queries, coingeckoPrices, sortedList]);
 	const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
 		const { value } = event.target;
 		setSearch(value);

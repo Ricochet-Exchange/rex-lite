@@ -67,11 +67,16 @@ export const DataTable: NextPage<Props> = ({
 											<td className='px-6 py-4 whitespace-nowrap'>{data.positions}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.feePercent}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
-												{data.input.toFixed(3)} {data.coinA}x
+												<p>
+													{data.input.toFixed(3)} {data.coinA}x
+												</p>
+												<p>({formatCurrency(parseFloat(data.streamedUsdValue))})</p>
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
-												{parseFloat(data.output).toFixed(3)} {data.coinA}x
-												{/* ({formatCurrency(parseFloat(data.usdValue))}) */}
+												<p>
+													{parseFloat(data.output).toFixed(3)} {data.coinA}x
+												</p>
+												<p>({formatCurrency(parseFloat(data.rateUsdValue))})</p>
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
 												{parseFloat(data.avgPrice).toFixed(3)} {data.coinA} / {data.coinB}
@@ -84,7 +89,10 @@ export const DataTable: NextPage<Props> = ({
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.feePercent}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
-												{data.total} {data.coinA}x
+												<p>
+													{data.total} {data.coinA}x
+												</p>
+												<p>({formatCurrency(parseFloat(data.usdValue))})</p>
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.posAmt}</td>
 										</>

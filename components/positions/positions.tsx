@@ -1,5 +1,5 @@
 import { PlusSmallIcon } from '@heroicons/react/24/solid';
-import { getFlowUSDValue } from '@richochet/utils/getFlowUsdValue';
+import { getPersonalFlowUSDValue } from '@richochet/utils/getFlowUsdValue';
 import { polygon } from '@wagmi/chains';
 import { fetchBalance } from '@wagmi/core';
 import { flowConfig, FlowEnum, InvestmentFlow } from 'constants/flowConfig';
@@ -20,11 +20,13 @@ export interface PositionData extends InvestmentFlow {
 	positions: number;
 	timeLeft: number;
 	endDate: string;
-	usdValue: string;
+	rateUsdValue: string;
+	streamedUsdValue: string;
 	feePercent: string;
 	input: number;
 	output: string;
 	avgPrice: string;
+	avgBuy: number;
 }
 
 interface Props {
@@ -157,7 +159,14 @@ export const Positions: NextPage<Props> = ({ coingeckoPrices, positions, queries
 					positions.push({
 						...r?.position,
 						positions: queries.get(r?.position?.flowKey)?.totalFlows || 0,
-						usdValue: getFlowUSDValue(r?.position, queries, coingeckoPrices, 2),
+						rateUsdValue: getPersonalFlowUSDValue(
+							queries.get(r?.position?.flowKey)?.placeholder!,
+							coingeckoPrices.get(r?.position?.tokenA)!
+						),
+						streamedUsdValue: getPersonalFlowUSDValue(
+							queries.get(r?.position?.flowKey)?.streamedSoFar?.toFixed(0)!,
+							coingeckoPrices.get(r?.position?.tokenA)!
+						),
 						input: queries.get(r?.position?.flowKey)?.streamedSoFar || 0,
 						output: queries.get(r?.position?.flowKey)?.placeholder!,
 						feePercent: r?.position?.coinA.includes('IbAlluo') ? '0.5%' : '2%',
@@ -168,6 +177,9 @@ export const Positions: NextPage<Props> = ({ coingeckoPrices, positions, queries
 							day: 'numeric',
 						}),
 						avgPrice: r?.sushiPrice || '0',
+						avgBuy:
+							queries.get(r?.position?.flowKey)?.streamedSoFar! /
+							parseFloat(queries.get(r?.position?.flowKey)?.placeholder!),
 					});
 				});
 				setPositionList(positions);

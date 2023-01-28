@@ -24,3 +24,7 @@ export const getFlowUSDValue = (
 			: 0
 	).toFixed(toFixed);
 };
+
+export const getPersonalFlowUSDValue = (flow: string, coingeckoPrice: number, toFixed: number = 0) => {
+	return (parseFloat(flow as string) * coingeckoPrice).toFixed(toFixed);
+};
