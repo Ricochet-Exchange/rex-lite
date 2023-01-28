@@ -8,8 +8,6 @@ import iballuousd from '@richochet/assets/images/coins/ibusd.svg';
 import idle from '@richochet/assets/images/coins/idle.svg';
 import matic from '@richochet/assets/images/coins/matic.svg';
 import mkr from '@richochet/assets/images/coins/mkr.svg';
-import rexhat from '@richochet/assets/images/coins/rexhat.svg';
-import rexshirt from '@richochet/assets/images/coins/rexshirt.svg';
 import ric from '@richochet/assets/images/coins/ric.svg';
 import shib from '@richochet/assets/images/coins/shibaInu.svg';
 import slp from '@richochet/assets/images/coins/slp.svg';
@@ -95,8 +93,8 @@ export const iconsCoin: Partial<Record<Coin, string>> = {
 	[Coin.MATIC]: matic,
 	[Coin.MKR]: mkr,
 	[Coin.RIC]: ric,
-	[Coin.REXSHIRT]: rexshirt,
-	[Coin.REXHAT]: rexhat,
+	// [Coin.REXSHIRT]: rexshirt,
+	// [Coin.REXHAT]: rexhat,
 	[Coin.WETH]: eth,
 	[Coin.SLP]: slp,
 	[Coin.DAIx]: dai,

@@ -14,6 +14,7 @@ import { buildFlowQuery } from '@richochet/utils/buildFlowQuery';
 import calculateStreamedSoFar from '@richochet/utils/calculateStreamedSoFar';
 import { getSFFramework } from '@richochet/utils/fluidsdkConfig';
 import { getFlowUSDValue } from '@richochet/utils/getFlowUsdValue';
+import { getSuperTokenBalances } from '@richochet/utils/getSuperTokenBalances';
 import { formatCurrency } from '@richochet/utils/helperFunctions';
 import Big, { BigSource } from 'big.js';
 import { ConnectKitButton } from 'connectkit';
@@ -29,6 +30,7 @@ import {
 	WBTCxAddress,
 	WETHxAddress
 } from 'constants/polygon_config';
+import { upgradeTokensList } from 'constants/upgradeConfig';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
@@ -59,6 +61,17 @@ const coingeckoIds = new Map<string, string>([
 	[StIbAlluoUSDAddress, 'usd-coin'],
 	[StIbAlluoBTCAddress, 'wrapped-bitcoin'],
 ]);
+const geckoMapping: Record<string, string> = {
+	USDC: 'usd-coin',
+	MATIC: 'matic-network',
+	ETH: 'ethereum',
+	WBTC: 'wrapped-bitcoin',
+	DAI: 'dai',
+	RIC: 'richochet',
+	StIbAlluoETH: 'ethereum',
+	StIbAlluoBTC: 'wrapped-bitcoin',
+	StIbAlluoUSD: 'usd-coin',
+};
 const exchangeContractsAddresses = flowConfig.map((f) => f.superToken);
 
 export default function Home({ locale }: any): JSX.Element {
@@ -75,6 +88,13 @@ export default function Home({ locale }: any): JSX.Element {
 		isError: tokenPriceIsError,
 		error: tokenPriceError,
 	} = coingeckoApi.useGetTokenPriceQuery('richochet');
+	const {
+		data: tokens,
+		isSuccess: tokensIsSuccess,
+		isError: tokensIsError,
+		error: tokensError,
+		//@ts-ignore
+	} = coingeckoApi.useGetUpgradedTokensListQuery();
 	const [queries, setQueries] = useState<
 		Map<
 			string,
@@ -90,7 +110,7 @@ export default function Home({ locale }: any): JSX.Element {
 			}
 		>
 	>(new Map());
-
+	const [balanceList, setBalanceList] = useState<Record<string, string>>({});
 	const [sortedList, setSortedList] = useState<InvestmentFlow[]>([]);
 	const [positions, setPositions] = useState<InvestmentFlow[]>([]);
 	const [positionTotal, setPositionTotal] = useState<number>(0);
@@ -100,7 +120,9 @@ export default function Home({ locale }: any): JSX.Element {
 	const [queryFlows] = superfluidSubgraphApi.useQueryFlowsMutation();
 	const [queryStreams] = superfluidSubgraphApi.useQueryStreamsMutation();
 	const [queryReceived] = superfluidSubgraphApi.useQueryReceivedMutation();
-
+	useEffect(() => {
+		if (isConnected) getSuperTokenBalances(address!).then((res) => setBalanceList(res));
+	}, [address, isConnected]);
 	useEffect(() => {
 		const ids = [...coingeckoIds.values()];
 		const prices = coingeckoPricesTrigger(ids.join(','));
@@ -201,20 +223,40 @@ export default function Home({ locale }: any): JSX.Element {
 	}, [results]);
 
 	useEffect(() => {
-		const positions = flowConfig.filter(({ flowKey }) => parseFloat(queries.get(flowKey)?.placeholder!) > 0);
-		setPositions(positions);
-		const totalInPositions = positions.reduce(
-			(acc, curr) => acc + parseFloat(queries.get(curr.flowKey)?.flowsOwned!),
-			0
-		);
-		setPositionTotal(totalInPositions);
+		if (isConnected) {
+			const positions = flowConfig.filter(({ flowKey }) => parseFloat(queries.get(flowKey)?.placeholder!) > 0);
+			setPositions(positions);
+		}
 	}, [queries, isConnected]);
+
+	useEffect(() => {
+		if (isConnected && tokensIsError) console.error(tokensError);
+		if (isConnected && tokensIsSuccess) {
+			const totalInPositions = upgradeTokensList.reduce((total, token) => {
+				const balancess =
+					balanceList &&
+					tokens &&
+					geckoMapping &&
+					(
+						parseFloat(balanceList[token.superTokenAddress]) *
+						parseFloat((tokens as any)[(geckoMapping as any)[token.coin]].usd)
+					).toFixed(6);
+
+				return total + parseFloat(balancess as any);
+			}, 0);
+			// positions.reduce(
+			// 	(acc, curr) => acc + parseFloat(queries.get(curr.flowKey)?.flowsOwned!),
+			// 	0
+			// );
+			setPositionTotal(totalInPositions);
+		}
+	}, [isConnected, balanceList, tokens, tokensIsSuccess]);
 
 	useEffect(() => {
 		if (coingeckoPrices.size > 0 && queries.size > 0) {
 			let list = flowConfig.filter((each) => each.type === FlowTypes.market);
 			let sortList = list.sort((a, b) => {
-				const totalVolumeA = parseFloat(getFlowUSDValue(b, queries, coingeckoPrices));
+				const totalVolumeA = parseFloat(getFlowUSDValue(a, queries, coingeckoPrices));
 				const totalVolumeB = parseFloat(getFlowUSDValue(b, queries, coingeckoPrices));
 				return totalVolumeB - totalVolumeA;
 			});
@@ -349,7 +391,7 @@ export default function Home({ locale }: any): JSX.Element {
 								<Card
 									content={
 										isConnected ? (
-											<Balances />
+											<Balances tokens={tokens} balances={balanceList} />
 										) : (
 											<div className='flex flex-col items-center justify-center space-y-4 h-96'>
 												<p className='text-primary-500'>{t('connect-for-balances')}.</p>

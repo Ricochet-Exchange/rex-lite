@@ -3,6 +3,8 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid';
 import AlertAction from '@richochet/utils/alertAction';
 import { checkForApproval } from '@richochet/utils/checkForApproval';
 import { getSuperTokenBalances } from '@richochet/utils/getSuperTokenBalances';
+import { polygon } from '@wagmi/chains';
+import { fetchBalance } from '@wagmi/core';
 import { Coin, namesCoin, namesCoinX } from 'constants/coins';
 import { downgradeTokensList } from 'constants/downgradeConfig';
 import { upgradeTokensList } from 'constants/upgradeConfig';
@@ -21,6 +23,7 @@ const tolerance = ['0.02%', '0.03%', '0.05%'];
 interface Props {
 	type: BalanceAction;
 	close: boolean;
+	balanceList: Record<string, string>;
 	setClose: Function;
 }
 
@@ -28,7 +31,7 @@ const downgradeTokens = downgradeTokensList.map((token) => token.coin).filter((c
 const upgradeTokens = upgradeTokensList.map((token) => token.coin).filter((coin) => coin !== Coin.RIC);
 const coins = [...namesCoin, ...namesCoinX];
 
-export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
+export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceList }) => {
 	const { t } = useTranslation('home');
 	const { address } = useAccount();
 	const [state, dispatch] = useContext(AlertContext);
@@ -57,6 +60,7 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 	const [swapTo, setSwapTo] = useState<Coin>(Coin.SELECT);
 	const [amount, setAmount] = useState<string>('');
 	const [slippageTolerance, setSlippageTolerance] = useState<string>();
+	const [walletBalance, setWalletBalance] = useState<string>('');
 	const [upgradeTrigger] = streamApi.useLazyUpgradeQuery();
 	const [approveTrigger] = streamApi.useLazyApproveQuery();
 	const [downgradeTrigger] = streamApi.useLazyDowngradeQuery();
@@ -72,6 +76,18 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 			setUpgradeConfig(upgradeConfig);
 		}
 	}, [selectedToken]);
+	useEffect(() => {
+		if (BalanceAction.Deposit && upgradeConfig) {
+			(async () => {
+				const balance = await fetchBalance({
+					address: address!,
+					chainId: polygon.id,
+					token: upgradeConfig?.tokenAddress as `0x${string}`,
+				}).then((res) => res?.formatted);
+				setWalletBalance(balance);
+			})();
+		}
+	}, [upgradeConfig]);
 	const handleApprove = () => {
 		if (upgradeConfig) {
 			const approve = approveTrigger({
@@ -84,6 +100,14 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 					setHasApprove(hasApprove)
 				);
 			});
+		}
+	};
+	const setMaxValue = () => {
+		if (BalanceAction.Withdraw && balanceList) {
+			setAmount(balanceList?.[downgradeConfig?.tokenAddress!]);
+		}
+		if (BalanceAction.Deposit && walletBalance) {
+			setAmount(walletBalance);
 		}
 	};
 	const handleSubmit = (event: any) => {
@@ -153,6 +177,17 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 							}
 							handleChange={setSelectedToken}
 						/>
+						{selectedToken !== Coin.SELECT && (
+							<p>
+								Balance:{' '}
+								{BalanceAction.Withdraw && balanceList && downgradeConfig
+									? parseFloat(balanceList?.[downgradeConfig?.tokenAddress!]).toFixed(3)
+									: BalanceAction.Deposit && walletBalance && upgradeConfig
+									? parseFloat(walletBalance).toFixed(3)
+									: 0}{' '}
+								{selectedToken}
+							</p>
+						)}
 					</>
 				)}
 				{type === BalanceAction.Swap && (
@@ -173,20 +208,28 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose }) => {
 				<label className='text-slate-100'>
 					{t('amount-action')} {t(type)}?
 				</label>
-				<input
-					type='number'
-					className='input-outline'
-					value={amount}
-					step='any'
-					onChange={(e) => setAmount(e.target.value)}
-					placeholder={
-						type === BalanceAction.Swap
-							? `${swapFrom !== Coin.SELECT ? t('amount-in')! : t('amount')} ${
-									swapFrom !== Coin.SELECT ? swapFrom : ''
-							  }`
-							: t('amount')!
-					}
-				/>
+				<div className='relative w-full'>
+					<input
+						type='number'
+						className='input-outline'
+						value={amount}
+						step='any'
+						onChange={(e) => setAmount(e.target.value)}
+						placeholder={
+							type === BalanceAction.Swap
+								? `${swapFrom !== Coin.SELECT ? t('amount-in')! : t('amount')} ${
+										swapFrom !== Coin.SELECT ? swapFrom : ''
+								  }`
+								: t('amount')!
+						}
+					/>
+					<button
+						type='button'
+						className='pr-8 text-primary-500 hover:text-primary-300 hover:font-bold absolute right-2.5 bottom-2.5 font-medium text-sm'
+						onClick={setMaxValue}>
+						Max
+					</button>
+				</div>
 				{type === BalanceAction.Swap && (
 					<>
 						<label className='text-slate-100'>{t('slippage-tolerance')}:</label>

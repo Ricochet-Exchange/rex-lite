@@ -1,4 +1,5 @@
 import { formatCurrency } from '@richochet/utils/helperFunctions';
+import { upgradeTokensList } from 'constants/upgradeConfig';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { useEffect, useState } from 'react';
@@ -7,6 +8,9 @@ import { TokenData } from '../balances';
 
 interface Props {
 	tokens: TokenData[];
+	geckoPriceList: any;
+	balances: Record<string, string>;
+	geckoMapping: Record<string, string>;
 }
 
 interface ChartData {
@@ -15,7 +19,7 @@ interface ChartData {
 	value: number;
 }
 
-export const DoughnutChart: NextPage<Props> = ({ tokens }): JSX.Element => {
+export const DoughnutChart: NextPage<Props> = ({ tokens, geckoPriceList, balances, geckoMapping }): JSX.Element => {
 	const { t } = useTranslation('home');
 	const [total, setTotal] = useState<number>(0);
 	const [chartData, setChartData] = useState<ChartData[]>([]);
@@ -27,17 +31,26 @@ export const DoughnutChart: NextPage<Props> = ({ tokens }): JSX.Element => {
 				data.push({
 					name: token.token,
 					color: token.color,
-					value: token.dollarVal,
+					value: parseFloat(token.ricAmount),
 				});
 			});
 		setChartData(data);
 	}, [tokens]);
 	useEffect(() => {
-		const total: number = tokens
-			.filter((token) => !!token.walletAmount && token.walletAmount !== 'N/A')
-			.reduce((accumulator, current) => accumulator + parseFloat(current.walletAmount), 0);
+		const total = upgradeTokensList.reduce((total, token) => {
+			const balancess =
+				balances &&
+				geckoPriceList &&
+				geckoMapping &&
+				(
+					parseFloat(balances[token.superTokenAddress]) *
+					parseFloat((geckoPriceList as any)[(geckoMapping as any)[token.coin]].usd)
+				).toFixed(6);
+
+			return total + parseFloat(balancess as any);
+		}, 0);
 		setTotal(total);
-	}, [tokens]);
+	}, [tokens, balances, geckoPriceList, geckoMapping]);
 	return (
 		<div className='h-52 w-52'>
 			<ResponsiveContainer height='100%' width='100%'>

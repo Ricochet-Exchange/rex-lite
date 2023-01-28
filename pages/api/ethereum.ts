@@ -58,7 +58,6 @@ export const allowance = async (contract: any, address: string, superTokenAddres
 		functionName: 'allowance',
 		args: [address.toLowerCase(), superTokenAddress],
 	});
-	console.log({ allowance });
 	return allowance;
 };
 

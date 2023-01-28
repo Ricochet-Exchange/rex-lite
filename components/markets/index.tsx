@@ -46,7 +46,8 @@ export const Markets: NextPage<Props> = ({ sortedList, queries }) => {
 					posAmt: queries.get(item.flowKey)?.totalFlows || 0,
 				})
 			);
-			setMarketList(marketData);
+			const sortedData = marketData.sort((a, b) => b.total - a.total);
+			setMarketList(sortedData);
 		}
 	}, [queries, sortedList]);
 	const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {

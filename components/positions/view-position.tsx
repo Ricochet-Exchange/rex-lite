@@ -70,11 +70,11 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 						<CoinChange coinA={position.coinA} coinB={position.coinB} type={DataType.ViewPosition} />
 					</span>
 					<p className='text-slate-100 my-2'>
-						<span className='text-slate-400'>{t('input')}:</span> {position.input.toFixed(3)} {position.coinA}x
+						<span className='text-slate-400'>{t('total-input')}:</span> {position.input.toFixed(3)} {position.coinA}x
 					</p>
 					<p className='text-slate-100 my-2'>
-						<span className='text-slate-400'>{t('output')}:</span> {parseFloat(position.output).toFixed(3)}{' '}
-						{position.coinA}x
+						<span className='text-slate-400'>{t('total-output')}:</span> {parseFloat(position.output).toFixed(3)}{' '}
+						{position.coinB}x
 					</p>
 					<p className='text-slate-100 my-2'>
 						<span className='text-slate-400'>{t('time-left')}:</span> {position.timeLeft} {t('days')}
@@ -90,14 +90,14 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 							<span className='text-slate-400'>{t('average-buy-price')}:</span> 1 {position.coinB} ={' '}
 							{formatCurrency(usdPrice)}
 						</p>
-						<div>
+						{/* <div>
 							<span className='text-slate-400'>
 								{t('average-buy-price')} &#62;&#60; {t('current-price')}:{' '}
 							</span>
 							<p className='text-slate-100'>
 								{formatCurrency(usdPrice)} &#62;&#60; {formatCurrency(usdPrice)}
 							</p>
-						</div>
+						</div> */}
 					</div>
 				)}
 				{edit && (

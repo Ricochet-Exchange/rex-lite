@@ -9,10 +9,11 @@ import { Transactions } from '../transactions';
 interface Props {
 	action: number;
 	close: boolean;
+	balanceList: Record<string, string>;
 	setClose: Function;
 }
 
-export const BalanceTabs: NextPage<Props> = ({ close, setClose, action }) => {
+export const BalanceTabs: NextPage<Props> = ({ close, setClose, action, balanceList }) => {
 	const { t } = useTranslation('home');
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	useEffect(() => {
@@ -51,13 +52,13 @@ export const BalanceTabs: NextPage<Props> = ({ close, setClose, action }) => {
 			</Tab.List>
 			<Tab.Panels>
 				<Tab.Panel>
-					<Transactions type={BalanceAction.Withdraw} close={close} setClose={setClose} />
+					<Transactions type={BalanceAction.Withdraw} close={close} setClose={setClose} balanceList={balanceList} />
 				</Tab.Panel>
 				<Tab.Panel>
-					<Transactions type={BalanceAction.Deposit} close={close} setClose={setClose} />
+					<Transactions type={BalanceAction.Deposit} close={close} setClose={setClose} balanceList={balanceList} />
 				</Tab.Panel>
 				<Tab.Panel>
-					<Transactions type={BalanceAction.Swap} close={close} setClose={setClose} />
+					<Transactions type={BalanceAction.Swap} close={close} setClose={setClose} balanceList={balanceList} />
 				</Tab.Panel>
 			</Tab.Panels>
 		</Tab.Group>

@@ -125,7 +125,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 					className='flex flex-col items-start lg:p-8 w-full lg:w-1/2 space-y-6'
 					onSubmit={handleSubmit}>
 					<label className='text-slate-100'>{t('position-token')}?</label>
-					<div className='flex flex-wrap items-center lg:space-x-4 w-full lg:w-auto'>
+					<div className='flex flex-wrap lg:flex-nowrap items-center lg:space-x-4 w-full lg:w-auto'>
 						<TokenList classNames='relative w-full z-20' value={from} coins={coinsFrom} handleChange={setFrom} />
 						<ArrowLongRightIcon className='h-10 w-16' />
 						<TokenList classNames='relative w-full z-20' value={to} coins={coinsTo} handleChange={setTo} />

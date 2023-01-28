@@ -471,24 +471,24 @@ const launchpads: InvestmentFlow[] = [
 		flowKey: FlowEnum.usdcRicFlowQuery,
 		type: FlowTypes.launchpad,
 	},
-	{
-		superToken: ricRexShirtLaunchpadAddress,
-		tokenA: RICAddress,
-		tokenB: RexShirtAddress,
-		coinA: Coin.RIC,
-		coinB: Coin.REXSHIRT,
-		flowKey: FlowEnum.ricRexShirtFlowQuery,
-		type: FlowTypes.launchpad,
-	},
-	{
-		superToken: ricRexHatLaunchpadAddress,
-		tokenA: RICAddress,
-		tokenB: RexHatAddress,
-		coinA: Coin.RIC,
-		coinB: Coin.REXHAT,
-		flowKey: FlowEnum.ricRexHatFlowQuery,
-		type: FlowTypes.launchpad,
-	},
+	// {
+	// 	superToken: ricRexShirtLaunchpadAddress,
+	// 	tokenA: RICAddress,
+	// 	tokenB: RexShirtAddress,
+	// 	coinA: Coin.RIC,
+	// 	coinB: Coin.REXSHIRT,
+	// 	flowKey: FlowEnum.ricRexShirtFlowQuery,
+	// 	type: FlowTypes.launchpad,
+	// },
+	// {
+	// 	superToken: ricRexHatLaunchpadAddress,
+	// 	tokenA: RICAddress,
+	// 	tokenB: RexHatAddress,
+	// 	coinA: Coin.RIC,
+	// 	coinB: Coin.REXHAT,
+	// 	flowKey: FlowEnum.ricRexHatFlowQuery,
+	// 	type: FlowTypes.launchpad,
+	// },
 ];
 
 // export const RoutesToFlowTypes = {
