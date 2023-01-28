@@ -61,8 +61,10 @@ export const DataTable: NextPage<Props> = ({
 									onClick={() => (selectable && isPositionData(data) ? selectData?.(data) : null)}>
 									{isPositionData(data) ? (
 										<>
-											<td className='flex items-center px-2 py-4 whitespace-nowrap space-x-2'>
-												<CoinChange coinA={data.coinA} coinB={data.coinB} type={DataType.Position} />
+											<td className='px-2 py-4 whitespace-nowrap'>
+												<div className='inline-flex items-center gap-2'>
+													<CoinChange coinA={data.coinA} coinB={data.coinB} type={DataType.Position} />
+												</div>
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.positions}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.feePercent}</td>
@@ -84,8 +86,10 @@ export const DataTable: NextPage<Props> = ({
 										</>
 									) : isMarketData(data) ? (
 										<>
-											<td className='flex items-center px-2 py-4 whitespace-nowrap'>
-												<CoinChange coinA={data.coinA} coinB={data.coinB} type={DataType.Market} />
+											<td className='px-2 py-4 whitespace-nowrap'>
+												<div className='inline-flex items-center gap-2'>
+													<CoinChange coinA={data.coinA} coinB={data.coinB} type={DataType.Market} />
+												</div>
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.feePercent}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
