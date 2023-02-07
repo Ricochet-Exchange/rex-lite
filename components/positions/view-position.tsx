@@ -75,7 +75,7 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 					</p>
 					<p className='text-slate-100 my-2'>
 						<span className='text-slate-400'>{t('investment-rate')}:</span> {parseFloat(position.output).toFixed(3)}{' '}
-						{position.coinB}x ({formatCurrency(parseFloat(position.rateUsdValue))})
+						{position.coinA}x ({formatCurrency(parseFloat(position.rateUsdValue))})
 					</p>
 					<p className='text-slate-100 my-2'>
 						<span className='text-slate-400'>{t('time-left')}:</span> {position.timeLeft} {t('days')}
