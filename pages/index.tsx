@@ -9,6 +9,7 @@ import { Markets } from '@richochet/components/markets';
 import Navigation from '@richochet/components/navigation';
 import { Positions } from '@richochet/components/positions';
 import { Refer } from '@richochet/components/refer';
+import { useCoingeckoPrices } from '@richochet/hooks/useCoingeckoPrices';
 import { useIsMounted } from '@richochet/hooks/useIsMounted';
 import { buildFlowQuery } from '@richochet/utils/buildFlowQuery';
 import calculateStreamedSoFar from '@richochet/utils/calculateStreamedSoFar';
@@ -115,33 +116,13 @@ export default function Home({ locale }: any): JSX.Element {
 	const [positions, setPositions] = useState<InvestmentFlow[]>([]);
 	const [positionTotal, setPositionTotal] = useState<number>(0);
 	const [results, setResults] = useState<{ flowsOwned: Flow[]; flowsReceived: Flow[] }[]>([]);
-	const [coingeckoPrices, setCoingeckoPrices] = useState<Map<string, number>>(new Map());
-	const [coingeckoPricesTrigger] = coingeckoApi.useLazyGetPricesQuery();
+	const coingeckoPrices = useCoingeckoPrices();
 	const [queryFlows] = superfluidSubgraphApi.useQueryFlowsMutation();
 	const [queryStreams] = superfluidSubgraphApi.useQueryStreamsMutation();
 	const [queryReceived] = superfluidSubgraphApi.useQueryReceivedMutation();
 	useEffect(() => {
 		if (isConnected) getSuperTokenBalances(address!).then((res) => setBalanceList(res));
 	}, [address, isConnected]);
-	useEffect(() => {
-		const ids = [...coingeckoIds.values()];
-		const prices = coingeckoPricesTrigger(ids.join(','));
-		prices.then((res: any) => {
-			const tokenAddresses = [...coingeckoIds.keys()];
-			const priceMap: Map<string, number> = new Map();
-			tokenAddresses.forEach((tokenAddress) => {
-				const id = coingeckoIds?.get(tokenAddress);
-				const tokenData = res?.data?.filter((res: any) => res.id === id!);
-				if (tokenData === undefined) {
-					priceMap.set(tokenAddress, 0);
-					console.warn('Could not fetch price for token ', tokenAddress);
-				} else {
-					priceMap.set(tokenAddress, tokenData[0]?.current_price);
-				}
-			});
-			setCoingeckoPrices(priceMap);
-		});
-	}, [isMounted]);
 
 	useEffect(() => {
 		const results = exchangeContractsAddresses.map(
@@ -234,9 +215,9 @@ export default function Home({ locale }: any): JSX.Element {
 		if (isConnected && tokensIsSuccess) {
 			const totalInPositions = upgradeTokensList.reduce((total, token) => {
 				const balancess =
-					balanceList &&
+					Object.keys(balanceList).length &&
 					tokens &&
-					geckoMapping &&
+					Object.keys(geckoMapping).length &&
 					(
 						parseFloat(balanceList[token.superTokenAddress]) *
 						parseFloat((tokens as any)[(geckoMapping as any)[token.coin]].usd)
@@ -327,7 +308,14 @@ export default function Home({ locale }: any): JSX.Element {
 											<h6 className='font-light uppercase tracking-widest text-primary-500 mb-2'>
 												{t('total-in-positions')}
 											</h6>
-											<p className='text-slate-100 font-light text-2xl'>{formatCurrency(positionTotal)}</p>
+											{!positionTotal && (
+												<div className='animate-pulse'>
+													<div className='h-4 rounded bg-slate-700'></div>
+												</div>
+											)}
+											{positionTotal && (
+												<p className='text-slate-100 font-light text-2xl'>{formatCurrency(positionTotal)}</p>
+											)}
 										</>
 									}
 								/>
@@ -337,9 +325,16 @@ export default function Home({ locale }: any): JSX.Element {
 											<h6 className='font-light uppercase tracking-widest text-primary-500 mb-2'>
 												{t('net-flow-rate')}
 											</h6>
-											<p className='text-slate-100 font-light text-2xl'>
-												{formatCurrency(parseFloat(usdFlowRate!))} / {t('month')}
-											</p>
+											{!usdFlowRate && (
+												<div className='animate-pulse'>
+													<div className='h-4 rounded bg-slate-700'></div>
+												</div>
+											)}
+											{usdFlowRate && (
+												<p className='text-slate-100 font-light text-2xl'>
+													{formatCurrency(parseFloat(usdFlowRate!))} / {t('month')}
+												</p>
+											)}
 										</>
 									}
 								/>
@@ -370,7 +365,7 @@ export default function Home({ locale }: any): JSX.Element {
 								<CardContainer
 									content={
 										isConnected ? (
-											<Positions coingeckoPrices={coingeckoPrices} positions={positions} queries={queries} />
+											<Positions positions={positions} queries={queries} />
 										) : (
 											<div className='flex flex-col items-center justify-center space-y-4 h-96'>
 												<p className='text-primary-500'>{t('connect-for-positions')}.</p>

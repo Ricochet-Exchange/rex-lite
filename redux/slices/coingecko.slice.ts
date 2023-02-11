@@ -3,7 +3,9 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 const coingeckoApi = createApi({
 	keepUnusedDataFor: 60, // 60 seconds (default)
 	reducerPath: 'coingecko',
-	baseQuery: fetchBaseQuery({ baseUrl: 'https://api.coingecko.com/api/v3/' }),
+	baseQuery: fetchBaseQuery({
+		baseUrl: 'https://api.coingecko.com/api/v3/',
+	}),
 	endpoints: (builder) => ({
 		getPrices: builder.query<any | null, string>({
 			query: (ids: string) => `coins/markets?vs_currency=USD&ids=${ids}`,

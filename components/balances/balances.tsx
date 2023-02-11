@@ -42,14 +42,14 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 	const [action, setAction] = useState(0);
 	const [tabsClosed, setTabsClosed] = useState(true);
 	const [sortedUpgradeTokensList, setSortedUpgradeTokensList] = useState(upgradeTokensList);
-	const [geckoPriceList, setGeckoPriceList] = useState<Object>();
+	const [geckoPriceList, setGeckoPriceList] = useState<Object>({});
 	const [tokenList, setTokenList] = useState<TokenData[]>([]);
 	useEffect(() => {
 		if (isConnected) {
 			if (tokens) setGeckoPriceList(tokens);
-			const getTokenData = async () => {
-				if (geckoPriceList && balances) {
-					const tokens = await Promise.all(
+			(async () => {
+				if (Object.keys(geckoPriceList).length && Object.keys(balances).length) {
+					await Promise.all(
 						sortedUpgradeTokensList.map(async (token) => {
 							// const balance = await fetchBalance({
 							// 	address: address!,
@@ -64,13 +64,13 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 								dollarVal: parseFloat((geckoPriceList as any)[geckoMapping[token.coin]].usd),
 							};
 						})
-					);
-					// sort array by dollar value in descending order
-					const sortedTokens = tokens.sort((a, b) => parseFloat(b.ricAmount) - parseFloat(a.ricAmount));
-					if (sortedTokens.length > 0) setTokenList(sortedTokens);
+					).then((tokens) => {
+						// sort array by ric balance in descending order
+						const sortedTokens = tokens.sort((a, b) => parseFloat(b.ricAmount) - parseFloat(a.ricAmount));
+						if (sortedTokens.length > 0) setTokenList(sortedTokens);
+					});
 				}
-			};
-			getTokenData();
+			})();
 		}
 	}, [isConnected, tokens, balances, geckoPriceList, sortedUpgradeTokensList]);
 	return (

@@ -1,4 +1,5 @@
 import { PlusSmallIcon } from '@heroicons/react/24/solid';
+import { useCoingeckoPrices } from '@richochet/hooks/useCoingeckoPrices';
 import { getPersonalFlowUSDValue } from '@richochet/utils/getFlowUsdValue';
 import { polygon } from '@wagmi/chains';
 import { fetchBalance } from '@wagmi/core';
@@ -44,16 +45,16 @@ interface Props {
 			receivedSoFar?: number;
 		}
 	>;
-	coingeckoPrices: Map<string, number>;
 }
 
 const positionTitles = ['symbols', 'positions', 'fee percent', 'total invested', 'investment rate', 'average price'];
 
-export const Positions: NextPage<Props> = ({ coingeckoPrices, positions, queries }) => {
+export const Positions: NextPage<Props> = ({ positions, queries }) => {
 	const { t } = useTranslation('home');
 	const [positionList, setPositionList] = useState<PositionData[]>([]);
 	const [balances, setBalances] = useState<Map<string, string>>(new Map());
 	const [newPosition, newPositionClosed] = useState(true);
+	const coingeckoPrices = useCoingeckoPrices();
 	const [selectedPosition, setSelectedPosition] = useState<PositionData>();
 	const [closePosition, setClosePosition] = useState(true);
 	const { address, isConnected } = useAccount();

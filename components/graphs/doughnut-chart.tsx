@@ -39,9 +39,9 @@ export const DoughnutChart: NextPage<Props> = ({ tokens, geckoPriceList, balance
 	useEffect(() => {
 		const total = upgradeTokensList.reduce((total, token) => {
 			const balancess =
-				balances &&
-				geckoPriceList &&
-				geckoMapping &&
+				Object.keys(balances).length &&
+				Object.keys(geckoPriceList).length &&
+				Object.keys(geckoMapping).length &&
 				(
 					parseFloat(balances[token.superTokenAddress]) *
 					parseFloat((geckoPriceList as any)[(geckoMapping as any)[token.coin]].usd)
@@ -58,9 +58,11 @@ export const DoughnutChart: NextPage<Props> = ({ tokens, geckoPriceList, balance
 					<text fill='#81a8ce' x={100} y={80} textAnchor='middle' dominantBaseline='middle'>
 						{t('total')}
 					</text>
-					<text fill='white' x={100} y={110} fontWeight={600} textAnchor='middle' dominantBaseline='middle'>
-						{formatCurrency(total)}
-					</text>
+					{total && (
+						<text fill='white' x={100} y={110} fontWeight={600} textAnchor='middle' dominantBaseline='middle'>
+							{formatCurrency(total)}
+						</text>
+					)}
 					<Pie
 						data={chartData}
 						innerRadius={80}

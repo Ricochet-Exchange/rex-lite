@@ -116,7 +116,10 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 			dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
 			if (type === BalanceAction.Withdraw) {
 				getSuperTokenBalances(address!).then((balances) => {
-					if (Number(amount) <= 0 || (balances && Number(balances[downgradeConfig?.tokenAddress!]) === 0)) {
+					if (
+						Number(amount) <= 0 ||
+						(Object.keys(balances).length && Number(balances[downgradeConfig?.tokenAddress!]) === 0)
+					) {
 						return;
 					}
 					const downgrade = downgradeTrigger({ value: amount, tokenAddress: downgradeConfig?.tokenAddress! });
@@ -137,7 +140,10 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 				});
 			} else if (type === BalanceAction.Deposit) {
 				getSuperTokenBalances(address!).then((balances) => {
-					if (Number(amount) < 0 || (balances && upgradeConfig && Number(balances[upgradeConfig.tokenAddress]) === 0)) {
+					if (
+						Number(amount) < 0 ||
+						(Object.keys(balances).length && upgradeConfig && Number(balances[upgradeConfig.tokenAddress]) === 0)
+					) {
 						return;
 					}
 					if (hasApprove) {
