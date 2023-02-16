@@ -47,7 +47,7 @@ interface Props {
 	>;
 }
 
-const positionTitles = ['symbols', 'positions', 'fee percent', 'total invested', 'investment rate', 'average price'];
+const positionTitles = ['symbols', 'positions', 'fee percent', 'total invested', 'investment rate'];
 
 export const Positions: NextPage<Props> = ({ positions, queries }) => {
 	const { t } = useTranslation('home');

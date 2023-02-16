@@ -225,10 +225,6 @@ export default function Home({ locale }: any): JSX.Element {
 
 				return total + parseFloat(balancess as any);
 			}, 0);
-			// positions.reduce(
-			// 	(acc, curr) => acc + parseFloat(queries.get(curr.flowKey)?.flowsOwned!),
-			// 	0
-			// );
 			setPositionTotal(totalInPositions);
 		}
 	}, [isConnected, balanceList, tokens, tokensIsSuccess]);

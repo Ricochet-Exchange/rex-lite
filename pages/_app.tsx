@@ -5,16 +5,7 @@ import type { AppProps } from 'next/app';
 import { Provider } from 'react-redux';
 import { store } from 'redux/store';
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
-import {
-	arbitrum,
-	arbitrumGoerli,
-	goerli,
-	mainnet,
-	optimism,
-	optimismGoerli,
-	polygon,
-	polygonMumbai
-} from 'wagmi/chains';
+import { optimism, polygon } from 'wagmi/chains';
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
@@ -25,7 +16,7 @@ import { publicProvider } from 'wagmi/providers/public';
 import '../styles/globals.css';
 
 const { chains, provider, webSocketProvider } = configureChains(
-	[mainnet, goerli, arbitrum, arbitrumGoerli, polygon, polygonMumbai, optimism, optimismGoerli],
+	[polygon, optimism],
 	[
 		infuraProvider({ priority: 0, apiKey: process.env.INFURA_ID! }),
 		alchemyProvider({ priority: 1, apiKey: process.env.ALCHEMY_ID! }),
@@ -64,14 +55,7 @@ const client = createClient({
 function App({ Component, pageProps }: AppProps) {
 	return (
 		<WagmiConfig client={client}>
-			<ConnectKitProvider
-				theme='midnight'
-				customTheme={{
-					'--ck-font-family': '"Montserrat"',
-					'--ck-accent-color': '#81a8ce',
-					'--ck-accent-text-color': '##f1f5f9',
-					'--ck-body-background': '#16212C',
-				}}>
+			<ConnectKitProvider theme='midnight'>
 				<Provider store={store()}>
 					<AlertProvider>
 						<Component {...pageProps} />

@@ -80,9 +80,6 @@ export const DataTable: NextPage<Props> = ({
 												</p>
 												<p>({formatCurrency(parseFloat(data.rateUsdValue))})</p>
 											</td>
-											<td className='px-6 py-4 whitespace-nowrap'>
-												{parseFloat(data.avgPrice).toFixed(3)} {data.coinA} / {data.coinB}
-											</td>
 										</>
 									) : isMarketData(data) ? (
 										<>
