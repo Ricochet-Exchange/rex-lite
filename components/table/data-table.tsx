@@ -66,8 +66,8 @@ export const DataTable: NextPage<Props> = ({
 													<CoinChange coinA={data.coinA} coinB={data.coinB} type={DataType.Position} />
 												</div>
 											</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{data.positions}</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{data.feePercent}</td>
+											{/* <td className='px-6 py-4 whitespace-nowrap'>{data.positions}</td> */}
+											{/* <td className='px-6 py-4 whitespace-nowrap'>{data.feePercent}</td> */}
 											<td className='px-6 py-4 whitespace-nowrap'>
 												<p>{formatCurrency(parseFloat(data.streamedUsdValue))}</p>
 												<p className='text-slate-400'>
