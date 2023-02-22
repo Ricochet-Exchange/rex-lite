@@ -11,7 +11,7 @@ export interface MarketData extends InvestmentFlow {
 	total: number;
 	usdValue: string;
 	feePercent: string;
-	posAmt: number;
+	streams: number;
 }
 interface Props {
 	coingeckoPrices: Map<string, number>;
@@ -31,7 +31,7 @@ interface Props {
 	>;
 }
 
-const marketTitles = ['market', 'fee percent', 'total value streaming', 'amount of positions'];
+const marketTitles = ['market', 'fee percent', 'total value streaming', 'currently streaming'];
 
 export const Markets: NextPage<Props> = ({ coingeckoPrices, sortedList, queries }) => {
 	const { t } = useTranslation('home');
@@ -47,7 +47,7 @@ export const Markets: NextPage<Props> = ({ coingeckoPrices, sortedList, queries 
 					total: parseFloat(queries.get(item.flowKey)?.flowsOwned!) || 0,
 					usdValue: getFlowUSDValue(item, queries, coingeckoPrices),
 					feePercent: item.coinA.includes('IbAlluo') ? '0.5%' : '2%',
-					posAmt: queries.get(item.flowKey)?.totalFlows || 0,
+					streams: queries.get(item.flowKey)?.totalFlows || 0,
 				})
 			);
 			const sortedData = marketData.sort((a, b) => b.total - a.total);

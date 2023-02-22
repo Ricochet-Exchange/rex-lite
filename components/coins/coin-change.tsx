@@ -32,11 +32,13 @@ export const CoinChange: NextPage<Props> = ({ coinA, coinB, token, type }): JSX.
 		return (
 			<div className='flex flex-wrap items-center justify-between lg:space-x-2'>
 				<span className='flex items-center space-x-2'>
-					<Image width='24' height='24' src={iconsCoin[coinA as Coin]!} alt={coinA} /> <span>{coinA}</span>
+					<Image width='24' height='24' src={iconsCoin[coinA as Coin]!} alt={coinA} />{' '}
+					<span className='text-sm'>{coinA}</span>
 				</span>
 				<ArrowLongRightIcon className='h-5 w-5' />
 				<span className='flex items-center space-x-2'>
-					<Image width='24' height='24' src={iconsCoin[coinB as Coin]!} alt={coinB} /> <span>{coinB}</span>
+					<Image width='24' height='24' src={iconsCoin[coinB as Coin]!} alt={coinB} />{' '}
+					<span className='text-sm'>{coinB}</span>
 				</span>
 			</div>
 		);
@@ -59,7 +61,8 @@ export const CoinChange: NextPage<Props> = ({ coinA, coinB, token, type }): JSX.
 							? 'bg-stIbAlluoEth text-slate-800 px-1 py-0'
 							: token === Coin.StIbAlluoUSD
 							? 'bg-stIbAlluoUsd text-slate-800 px-1 py-0'
-							: 'bg-transparent'
+							: 'bg-transparent',
+						'text-sm'
 					)}>
 					{token}
 				</span>

@@ -20,7 +20,7 @@ interface Props {
 const isPositionData = (data: PositionData | MarketData | TokenData): data is PositionData =>
 	!!(data as PositionData).positions || (data as PositionData).positions === 0;
 const isMarketData = (data: PositionData | MarketData | TokenData): data is MarketData =>
-	!!(data as MarketData).posAmt || (data as MarketData).posAmt === 0;
+	!!(data as MarketData).streams || (data as MarketData).streams === 0;
 const isTokenData = (data: PositionData | MarketData | TokenData): data is TokenData => !!(data as TokenData).token;
 
 export const DataTable: NextPage<Props> = ({
@@ -90,12 +90,15 @@ export const DataTable: NextPage<Props> = ({
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.feePercent}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
-												<p>
+												<p>{formatCurrency(parseFloat(data.usdValue))}</p>
+												<p className='text-slate-400'>
 													{data.total} {data.coinA}x
 												</p>
-												<p>({formatCurrency(parseFloat(data.usdValue))})</p>
 											</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{data.posAmt}</td>
+											<td className='px-6 py-4 whitespace-nowrap'>
+												{data.streams}
+												{/* {t('streams')} */}
+											</td>
 										</>
 									) : isTokenData(data) ? (
 										<>
