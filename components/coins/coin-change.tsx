@@ -19,16 +19,16 @@ interface Props {
 }
 
 export const CoinChange: NextPage<Props> = ({ coinA, coinB, token, type }): JSX.Element => {
-	if (type === DataType.Position && coinA && coinB) {
-		return (
-			<>
-				<Image width='24' height='24' src={iconsCoin[coinA as Coin]!} alt={coinA} />
-				<ArrowLongRightIcon className='h-5 w-5' />
-				<Image width='24' height='24' src={iconsCoin[coinB as Coin]!} alt={coinB} />
-			</>
-		);
-	}
-	if (type === DataType.Market && coinA && coinB) {
+	// if (type === DataType.Position && coinA && coinB) {
+	// 	return (
+	// 		<>
+	// 			<Image width='24' height='24' src={iconsCoin[coinA as Coin]!} alt={coinA} />
+	// 			<ArrowLongRightIcon className='h-5 w-5' />
+	// 			<Image width='24' height='24' src={iconsCoin[coinB as Coin]!} alt={coinB} />
+	// 		</>
+	// 	);
+	// }
+	if ((type === DataType.Market || type === DataType.Position) && coinA && coinB) {
 		return (
 			<div className='flex flex-wrap items-center justify-between lg:space-x-2'>
 				<span className='flex items-center space-x-2'>

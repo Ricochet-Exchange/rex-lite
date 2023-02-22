@@ -47,7 +47,7 @@ interface Props {
 	>;
 }
 
-const positionTitles = ['symbols', 'positions', 'fee percent', 'total invested', 'investment rate'];
+const positionTitles = ['your markets', 'positions', 'fee percent', 'total streaming', 'stream rate'];
 
 export const Positions: NextPage<Props> = ({ positions, queries }) => {
 	const { t } = useTranslation('home');
@@ -194,7 +194,7 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 					<CardTitle
 						content={
 							<>
-								<p className='text-primary-500 uppercase'>{t('your-positions')}</p>
+								<p className='text-primary-500 uppercase'>{t('your-streams')}</p>
 								<RoundedButton
 									icon={<PlusSmallIcon className='h-4 w-4' />}
 									type='button'

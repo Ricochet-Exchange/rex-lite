@@ -69,16 +69,16 @@ export const DataTable: NextPage<Props> = ({
 											<td className='px-6 py-4 whitespace-nowrap'>{data.positions}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.feePercent}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
-												<p>
+												<p>{formatCurrency(parseFloat(data.streamedUsdValue))}</p>
+												<p className='text-slate-400'>
 													{data.input.toFixed(3)} {data.coinA}x
 												</p>
-												<p>({formatCurrency(parseFloat(data.streamedUsdValue))})</p>
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
-												<p>
+												<p>{formatCurrency(parseFloat(data.rateUsdValue))}</p>
+												<p className='text-slate-400'>
 													{parseFloat(data.output).toFixed(3)} {data.coinA}x
 												</p>
-												<p>({formatCurrency(parseFloat(data.rateUsdValue))})</p>
 											</td>
 										</>
 									) : isMarketData(data) ? (
