@@ -71,13 +71,13 @@ export const DataTable: NextPage<Props> = ({
 											<td className='px-6 py-4 whitespace-nowrap'>
 												<p>{formatCurrency(parseFloat(data.streamedUsdValue))}</p>
 												<p className='text-slate-400'>
-													{data.input.toFixed(3)} {data.coinA}x
+													{data.input.toFixed(3)} <span className='text-sm'>{data.coinA}x</span>
 												</p>
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
 												<p>{formatCurrency(parseFloat(data.rateUsdValue))}</p>
 												<p className='text-slate-400'>
-													{parseFloat(data.output).toFixed(3)} {data.coinA}x
+													{parseFloat(data.output).toFixed(3)} <span className='text-sm'>{data.coinA}x</span>
 												</p>
 											</td>
 										</>
@@ -92,7 +92,7 @@ export const DataTable: NextPage<Props> = ({
 											<td className='px-6 py-4 whitespace-nowrap'>
 												<p>{formatCurrency(parseFloat(data.usdValue))}</p>
 												<p className='text-slate-400'>
-													{data.total} {data.coinA}x
+													{data.total} <span className='text-sm'>{data.coinA}x</span>
 												</p>
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
