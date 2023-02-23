@@ -14,6 +14,13 @@ export const BalanceDisplay: NextPage<Props> = ({ tokenAddress, showSymbol }): J
 		chainId: polygon.id,
 		token: tokenAddress as `0x${string}`,
 	});
+	if (!balance) {
+		return (
+			<div className='animate-pulse'>
+				<div className='h-4 rounded bg-slate-700'></div>
+			</div>
+		);
+	}
 	return (
 		<>
 			<span>{Number(balance?.formatted).toFixed(2)}</span>
