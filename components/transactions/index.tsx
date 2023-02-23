@@ -10,6 +10,7 @@ import { downgradeTokensList } from 'constants/downgradeConfig';
 import { upgradeTokensList } from 'constants/upgradeConfig';
 import { AlertContext } from 'contexts/AlertContext';
 import { BalanceAction } from 'enumerations/balanceActions.enum';
+import { ethers } from 'ethers';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { Fragment, useContext, useEffect, useState } from 'react';
@@ -59,6 +60,7 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 	const [swapFrom, setSwapFrom] = useState<Coin>(Coin.SELECT);
 	const [swapTo, setSwapTo] = useState<Coin>(Coin.SELECT);
 	const [amount, setAmount] = useState<string>('');
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [slippageTolerance, setSlippageTolerance] = useState<string>();
 	const [walletBalance, setWalletBalance] = useState<string>('');
 	const [upgradeTrigger] = streamApi.useLazyUpgradeQuery();
@@ -90,12 +92,14 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 	}, [upgradeConfig]);
 	const handleApprove = () => {
 		if (upgradeConfig) {
+			setIsLoading(true);
 			const approve = approveTrigger({
 				tokenAddress: upgradeConfig?.tokenAddress!,
 				superTokenAddress: upgradeConfig?.superTokenAddress!,
 			});
 			approve.then((res) => {
 				console.log({ res });
+				setIsLoading(res.isLoading);
 				checkForApproval(upgradeConfig?.tokenAddress!, upgradeConfig?.superTokenAddress!).then((hasApprove) =>
 					setHasApprove(hasApprove)
 				);
@@ -122,13 +126,16 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 					) {
 						return;
 					}
-					const downgrade = downgradeTrigger({ value: amount, tokenAddress: downgradeConfig?.tokenAddress! });
+					const bigNumberAmount = ethers.BigNumber.from(amount).toString();
+					setIsLoading(true);
+					const downgrade = downgradeTrigger({ value: bigNumberAmount, tokenAddress: downgradeConfig?.tokenAddress! });
 					console.log({ downgrade });
 					downgrade
 						.then((response) => {
 							if (response.isSuccess) {
 								dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
 							}
+							setIsLoading(response.isLoading);
 							if (response.isError) {
 								dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
 							}
@@ -147,7 +154,9 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 						return;
 					}
 					if (hasApprove) {
-						const upgrade = upgradeTrigger({ value: amount, tokenAddress: upgradeConfig?.tokenAddress! });
+						const bigNumberAmount = ethers.BigNumber.from(amount).toString();
+						setIsLoading(true);
+						const upgrade = upgradeTrigger({ value: bigNumberAmount, tokenAddress: upgradeConfig?.tokenAddress! });
 						console.log({ upgrade });
 						upgrade
 							.then((response: any) => {
@@ -155,6 +164,7 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 								if (response.isSuccess) {
 									dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
 								}
+								setIsLoading(response.isLoading);
 								if (response.isError) {
 									dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
 								}
@@ -290,13 +300,29 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 						{t('cancel')}
 					</button>
 					{(type === BalanceAction.Withdraw || type === BalanceAction.Swap) && (
-						<RoundedButton type='submit' action={`${t('confirm')} ${t(type)}`} />
+						<RoundedButton
+							type='submit'
+							loading={isLoading}
+							disabled={isLoading}
+							action={isLoading ? `${t('confirming')}...` : `${t('confirm')} ${t(type)}`}
+						/>
 					)}
 					{hasApprove && type === BalanceAction.Deposit && (
-						<RoundedButton type='submit' action={`${t('confirm')} ${t(type)}`} />
+						<RoundedButton
+							type='submit'
+							loading={isLoading}
+							disabled={isLoading}
+							action={isLoading ? `${t('confirming')}...` : `${t('confirm')} ${t(type)}`}
+						/>
 					)}
 					{!hasApprove && type === BalanceAction.Deposit && (
-						<RoundedButton type='button' action={`${t('approve')}`} handleClick={handleApprove} />
+						<RoundedButton
+							type='button'
+							loading={isLoading}
+							action={isLoading ? `${t('approving')}...` : `${t('approve')}`}
+							disabled={selectedToken !== Coin.SELECT || isLoading}
+							handleClick={handleApprove}
+						/>
 					)}
 				</div>
 			</form>

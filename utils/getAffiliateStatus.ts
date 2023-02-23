@@ -1,5 +1,5 @@
 import { readContract } from '@wagmi/core';
-import { referralABI } from 'constants/abis';
+import { referralABI } from 'constants/ABIs/referralABI';
 import { rexReferralAddress } from 'constants/polygon_config';
 import { ethers } from 'ethers';
 

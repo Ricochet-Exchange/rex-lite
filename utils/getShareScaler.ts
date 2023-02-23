@@ -1,6 +1,6 @@
 import { readContract } from '@wagmi/core';
+import { streamExchangeABI } from 'constants/ABIs/streamExchange';
 import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
-import { streamExchangeABI } from '../constants/abis';
 import { indexIDA } from '../constants/flowConfig';
 import { getExchangeAddressFromKey } from './getExchangeAddress';
 

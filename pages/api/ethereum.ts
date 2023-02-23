@@ -1,11 +1,11 @@
-import { TransactionReceipt } from '@ethersproject/providers';
-
 import { Signer } from '@ethersproject/abstract-signer';
+import { TransactionReceipt } from '@ethersproject/providers';
 import { getSFFramework } from '@richochet/utils/fluidsdkConfig';
 import { Framework } from '@superfluid-finance/sdk-core';
 import Operation from '@superfluid-finance/sdk-core/dist/main/Operation';
 import { fetchSigner, getAccount, getProvider, prepareWriteContract, readContract, writeContract } from '@wagmi/core';
-import { erc20ABI, superTokenABI } from 'constants/abis';
+import { erc20ABI } from 'constants/ABIs/ERC20';
+import { superTokenABI } from 'constants/ABIs/supertoken';
 import { indexIDA } from 'constants/flowConfig';
 import {
 	MATICxAddress,
@@ -15,11 +15,11 @@ import {
 	ricRexShirtLaunchpadAddress,
 	usdcxRicExchangeAddress
 } from 'constants/polygon_config';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { polygon } from 'wagmi/chains';
 import { gas } from './gasEstimator';
 
-export const downgrade = async (contract: any, amount: string, address: string) => {
+export const downgrade = async (contract: any, amount: BigNumber, address: string) => {
 	const config = await prepareWriteContract({
 		address: contract?.address as `0x${string}`,
 		abi: superTokenABI,
@@ -36,7 +36,7 @@ export const downgrade = async (contract: any, amount: string, address: string) 
 	return data;
 };
 
-export const downgradeMatic = async (contract: any, amount: string, address: string) => {
+export const downgradeMatic = async (contract: any, amount: BigNumber, address: string) => {
 	const config = await prepareWriteContract({
 		address: contract?.address as `0x${string}`,
 		abi: superTokenABI,
@@ -61,7 +61,7 @@ export const allowance = async (contract: any, address: string, superTokenAddres
 	return allowance;
 };
 
-export const approve = async (contract: any, address: string, tokenAddress: string, amount: string) => {
+export const approve = async (contract: any, address: string, tokenAddress: string, amount: BigNumber) => {
 	const config = await prepareWriteContract({
 		address: contract?.address as `0x${string}`,
 		abi: superTokenABI,
@@ -78,7 +78,7 @@ export const approve = async (contract: any, address: string, tokenAddress: stri
 	return data;
 };
 
-export const upgrade = async (contract: any, amount: string, address: string) => {
+export const upgrade = async (contract: any, amount: BigNumber, address: string) => {
 	const config = await prepareWriteContract({
 		address: contract?.address as `0x${string}`,
 		abi: superTokenABI,
@@ -95,14 +95,14 @@ export const upgrade = async (contract: any, amount: string, address: string) =>
 	return data;
 };
 
-export const upgradeMatic = async (contract: any, amount: string, address: string) => {
+export const upgradeMatic = async (contract: any, amount: BigNumber, address: string) => {
 	const config = await prepareWriteContract({
 		address: contract?.address as `0x${string}`,
 		abi: superTokenABI,
 		functionName: 'upgradeByETH',
 		overrides: {
 			from: address as `0x${string}`,
-			value: parseFloat(amount),
+			value: amount,
 			gasLimit: ethers.BigNumber.from(6000000),
 		},
 	});
@@ -151,7 +151,7 @@ export const startFlow = async (
 	exchangeAddress: string,
 	inputTokenAddress: string,
 	outputTokenAddress: string,
-	amount: number,
+	amount: BigNumber,
 	referralId?: string
 ) => {
 	try {

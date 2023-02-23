@@ -2,7 +2,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { startFlow, upgrade } from '@richochet/api/ethereum';
 import { transformError } from '@richochet/utils/transformError';
 import { getAccount, getContract } from '@wagmi/core';
-import { idaABI, superTokenABI } from 'constants/abis';
+import { idaABI } from 'constants/ABIs/ida';
+import { superTokenABI } from 'constants/ABIs/supertoken';
 import { idaAddress, MATICxAddress } from 'constants/polygon_config';
 import { ethers } from 'ethers';
 import { PositionData } from './../../components/positions/positions';
@@ -20,7 +21,12 @@ const streamApi = createApi({
 					[key: string]: string;
 				};
 			} | null,
-			string
+			{
+				amount: string;
+				config: {
+					[key: string]: string;
+				};
+			}
 		>({
 			//Payload type:
 			//config.superToken,
@@ -37,7 +43,8 @@ const streamApi = createApi({
 					const idaContract = await getContract({ address: idaAddress, abi: idaABI });
 					console.log({ idaContract });
 					// We must normalize the payload amount for superfluid function
-					const normalizedAmount = Math.round((Number(amount) * 1e18) / 2592000);
+					const normalizedAmount = ethers.utils.parseEther(amount);
+					//  Math.round((Number(amount) * 1e18) / 2592000);
 					console.log({ normalizedAmount });
 					// we must call the startFlow function in api/ethereum.ts with following Data
 					//
@@ -96,7 +103,8 @@ const streamApi = createApi({
 				try {
 					console.log({ payload });
 					const { tokenAddress, value } = payload;
-					const amount = Math.round(Number(value) * 10e18).toString();
+					const amount = ethers.utils.parseEther(value);
+					// Math.round(Number(value) * 10e18).toString();
 					console.log({ amount });
 					const { address } = getAccount();
 					const contract = await getContract({ address: tokenAddress, abi: superTokenABI });
@@ -124,10 +132,11 @@ const streamApi = createApi({
 					const { tokenAddress, value } = payload;
 					const { address } = getAccount();
 					const contract = await getContract({ address: tokenAddress, abi: superTokenABI });
+					const amount = ethers.utils.parseEther(value);
 					const tx =
 						tokenAddress === MATICxAddress
-							? await upgradeMatic(contract, value, address!)
-							: await upgrade(contract, value, address!);
+							? await upgradeMatic(contract, amount, address!)
+							: await upgrade(contract, amount, address!);
 					console.log({ tx });
 					return tx.wait(1).then((res) => {
 						return {
@@ -151,10 +160,7 @@ const streamApi = createApi({
 					console.log({ payload });
 					const { address } = getAccount();
 					// Allow max instead of amount
-					const amount = ethers.BigNumber.from('2')
-						.pow(ethers.BigNumber.from('256'))
-						.sub(ethers.BigNumber.from('1'))
-						.toString();
+					const amount = ethers.BigNumber.from('2').pow(ethers.BigNumber.from('256')).sub(ethers.BigNumber.from('1'));
 					console.log({ amount });
 					const contract = await getContract({ address: tokenAddress, abi: superTokenABI });
 					console.log({ contract });

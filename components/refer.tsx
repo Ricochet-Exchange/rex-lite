@@ -3,7 +3,7 @@ import { AFFILIATE_STATUS, filterValidationErrors, getAffiliateStatus } from '@r
 import { combineClasses } from '@richochet/utils/helperFunctions';
 import { prepareWriteContract, writeContract } from '@wagmi/core';
 import { ConnectKitButton } from 'connectkit';
-import { referralABI } from 'constants/abis';
+import { referralABI } from 'constants/ABIs/referralABI';
 import { rexReferralAddress } from 'constants/polygon_config';
 import { useTranslation } from 'next-i18next';
 import Link from 'next/link';

@@ -32,6 +32,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	const [to, setTo] = useState<Coin>(Coin.SELECT);
 	const [amount, setAmount] = useState<string>('0');
 	const [state, dispatch] = useContext(AlertContext);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [shareScaler, setShareScaler] = useState(1e3);
 	const [startStreamTrigger] = streamApi.useLazyStartStreamQuery();
 	const [positionType, setPositionType] = useState(postionTypes[0]);
@@ -77,6 +78,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 					.then((res) => {
 						setShareScaler(res);
 						// Need to call hook here to start a new stream.
+						setIsLoading(true);
 						dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
 						if (shareScaler) {
 							const newAmount =
@@ -87,13 +89,13 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 									  ).toString()
 									: amount;
 							console.log({ newAmount, config });
-							//@ts-ignore
 							const stream = startStreamTrigger({ amount: newAmount, config });
 							stream
 								.then((response) => {
 									if (response.isSuccess) {
 										dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
 									}
+									setIsLoading(response.isLoading);
 									if (response.isError) {
 										dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
 									}
@@ -195,7 +197,13 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 					<button type='button' className='text-slate-100 underline' onClick={() => setClose(!close)}>
 						{t('cancel')}
 					</button>
-					<RoundedButton type='submit' form='new-position-form' action={`${t('start-new-position')}`} />
+					<RoundedButton
+						type='submit'
+						form='new-position-form'
+						loading={isLoading}
+						disabled={isLoading}
+						action={isLoading ? `${t('processing')}...` : `${t('start-new-position')}`}
+					/>
 				</div>
 			</div>
 		</>
