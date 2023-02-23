@@ -38,14 +38,14 @@ export const BalanceTabs: NextPage<Props> = ({ close, setClose, action, balanceL
 						</button>
 					)}
 				</Tab>
-				<Tab as={Fragment}>
+				{/* <Tab as={Fragment}>
 					{({ selected }) => (
 						<button
 							className={selected ? 'text-slate-100 border-b-2 border-primary-500' : 'text-slate-400 border-none'}>
 							{t('swap')}
 						</button>
 					)}
-				</Tab>
+				</Tab> */}
 				<button className='text-slate-400 hover:text-slate-100' onClick={() => setClose(!close)}>
 					<XMarkIcon className='h-4 w-4' />
 				</button>

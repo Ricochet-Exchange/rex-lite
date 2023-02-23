@@ -99,14 +99,14 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 								setAction(1);
 							}}
 						/>
-						<OutlineButton
+						{/* <OutlineButton
 							type='button'
 							action={`${t('swap')}`}
 							handleClick={() => {
 								setTabsClosed(false);
 								setAction(2);
 							}}
-						/>
+						/> */}
 					</div>
 					<div className='flex justify-center my-4'>
 						<DoughnutChart
