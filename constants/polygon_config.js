@@ -5,7 +5,12 @@ export const hostAddress = '0x3E14dC1b13c488a8d5D310918780c983bD5982E7';
 export const idaAddress = '0xB0aABBA4B2783A72C52956CDEF62d438ecA2d7a1';
 export const ZeroAddress = '0x0000000000000000000000000000000000000000';
 export const rexReferralAddress = '0xA0eC9E1542485700110688b3e6FbebBDf23cd901';
-export const claimAddress = '0x9dA677c3423E0eBc1e3d7c0a86e9b9a34Bbd2874';
+
+// Water Drops //
+
+export const rexShirtWaterdrop = '0x4965DD6Cc99e20B33B744374F132f7b5F8333a06';
+export const alluoWaterdrop = '0x114e5EAbd33B34F3B7f481Df4fc2617dE6cd2B66';
+export const uniwhalesWaterdrop = '0xa576a3E103f437f9845a400cd909CA5de6456A84';
 
 // Currently in use contracts //
 
@@ -119,49 +124,6 @@ export const supportedCurrencies = [
 	},
 ];
 
-export const exchangeAddresses = {
-	ricRexShirt: ricRexShirtLaunchpadAddress,
-	ricRexHat: ricRexHatLaunchpadAddress,
-	maticx: MATICxAddress,
-	daix: DAIxAddress,
-	dai: DAIAddress,
-	usdcx: USDCxAddress,
-	usdc: USDCAddress,
-	wethx: WETHxAddress,
-	weth: WETHAddress,
-	wbtcx: WBTCxAddress,
-	wbtc: WBTCAddress,
-	host: hostAddress,
-	ida: idaAddress,
-	ricApp: rickosheaAppAddress,
-	ric: RICAddress,
-	stiballuoeth: StIbAlluoETHAddress,
-	stiballuousd: StIbAlluoUSDAddress,
-	iballuousd: IbAlluoUSDAddress,
-	iballuoeth: IbAlluoETHAddress,
-	stiballuobtc: StIbAlluoBTCAddress,
-	iballuobtc: IbAlluoBTCAddress,
-	referral: rexReferralAddress,
-	twoWayusdcWeth: twoWayWETHMarketAddress,
-	twoWaywethUsdc: twoWayWETHMarketAddress,
-	twoWaywbtcUsdc: twoWayMarketWBTCAddress,
-	twoWayusdcWbtc: twoWayMarketWBTCAddress,
-	twoWayDaiWeth: twoWayMarketDAIWETHAddress,
-	twoWayWethDai: twoWayMarketDAIWETHAddress,
-	twoWayMaticUsdc: twoWayMarketMATICUSDCAddress,
-	twoWayUsdcMatic: twoWayMarketMATICUSDCAddress,
-	twoWayMaticDai: twoWayMarketMATICDAIAddress,
-	twoWayDaiMatic: twoWayMarketMATICDAIAddress,
-	twoWayWbtcDai: twoWayMarketWBTCDAIAddress,
-	twoWayDaiWbtc: twoWayMarketWBTCDAIAddress,
-	twoWayRicUsdc: twoWayMarketRICUSDCAddress,
-	twoWayUsdcRic: twoWayMarketRICUSDCAddress,
-	twoWayIbUsdIbEth: twoWayMarketibAlluoUSDETHAddress,
-	twoWayIbEthIbUsd: twoWayMarketibAlluoUSDETHAddress,
-	twoWayIbUsdIbBTC: twoWayMarketibAlluoUSDBTCAddress,
-	twoWayIbBTCIbUsd: twoWayMarketibAlluoUSDBTCAddress,
-};
-
 export const marketArray = [
 	twoWayMarketibAlluoUSDETHAddress,
 	twoWayMarketibAlluoUSDBTCAddress,
@@ -176,4 +138,44 @@ export const marketArray = [
 	ricRexHatLaunchpadAddress,
 ];
 
+// V1 Markets Deprecated //
+
+//ETH X USDC
+export const wethxUsdcxExchangeAddress = '0x3941e2E89f7047E0AC7B9CcE18fBe90927a32100';
+
+//BTC X USDC
+export const wbtcxUsdcxExchangeAddress = '0x71f649EB05AA48cF8d92328D1C486B7d9fDbfF6b';
+
+//USDC X ETH
+export const usdcxWethxExchangeAddress = '0x8082Ab2f4E220dAd92689F3682F3e7a42b206B42';
+
+//USDC X BTC
+export const usdcxWbtcxExchangeAddress = '0xe0A0ec8dee2f73943A6b731a2e11484916f45D44';
+
+//DAI X ETH
+export const daixEthxExchangeAddress = '0x9BEf427fa1fF5269b824eeD9415F7622b81244f5';
+
+//ETH X DAI
+export const ethxDaixExchangeAddress = '0x0A70Fbb45bc8c70fb94d8678b92686Bb69dEA3c3';
+
+//USDC X MATIC
+export const usdcxMaticxExchangeAddress = '0xE093D8A4269CE5C91cD9389A0646bAdAB2c8D9A3';
+
+//MATIC X USDC
+export const maticxUsdcxExchangeAddress = '0x93D2d0812C9856141B080e9Ef6E97c7A7b342d7F';
+
+//DAI X MATIC
+export const daixMaticxExchangeAddress = '0xA152715dF800dB5926598917A6eF3702308bcB7e';
+
+//MATIC X DAI
+export const maticxDaixExchangeAddress = '0x250efbB94De68dD165bD6c98e804E08153Eb91c6';
+
+//USDC X RIC
 export const usdcxRicExchangeAddress = '0x98d463A3F29F259E67176482eB15107F364c7E18';
+
+//USDC X IBALLUOUSD
+export const usdcxibAlluoUSDAddress = '0xE53dd10d49C8072d68d48c163d9e1A219bd6852D';
+
+//Deprecated Waterdrop
+
+export const claimAddress = '0x9dA677c3423E0eBc1e3d7c0a86e9b9a34Bbd2874';

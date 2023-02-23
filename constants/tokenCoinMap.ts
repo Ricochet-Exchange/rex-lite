@@ -1,7 +1,21 @@
 import { Coin } from './coins';
 import {
+	MATICxAddress,
+	USDCxAddress,
+	WETHxAddress,
+	WBTCxAddress,
+	RICAddress,
 	DAIAddress,
-	DAIxAddress, IbAlluoBTCAddress, IbAlluoETHAddress, IbAlluoUSDAddress, MATICxAddress, RICAddress, StIbAlluoBTCAddress, StIbAlluoETHAddress, StIbAlluoUSDAddress, USDCAddress, USDCxAddress, WBTCAddress, WBTCxAddress, WETHAddress, WETHxAddress
+	DAIxAddress,
+	USDCAddress,
+	WETHAddress,
+	WBTCAddress,
+	IbAlluoETHAddress,
+	StIbAlluoETHAddress,
+	IbAlluoUSDAddress,
+	StIbAlluoUSDAddress,
+	IbAlluoBTCAddress,
+	StIbAlluoBTCAddress,
 } from './polygon_config';
 
 type Transformer = {
