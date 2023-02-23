@@ -1,5 +1,5 @@
 import { getContract } from '@wagmi/core';
-import { erc20ABI } from 'constants/abis';
+import { erc20ABI } from 'constants/ABIs/ERC20';
 import { flowConfig } from 'constants/flowConfig';
 import { RICAddress } from 'constants/polygon_config';
 
