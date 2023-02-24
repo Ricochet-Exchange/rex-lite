@@ -2,7 +2,7 @@ import { geckoMapping } from 'constants/coingeckoMapping';
 import { Coin } from 'constants/coins';
 import { NextPage } from 'next';
 import { useEffect, useState } from 'react';
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Label } from 'recharts';
 import coingeckoApi from 'redux/slices/coingecko.slice';
 
 interface ChartData {
@@ -25,11 +25,15 @@ export const AreaGraph: NextPage<Props> = ({ from, to }) => {
 	const [coingeckoHistory, setCoingeckoHistory] = useState<Map<string, string[]>>(new Map());
 	const [fromPrices, setFromPrices] = useState<string[] | undefined>([]);
 	const [chartData, setChartData] = useState<ChartData[]>([]);
+	const [minMax, setMinMax] = useState<string[]>(['0', '0']);
 
 	//set up board with aver
 	const getPriceRange = (prices: string[]) => {
 		//Sorted Array over time
 		const tSort = [...prices].sort((a, b) => +a[0] - +b[0]);
+		const priceSorted = [...tSort].sort((a, b) => +a[1] - +b[1])
+		setMinMax([priceSorted[0][1], priceSorted[priceSorted.length -1][1]]);
+		console.log(priceSorted[0])
 		//Grabbing an element from t==0, 1 week, 2 week, 3 weeks, 1 month
 		//issue is this will only grab those values, we also want the highest price and lowest price of the month
 		const timeSorted = [tSort[0], tSort[7], tSort[14], tSort[21], tSort[tSort.length -1]]
@@ -84,9 +88,9 @@ export const AreaGraph: NextPage<Props> = ({ from, to }) => {
 			<ResponsiveContainer height='100%' width='100%'>
 				<AreaChart data={chartData}>
 					{/* Add label called time */}
-					<XAxis dataKey='name'/>
+					<XAxis dataKey='name' label={{ value: 'Time', angle: 0, position: 'bottom' }} />
 					{/* Add label called price and instead of grabbing from 0 to max price, start from lowest price in range - 10% */}
-					<YAxis dataKey='y'/>
+					<YAxis dataKey='y' label={{ value: 'Price in USD', angle: -90, position: 'left' }} domain={[minMax[0], minMax[1]]}/>
 					<Tooltip />
 					<Area type='monotone' dataKey='price' stroke='#81a8ce' fill='#81a8ce' />
 				</AreaChart>
