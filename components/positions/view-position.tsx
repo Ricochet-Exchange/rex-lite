@@ -1,4 +1,5 @@
 import { combineClasses, formatCurrency } from '@richochet/utils/helperFunctions';
+import { geckoMapping } from 'constants/coingeckoMapping';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { useEffect, useState } from 'react';
@@ -13,18 +14,6 @@ interface Props {
 	setClose: Function;
 	position: PositionData;
 }
-
-const geckoMapping: Record<string, string> = {
-	USDC: 'usd-coin',
-	MATIC: 'matic-network',
-	ETH: 'ethereum',
-	WBTC: 'wrapped-bitcoin',
-	DAI: 'dai',
-	RIC: 'richochet',
-	StIbAlluoETH: 'ethereum',
-	StIbAlluoBTC: 'wrapped-bitcoin',
-	StIbAlluoUSD: 'usd-coin',
-};
 
 export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 	const { t } = useTranslation('home');
@@ -86,7 +75,7 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 				</div>
 				{!edit && (
 					<div className='w-full md:w-1/2'>
-						<AreaGraph />
+						<AreaGraph from={position.coinA} to={position.coinB} />
 						<p className='text-slate-100 my-2'>
 							<span className='text-slate-400'>{t('average-buy-price')}:</span> 1 {position.coinB} ={' '}
 							{position.avgBuy.toFixed(3)} {position.coinA}

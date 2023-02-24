@@ -1,4 +1,5 @@
 import { formatCurrency } from '@richochet/utils/helperFunctions';
+import { geckoMapping } from 'constants/coingeckoMapping';
 import { upgradeTokensList } from 'constants/upgradeConfig';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
@@ -10,7 +11,6 @@ interface Props {
 	tokens: TokenData[];
 	geckoPriceList: any;
 	balances: Record<string, string>;
-	geckoMapping: Record<string, string>;
 }
 
 interface ChartData {
@@ -19,7 +19,7 @@ interface ChartData {
 	value: number;
 }
 
-export const DoughnutChart: NextPage<Props> = ({ tokens, geckoPriceList, balances, geckoMapping }): JSX.Element => {
+export const DoughnutChart: NextPage<Props> = ({ tokens, geckoPriceList, balances }): JSX.Element => {
 	const { t } = useTranslation('home');
 	const [total, setTotal] = useState<number>(0);
 	const [chartData, setChartData] = useState<ChartData[]>([]);

@@ -1,3 +1,4 @@
+import { geckoMapping } from 'constants/coingeckoMapping';
 import { upgradeTokensList } from 'constants/upgradeConfig';
 import { colors } from 'enumerations/colors.enum';
 import { NextPage } from 'next';
@@ -21,18 +22,6 @@ export interface TokenData {
 	color: string;
 	dollarVal: number;
 }
-
-const geckoMapping: Record<string, string> = {
-	USDC: 'usd-coin',
-	MATIC: 'matic-network',
-	ETH: 'ethereum',
-	WBTC: 'wrapped-bitcoin',
-	DAI: 'dai',
-	RIC: 'richochet',
-	StIbAlluoETH: 'ethereum',
-	StIbAlluoBTC: 'wrapped-bitcoin',
-	StIbAlluoUSD: 'usd-coin',
-};
 
 const headerTitles = ['token', 'ricochet-balance', 'dollar-value'];
 
@@ -109,12 +98,7 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 						/> */}
 					</div>
 					<div className='flex justify-center my-4'>
-						<DoughnutChart
-							tokens={tokenList}
-							geckoPriceList={geckoPriceList}
-							balances={balances}
-							geckoMapping={geckoMapping}
-						/>
+						<DoughnutChart tokens={tokenList} geckoPriceList={geckoPriceList} balances={balances} />
 					</div>
 					<DataTable headers={headerTitles} rowData={tokenList} tableLoaderRows={6} />
 				</>

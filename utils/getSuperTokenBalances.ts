@@ -13,7 +13,6 @@ export const getSuperTokenBalances = (address: string) => {
 			functionName: 'balanceOf',
 			args: [address],
 		});
-		console.log({ balance });
 		return { balance, tokenAddress };
 	});
 	return Promise.all(requests).then((res: any) => {

@@ -120,7 +120,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 
 	return (
 		<>
-			<p className='text-primary-500 uppercase'>{t('your-positions')}</p>
+			<p className='text-primary-500 uppercase'>{t('your-streams')}</p>
 			<div className='flex flex-wrap items-center justify-between space-y-8 lg:space-y-0 mt-4'>
 				<form
 					id='new-position-form'
@@ -191,7 +191,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 					</Listbox>
 				</form>
 				<div className='w-full lg:w-1/2'>
-					<AreaGraph />
+					<AreaGraph from={from} to={to} />
 				</div>
 				<div className='flex space-x-4 w-full justify-end'>
 					<button type='button' className='text-slate-100 underline' onClick={() => setClose(!close)}>

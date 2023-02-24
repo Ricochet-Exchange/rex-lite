@@ -19,18 +19,9 @@ import { getSuperTokenBalances } from '@richochet/utils/getSuperTokenBalances';
 import { formatCurrency } from '@richochet/utils/helperFunctions';
 import Big, { BigSource } from 'big.js';
 import { ConnectKitButton } from 'connectkit';
+import { geckoMapping } from 'constants/coingeckoMapping';
 import { flowConfig, FlowEnum, FlowTypes, InvestmentFlow } from 'constants/flowConfig';
-import {
-	DAIxAddress,
-	MATICxAddress,
-	RICAddress,
-	StIbAlluoBTCAddress,
-	StIbAlluoETHAddress,
-	StIbAlluoUSDAddress,
-	USDCxAddress,
-	WBTCxAddress,
-	WETHxAddress
-} from 'constants/polygon_config';
+import { RICAddress } from 'constants/polygon_config';
 import { upgradeTokensList } from 'constants/upgradeConfig';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -49,30 +40,7 @@ export async function getStaticProps({ locale }: any): Promise<Object> {
 		},
 	};
 }
-const coingeckoIds = new Map<string, string>([
-	[DAIxAddress, 'dai'],
-	[USDCxAddress, 'usd-coin'],
-	[WETHxAddress, 'weth'],
-	[WBTCxAddress, 'wrapped-bitcoin'],
-	[MATICxAddress, 'matic-network'],
-	[RICAddress, 'richochet'],
-	// TODO: These prices need to be multiplied by the growingRatio
-	// from these contracts since 1 ibAlluoUSD > 1 USD
-	[StIbAlluoETHAddress, 'weth'],
-	[StIbAlluoUSDAddress, 'usd-coin'],
-	[StIbAlluoBTCAddress, 'wrapped-bitcoin'],
-]);
-const geckoMapping: Record<string, string> = {
-	USDC: 'usd-coin',
-	MATIC: 'matic-network',
-	ETH: 'ethereum',
-	WBTC: 'wrapped-bitcoin',
-	DAI: 'dai',
-	RIC: 'richochet',
-	StIbAlluoETH: 'ethereum',
-	StIbAlluoBTC: 'wrapped-bitcoin',
-	StIbAlluoUSD: 'usd-coin',
-};
+
 const exchangeContractsAddresses = flowConfig.map((f) => f.superToken);
 
 export default function Home({ locale }: any): JSX.Element {
