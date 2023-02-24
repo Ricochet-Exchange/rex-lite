@@ -7,8 +7,8 @@ import coingeckoApi from 'redux/slices/coingecko.slice';
 
 interface ChartData {
 	name: string;
+	y: string;
 	price: string;
-	amt: string;
 }
 
 interface Props {
@@ -16,6 +16,7 @@ interface Props {
 	to: Coin;
 }
 
+//Instead of these labels get the date from timestamp
 const labels = ['1 Month', '3 Weeks', '2 Weeks', '1 Week', 'Now'];
 
 // Get coingecko token history
@@ -25,18 +26,25 @@ export const AreaGraph: NextPage<Props> = ({ from, to }) => {
 	const [fromPrices, setFromPrices] = useState<string[] | undefined>([]);
 	const [chartData, setChartData] = useState<ChartData[]>([]);
 
-	const getEveryNthEl = (arr: string[], nth: number) => arr.filter((_, i) => i % nth === 0);
+	//set up board with aver
+	const getPriceRange = (prices: string[]) => {
+		//Sorted Array over time
+		const tSort = [...prices].sort((a, b) => +a[0] - +b[0]);
+		//Grabbing an element from t==0, 1 week, 2 week, 3 weeks, 1 month
+		//issue is this will only grab those values, we also want the highest price and lowest price of the month
+		const timeSorted = [tSort[0], tSort[7], tSort[14], tSort[21], tSort[tSort.length -1]]
+		//To Do, get 1 highest price and 1 Lowest price in tSort array, then push them into the timeSorted in the positions they should be in (time wise)
+		setFromPrices(timeSorted);
+	}
 
 	useEffect(() => {
 		if (from !== Coin.SELECT && to !== Coin.SELECT) {
 			const priceMap: Map<string, string[]> = new Map();
 			const tokenIds = [geckoMapping[from], geckoMapping[to]];
 			const tokenHistory = tokenIds.map(async (token) => await coingeckoHistoryTrigger(token));
-			console.log({ tokenHistory });
 			Promise.all(tokenHistory).then((tokenHistory) => {
 				tokenHistory.forEach((history) => {
 					if (!history) return;
-					console.log({ history });
 					priceMap.set(history?.originalArgs!, history?.data.prices);
 				});
 				setCoingeckoHistory(priceMap);
@@ -44,12 +52,14 @@ export const AreaGraph: NextPage<Props> = ({ from, to }) => {
 		}
 	}, [from, to]);
 
+	//Set Y axis as non USD value token
 	useEffect(() => {
 		if (coingeckoHistory.size !== 0) {
-			console.log(coingeckoHistory, 'history');
-			if (from === Coin.USDC || to === Coin.USDC || from === Coin.DAI || to === Coin.DAI) {
-				setFromPrices(coingeckoHistory.get(geckoMapping[from]));
-				console.log({ fromPrices });
+			if (from === Coin.USDC || from === Coin.DAI) {
+				getPriceRange(coingeckoHistory.get(geckoMapping[to])!)
+			}
+			if (to === Coin.USDC || to === Coin.DAI) {
+				getPriceRange(coingeckoHistory.get(geckoMapping[from])!)
 			}
 		}
 	}, [coingeckoHistory, from, to]);
@@ -58,30 +68,27 @@ export const AreaGraph: NextPage<Props> = ({ from, to }) => {
 		if (fromPrices && fromPrices.length) {
 			const data: ChartData[] = [];
 			labels.map((label, i) => {
+				console.log(i, fromPrices[i], 'test')
 				data.push({
 					name: label,
-					price: fromPrices[i][1],
-					amt: getEveryNthEl(fromPrices, 7)[i][1], //blue stuff
+					y: fromPrices[i][1],
+					price: fromPrices[i][1]
 				});
 			});
 			setChartData(data);
-			console.log({ chartData });
 		}
 	}, [fromPrices]);
-	//Check what USD or DAI is from or to
-	//Set the USD as the Y axis
-	//const labels string []= ['1 Month', '3 Weeks', '2 Weeks', '1 Week', 'Now'];
-	//const price string []= USD min and max in array
-	//const amt string []= Get the array items history[0][1], history[7][1], history[14][1], history[21][1], history[28][1] for the other token
 
 	return (
 		<div className='h-52 min-h-full w-52 min-w-full'>
 			<ResponsiveContainer height='100%' width='100%'>
 				<AreaChart data={chartData}>
-					<XAxis dataKey='name' />
-					<YAxis dataKey='price' />
+					{/* Add label called time */}
+					<XAxis dataKey='name'/>
+					{/* Add label called price and instead of grabbing from 0 to max price, start from lowest price in range - 10% */}
+					<YAxis dataKey='y'/>
 					<Tooltip />
-					<Area type='monotone' dataKey='amt' stroke='#81a8ce' fill='#81a8ce' />
+					<Area type='monotone' dataKey='price' stroke='#81a8ce' fill='#81a8ce' />
 				</AreaChart>
 			</ResponsiveContainer>
 		</div>
