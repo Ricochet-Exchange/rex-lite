@@ -75,11 +75,7 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 				</div>
 				{!edit && (
 					<div className='w-full md:w-1/2'>
-						<AreaGraph from={position.coinA} to={position.coinB} />
-						<p className='text-slate-100 my-2'>
-							<span className='text-slate-400'>{t('average-buy-price')}:</span> 1 {position.coinB} ={' '}
-							{position.avgBuy.toFixed(3)} {position.coinA}
-						</p>
+						<AreaGraph from={position.coinA} to={position.coinB} position={position} />
 						{/* <div>
 							<span className='text-slate-400'>
 								{t('average-buy-price')} &#62;&#60; {t('current-price')}:{' '}

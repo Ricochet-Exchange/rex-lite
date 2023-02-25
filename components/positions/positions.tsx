@@ -27,7 +27,6 @@ export interface PositionData extends InvestmentFlow {
 	input: number;
 	output: string;
 	avgPrice: string;
-	avgBuy: number;
 }
 
 interface Props {
@@ -178,9 +177,6 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 							day: 'numeric',
 						}),
 						avgPrice: r?.sushiPrice || '0',
-						avgBuy:
-							queries.get(r?.position?.flowKey)?.streamedSoFar! /
-							parseFloat(queries.get(r?.position?.flowKey)?.placeholder!),
 					});
 				});
 				setPositionList(positions);
