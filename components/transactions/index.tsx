@@ -156,7 +156,7 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 					if (hasApprove) {
 						const bigNumberAmount = ethers.BigNumber.from(amount).toString();
 						setIsLoading(true);
-						const upgrade = upgradeTrigger({ value: bigNumberAmount, tokenAddress: upgradeConfig?.tokenAddress! });
+						const upgrade = upgradeTrigger({ value: bigNumberAmount, tokenAddress: upgradeConfig?.superTokenAddress! });
 						console.log({ upgrade });
 						upgrade
 							.then((response: any) => {
