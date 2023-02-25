@@ -48,10 +48,16 @@ export const AreaGraph: NextPage<Props> = ({ from, to, position }) => {
 	};
 
 	const toNiceDate = (date: string) => {
-		let x = new Date(date).toLocaleDateString('en-us', {
-			month: 'short',
-			day: 'numeric',
-		});
+		let x =
+			date !== 'auto'
+				? new Date(date).toLocaleDateString('en-us', {
+						month: 'short',
+						day: 'numeric',
+				  })
+				: new Date().toLocaleDateString('en-us', {
+						month: 'short',
+						day: 'numeric',
+				  });
 		return x;
 	};
 
