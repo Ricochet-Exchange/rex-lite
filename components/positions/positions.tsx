@@ -144,7 +144,7 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 		});
 	}, [address, isConnected]);
 	useEffect(() => {
-		if (isConnected && queries.size > 0 && positions.length > 0) {
+		if (address && isConnected && queries.size > 0 && positions.length > 0) {
 			const streamEnds = computeStreamEnds(queries, balances);
 			const avgPrices = positions.map(async (position) => {
 				const sushiPrice = await querySushiPoolPrices(sushiSwapPools[`${position.coinA}-${position.coinB}`]).then(
@@ -182,7 +182,7 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 				setPositionList(positions);
 			});
 		}
-	}, [isConnected, queries, balances, positions]);
+	}, [address, isConnected, queries, balances, positions]);
 	return (
 		<>
 			{newPosition && (

@@ -72,8 +72,9 @@ export const AreaGraph: NextPage<Props> = ({ from, to, position }) => {
 
 	useEffect(() => {
 		if (from !== Coin.SELECT && to !== Coin.SELECT) {
-			const priceMap: Map<string, string[]> = new Map();
 			const tokenIds = [geckoMapping[from], geckoMapping[to]];
+			console.log({ tokenIds });
+			const priceMap: Map<string, string[]> = new Map();
 			const tokenHistory = tokenIds.map(async (token) => await coingeckoHistoryTrigger(token));
 			Promise.all(tokenHistory).then((tokenHistory) => {
 				tokenHistory.forEach((history) => {
@@ -88,10 +89,10 @@ export const AreaGraph: NextPage<Props> = ({ from, to, position }) => {
 	//Set Y axis as non USD value token
 	useEffect(() => {
 		if (coingeckoHistory.size !== 0) {
-			if (from === Coin.USDC || from === Coin.DAI) {
+			if (from === Coin.USDC || from === Coin.IbAlluoUSD || from === Coin.StIbAlluoUSD || from === Coin.DAI) {
 				getPriceRange(coingeckoHistory.get(geckoMapping[to])!);
 			}
-			if (to === Coin.USDC || to === Coin.DAI) {
+			if (to === Coin.USDC || to === Coin.IbAlluoUSD || to === Coin.StIbAlluoUSD || to === Coin.DAI) {
 				getPriceRange(coingeckoHistory.get(geckoMapping[from])!);
 			}
 		}

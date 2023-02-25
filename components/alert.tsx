@@ -33,7 +33,7 @@ export const Alert = () => {
 			leave='transition-opacity duration-150'
 			leaveFrom='opacity-100'
 			leaveTo='opacity-0'>
-			<div className='max-w-full'>
+			<div className='max-w-full z-30'>
 				<div
 					className={combineClasses(
 						alertType === AlertTypes.INFO
