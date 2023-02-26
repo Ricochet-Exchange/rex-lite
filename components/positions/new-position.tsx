@@ -1,9 +1,10 @@
 import { Listbox, Transition } from '@headlessui/react';
 import { ArrowLongRightIcon, CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid';
 import AlertAction from '@richochet/utils/alertAction';
+import { getCoingeckoPairs } from '@richochet/utils/getCoingeckoPairs';
 import { getShareScaler } from '@richochet/utils/getShareScaler';
 import { Coin } from 'constants/coins';
-import { flowConfig, FlowTypes } from 'constants/flowConfig';
+import { flowConfig, FlowTypes, InvestmentFlow } from 'constants/flowConfig';
 import { AlertContext } from 'contexts/AlertContext';
 import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
 import { NextPage } from 'next';
@@ -28,6 +29,8 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	const [coinsTo, SetCoinsTo] = useState<Coin[]>(
 		flowConfig.map((flow) => flow.coinB).filter((coin, index, self) => self.indexOf(coin) === index)
 	);
+	const [position, setPosition] = useState<InvestmentFlow>();
+	const [coingeckoPairs, setCoingeckoPairs] = useState<Map<string, Coin[]>>(new Map());
 	const [from, setFrom] = useState<Coin>(Coin.SELECT);
 	const [to, setTo] = useState<Coin>(Coin.SELECT);
 	const [amount, setAmount] = useState<string>('0');
@@ -66,15 +69,28 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 		}
 	}, [to]);
 
+	useEffect(() => {
+		if (from !== Coin.SELECT && to !== Coin.SELECT) {
+			const config = flowConfig.find((flow) => flow.coinA === from && flow.coinB === to);
+			setPosition(config);
+		}
+	}, [from, to]);
+
+	useEffect(() => {
+		if (position) {
+			const pairs = getCoingeckoPairs([position]);
+			setCoingeckoPairs(pairs);
+		}
+	}, [position]);
+
 	const handleSubmit = (event: any) => {
 		event?.preventDefault();
-		if (to !== Coin.SELECT && from !== Coin.SELECT) {
+		if (from !== Coin.SELECT && to !== Coin.SELECT) {
 			//to do: figure out how to pass down the correct values.
-			const config = flowConfig.find((flow) => flow.coinA === from && flow.coinB === to);
-			if (config) {
-				console.log({ config });
-				const exchangeKey = config?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
-				fetchShareScaler(exchangeKey, config.tokenA, config.tokenB)
+			if (position) {
+				console.log({ position });
+				const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
+				fetchShareScaler(exchangeKey, position.tokenA, position.tokenB)
 					.then((res) => {
 						setShareScaler(res);
 						// Need to call hook here to start a new stream.
@@ -82,14 +98,14 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 						dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
 						if (shareScaler) {
 							const newAmount =
-								config?.type === FlowTypes.market
+								position?.type === FlowTypes.market
 									? (
 											((Math.floor(((parseFloat(amount) / 2592000) * 1e18) / shareScaler) * shareScaler) / 1e18) *
 											2592000
 									  ).toString()
 									: amount;
-							console.log({ newAmount, config });
-							const stream = startStreamTrigger({ amount: newAmount, config });
+							console.log({ newAmount, position });
+							const stream = startStreamTrigger({ amount: newAmount, config: position });
 							stream
 								.then((response) => {
 									if (response.isSuccess) {
@@ -191,7 +207,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 					</Listbox>
 				</form>
 				<div className='w-full lg:w-1/2'>
-					<AreaGraph from={from} to={to} />
+					<AreaGraph pairs={coingeckoPairs} />
 				</div>
 				<div className='flex space-x-4 w-full justify-end'>
 					<button type='button' className='text-slate-100 underline' onClick={() => setClose(!close)}>

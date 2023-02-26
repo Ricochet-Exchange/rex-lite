@@ -1,11 +1,15 @@
 import { PlusSmallIcon } from '@heroicons/react/24/solid';
+import { useCoingeckoPairs } from '@richochet/hooks/useCoingeckoPairs';
 import { useCoingeckoPrices } from '@richochet/hooks/useCoingeckoPrices';
+import { useTokenHistory } from '@richochet/hooks/useTokenHistory';
 import { getPersonalFlowUSDValue } from '@richochet/utils/getFlowUsdValue';
+import { getPriceRange } from '@richochet/utils/getPriceRange';
 import { polygon } from '@wagmi/chains';
 import { fetchBalance } from '@wagmi/core';
+import { geckoMapping } from 'constants/coingeckoMapping';
+import { Coin } from 'constants/coins';
 import { flowConfig, FlowEnum, InvestmentFlow } from 'constants/flowConfig';
 import { tokenArray } from 'constants/polygon_config';
-import { sushiSwapPools } from 'constants/poolAddresses';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { useEffect, useState } from 'react';
@@ -19,14 +23,15 @@ import { ViewPosition } from './view-position';
 
 export interface PositionData extends InvestmentFlow {
 	positions: number;
-	timeLeft: number;
-	endDate: string;
+	// timeLeft: number;
+	// endDate: string;
 	rateUsdValue: string;
 	streamedUsdValue: string;
-	feePercent: string;
+	// feePercent: string;
 	input: number;
 	output: string;
-	avgPrice: string;
+	// avgPrice: string;
+	avgBuyPrice: string;
 }
 
 interface Props {
@@ -46,7 +51,7 @@ interface Props {
 	>;
 }
 
-const positionTitles = ['your markets', 'total streamed', 'stream rate'];
+const positionTitles = ['your markets', 'average buy price', 'stream rate', 'total streamed'];
 
 export const Positions: NextPage<Props> = ({ positions, queries }) => {
 	const { t } = useTranslation('home');
@@ -54,6 +59,9 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 	const [balances, setBalances] = useState<Map<string, string>>(new Map());
 	const [newPosition, newPositionClosed] = useState(true);
 	const coingeckoPrices = useCoingeckoPrices();
+	const coingeckoPairs = useCoingeckoPairs(positions);
+	const history = useTokenHistory(coingeckoPairs);
+	const [minMax, setMinMax] = useState<string[][]>([['0', '0']]);
 	const [selectedPosition, setSelectedPosition] = useState<PositionData>();
 	const [closePosition, setClosePosition] = useState(true);
 	const { address, isConnected } = useAccount();
@@ -129,6 +137,37 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 		};
 	};
 	useEffect(() => {
+		if (history.size > 0 && coingeckoPairs.size > 0) {
+			const minMaxArr = [];
+			for (const [key, value] of coingeckoPairs) {
+				if (
+					value[0] === Coin.USDC ||
+					value[0] === Coin.IbAlluoUSD ||
+					value[0] === Coin.StIbAlluoUSD ||
+					value[0] === Coin.DAI
+				) {
+					const { priceSorted } = getPriceRange(history.get(geckoMapping[value[1]])!);
+					if (priceSorted.length) {
+						minMaxArr.push([priceSorted[0][1], priceSorted[priceSorted.length - 1][1]]);
+						setMinMax(minMaxArr);
+					}
+				}
+				if (
+					value[1] === Coin.USDC ||
+					value[1] === Coin.IbAlluoUSD ||
+					value[1] === Coin.StIbAlluoUSD ||
+					value[1] === Coin.DAI
+				) {
+					const { priceSorted } = getPriceRange(history.get(geckoMapping[value[0]])!);
+					if (priceSorted.length) {
+						minMaxArr.push([priceSorted[0][1], priceSorted[priceSorted.length - 1][1]]);
+						setMinMax(minMaxArr);
+					}
+				}
+			}
+		}
+	}, [history, coingeckoPairs]);
+	useEffect(() => {
 		const currBalances = tokenArray.map(async (token) => {
 			const balance = await fetchBalance({
 				address: address!,
@@ -144,45 +183,46 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 		});
 	}, [address, isConnected]);
 	useEffect(() => {
-		if (address && isConnected && queries.size > 0 && positions.length > 0) {
-			const streamEnds = computeStreamEnds(queries, balances);
-			const avgPrices = positions.map(async (position) => {
-				const sushiPrice = await querySushiPoolPrices(sushiSwapPools[`${position.coinA}-${position.coinB}`]).then(
-					(res: any) => res?.data?.data?.pair?.token0Price
-				);
-				return { position, sushiPrice };
-			});
-			Promise.all(avgPrices).then((res) => {
-				const positions: PositionData[] = [];
-				res.map((r) => {
-					const timeLeft = getTimeRemaining(streamEnds.get(r?.position?.flowKey)!);
-					positions.push({
-						...r?.position,
-						positions: queries.get(r?.position?.flowKey)?.totalFlows || 0,
-						rateUsdValue: getPersonalFlowUSDValue(
-							queries.get(r?.position?.flowKey)?.placeholder!,
-							coingeckoPrices.get(r?.position?.tokenA)!
-						),
-						streamedUsdValue: getPersonalFlowUSDValue(
-							queries.get(r?.position?.flowKey)?.streamedSoFar?.toFixed(0)!,
-							coingeckoPrices.get(r?.position?.tokenA)!
-						),
-						input: queries.get(r?.position?.flowKey)?.streamedSoFar || 0,
-						output: queries.get(r?.position?.flowKey)?.placeholder!,
-						feePercent: r?.position?.coinA.includes('IbAlluo') ? '0.5%' : '2%',
-						timeLeft: timeLeft.days,
-						endDate: new Date(streamEnds.get(r?.position?.flowKey)!).toLocaleDateString('en-us', {
-							year: 'numeric',
-							month: 'long',
-							day: 'numeric',
-						}),
-						avgPrice: r?.sushiPrice || '0',
-					});
+		if (address && isConnected && queries.size > 0 && positions.length > 0 && minMax.length > 1) {
+			// const streamEnds = computeStreamEnds(queries, balances);
+			// const avgPrices = positions.map(async (position) => {
+			// 	const sushiPrice = await querySushiPoolPrices(sushiSwapPools[`${position.coinA}-${position.coinB}`]).then(
+			// 		(res: any) => res?.data?.data?.pair?.token0Price
+			// 	);
+			// 	return { position, sushiPrice };
+			// });
+			// Promise.all(avgPrices).then((res) => {
+			const positionss: PositionData[] = [];
+			positions.map((position, i) => {
+				// const timeLeft = getTimeRemaining(streamEnds.get(r?.position?.flowKey)!);
+				positionss.push({
+					...position,
+					positions: queries.get(position?.flowKey)?.totalFlows || 0,
+					rateUsdValue: getPersonalFlowUSDValue(
+						queries.get(position?.flowKey)?.placeholder!,
+						coingeckoPrices.get(position?.tokenA)!
+					),
+					streamedUsdValue: getPersonalFlowUSDValue(
+						queries.get(position?.flowKey)?.streamedSoFar?.toFixed(0)!,
+						coingeckoPrices.get(position?.tokenA)!
+					),
+					input: queries.get(position?.flowKey)?.streamedSoFar || 0,
+					output: queries.get(position?.flowKey)?.placeholder!,
+					// feePercent: position.coinA.includes('IbAlluo') ? '0.5%' : '2%',
+					// timeLeft: timeLeft.days,
+					// endDate: new Date(streamEnds.get(r?.position?.flowKey)!).toLocaleDateString('en-us', {
+					// 	year: 'numeric',
+					// 	month: 'long',
+					// 	day: 'numeric',
+					// }),
+					avgBuyPrice: ((+minMax[i][0] + +minMax[i][1]) / 2).toFixed(3),
+					// avgPrice: r?.sushiPrice || '0',
 				});
-				setPositionList(positions);
 			});
+			setPositionList(positionss);
+			// });
 		}
-	}, [address, isConnected, queries, balances, positions]);
+	}, [address, isConnected, minMax, positions]);
 	return (
 		<>
 			{newPosition && (
@@ -202,18 +242,21 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 							</>
 						}
 					/>
-					{closePosition && (
-						<DataTable
-							headers={positionTitles}
-							rowData={positionList}
-							tableLoaderRows={12}
-							selectable={true}
-							selectData={(data: PositionData) => {
-								setSelectedPosition(data);
-								setClosePosition(false);
-							}}
-						/>
-					)}
+					{closePosition &&
+						(!positionList.length ? (
+							<p className='italic'>{t('no-positions')}...</p>
+						) : (
+							<DataTable
+								headers={positionTitles}
+								rowData={positionList}
+								tableLoaderRows={12}
+								selectable={true}
+								selectData={(data: PositionData) => {
+									setSelectedPosition(data);
+									setClosePosition(false);
+								}}
+							/>
+						))}
 					{!closePosition && (
 						<ViewPosition close={closePosition} setClose={setClosePosition} position={selectedPosition!} />
 					)}

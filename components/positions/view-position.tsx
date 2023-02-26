@@ -1,3 +1,4 @@
+import { useCoingeckoPairs } from '@richochet/hooks/useCoingeckoPairs';
 import { combineClasses, formatCurrency } from '@richochet/utils/helperFunctions';
 import { geckoMapping } from 'constants/coingeckoMapping';
 import { NextPage } from 'next';
@@ -19,6 +20,7 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 	const { t } = useTranslation('home');
 	const [edit, setEdit] = useState(false);
 	const [usdPrice, setUsdPrice] = useState<number>(0);
+	const coingeckoPairs = useCoingeckoPairs([position]);
 	const {
 		data: tokenPrice,
 		isLoading: tokenPriceIsLoading,
@@ -59,7 +61,7 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 						<CoinChange coinA={position.coinA} coinB={position.coinB} type={DataType.ViewPosition} />
 					</span>
 					<p className='text-slate-100 my-2'>
-						<span className='text-slate-400'>{t('total-streaming')}:</span> {position.input.toFixed(3)} {position.coinA}
+						<span className='text-slate-400'>{t('total-streamed')}:</span> {position.input.toFixed(3)} {position.coinA}
 						x ({formatCurrency(parseFloat(position.streamedUsdValue))})
 					</p>
 					<p className='text-slate-100 my-2'>
@@ -75,7 +77,7 @@ export const ViewPosition: NextPage<Props> = ({ setClose, position }) => {
 				</div>
 				{!edit && (
 					<div className='w-full md:w-1/2'>
-						<AreaGraph from={position.coinA} to={position.coinB} position={position} />
+						<AreaGraph pairs={coingeckoPairs} position={position} />
 						{/* <div>
 							<span className='text-slate-400'>
 								{t('average-buy-price')} &#62;&#60; {t('current-price')}:{' '}

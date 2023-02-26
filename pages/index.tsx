@@ -48,7 +48,8 @@ export default function Home({ locale }: any): JSX.Element {
 	const { t } = useTranslation('home');
 	const { address, isConnected } = useAccount();
 	const [usdPrice, setUsdPrice] = useState<Big>(new Big(0));
-	const [usdFlowRate, setUsdFlowRate] = useState<string>();
+	const [usdFlowRate, setUsdFlowRate] = useState<string>('0');
+	const [usdFlowRateLoading, setUsdFlowRateLoading] = useState<boolean>(false);
 	const provider = useProvider({ chainId: polygon.id });
 	const {
 		data: tokenPrice,
@@ -83,6 +84,7 @@ export default function Home({ locale }: any): JSX.Element {
 	const [sortedList, setSortedList] = useState<InvestmentFlow[]>([]);
 	const [positions, setPositions] = useState<InvestmentFlow[]>([]);
 	const [positionTotal, setPositionTotal] = useState<number>(0);
+	const [positionTotalLoading, setpositionTotalLoading] = useState<boolean>(false);
 	const [results, setResults] = useState<{ flowsOwned: Flow[]; flowsReceived: Flow[] }[]>([]);
 	const coingeckoPrices = useCoingeckoPrices();
 	const [queryFlows] = superfluidSubgraphApi.useQueryFlowsMutation();
@@ -97,7 +99,7 @@ export default function Home({ locale }: any): JSX.Element {
 			async (addr) => await queryFlows(addr).then((res: any) => res?.data?.data?.account)
 		);
 		Promise.all(results).then((res) => setResults(res));
-	}, [isMounted, isConnected]);
+	}, [isMounted, address, isConnected]);
 
 	const getStreams = (streams: any[], streamedSoFarMap: Record<string, number>) => {
 		(streams || []).forEach((stream: any) => {
@@ -149,7 +151,7 @@ export default function Home({ locale }: any): JSX.Element {
 				receivedSoFar?: number;
 			}
 		> = new Map();
-		if (flows.size !== 0) {
+		if (flows.size > 0) {
 			for (const [key, value] of Object.entries(FlowEnum)) {
 				flowQueries.set(value, buildFlowQuery(value, address!, flows, streamedSoFarMap, receivedSoFarMap));
 			}
@@ -169,18 +171,19 @@ export default function Home({ locale }: any): JSX.Element {
 
 	useEffect(() => {
 		if (results.length > 0) sweepQueryFlows();
-	}, [results]);
+	}, [results, address]);
 
 	useEffect(() => {
 		if (isConnected) {
 			const positions = flowConfig.filter(({ flowKey }) => parseFloat(queries.get(flowKey)?.placeholder!) > 0);
 			setPositions(positions);
 		}
-	}, [queries, isConnected]);
+	}, [queries, address, isConnected]);
 
 	useEffect(() => {
 		if (isConnected && tokensIsError) console.error(tokensError);
 		if (isConnected && tokensIsSuccess) {
+			setpositionTotalLoading(true);
 			const totalInPositions = upgradeTokensList.reduce((total, token) => {
 				const balancess =
 					Object.keys(balanceList).length &&
@@ -194,8 +197,9 @@ export default function Home({ locale }: any): JSX.Element {
 				return total + parseFloat(balancess as any);
 			}, 0);
 			setPositionTotal(totalInPositions);
+			setpositionTotalLoading(false);
 		}
-	}, [isConnected, balanceList, tokens, tokensIsSuccess]);
+	}, [isConnected, address, balanceList, tokens, tokensIsSuccess]);
 
 	useEffect(() => {
 		if (coingeckoPrices.size > 0 && queries.size > 0) {
@@ -216,31 +220,36 @@ export default function Home({ locale }: any): JSX.Element {
 		if (tokenPriceIsError) {
 			console.error(tokenPriceError);
 		}
-	}, [isConnected, tokenPrice, tokenPriceIsSuccess]);
+	}, [isConnected, address, tokenPrice, tokenPriceIsSuccess]);
 
 	const getNetFlowRate = async () => {
-		await getSFFramework().then(async (framework) => {
-			if (positions.length > 0) {
-				const flowRates = positions.map(
-					async (position) =>
-						await framework.cfaV1.getNetFlow({
-							superToken: position.tokenA,
-							account: address!,
-							providerOrSigner: provider,
-						})
-				);
-				Promise.all(flowRates).then((rates) => {
-					const totalRate = rates.reduce((acc, curr) => acc + parseFloat(curr), 0).toFixed(0);
-					const flowRateBigNumber = new Big(totalRate);
-					const usdFlowRate = flowRateBigNumber
-						.times(new Big('2592000'))
-						.div(new Big('10e17'))
-						.times(usdPrice as BigSource)
-						.toFixed(0);
-					setUsdFlowRate(usdFlowRate);
-				});
-			}
-		});
+		setUsdFlowRateLoading(true);
+		await getSFFramework()
+			.then(async (framework) => {
+				if (positions.length > 0) {
+					const flowRates = positions.map(
+						async (position) =>
+							await framework.cfaV1.getNetFlow({
+								superToken: position.tokenA,
+								account: address!,
+								providerOrSigner: provider,
+							})
+					);
+					Promise.all(flowRates).then((rates) => {
+						const totalRate = rates.reduce((acc, curr) => acc + parseFloat(curr), 0).toFixed(0);
+						const flowRateBigNumber = new Big(totalRate);
+						const usdFlowRate = flowRateBigNumber
+							.times(new Big('2592000'))
+							.div(new Big('10e17'))
+							.times(usdPrice as BigSource)
+							.toFixed(0);
+						setUsdFlowRate(usdFlowRate);
+						setUsdFlowRateLoading(false);
+					});
+				}
+				setUsdFlowRateLoading(false);
+			})
+			.catch((e) => setUsdFlowRateLoading(false));
 	};
 	useEffect(() => {
 		if (isConnected && usdPrice) {
@@ -272,12 +281,12 @@ export default function Home({ locale }: any): JSX.Element {
 											<h6 className='font-light uppercase tracking-widest text-primary-500 mb-2'>
 												{t('total-in-positions')}
 											</h6>
-											{!positionTotal && (
+											{positionTotalLoading && !positionTotal && (
 												<div className='animate-pulse'>
 													<div className='h-4 rounded bg-slate-700'></div>
 												</div>
 											)}
-											{positionTotal && (
+											{(positionTotal || positionTotal === 0) && (
 												<p className='text-slate-100 font-light text-2xl'>{formatCurrency(positionTotal)}</p>
 											)}
 										</>
@@ -289,7 +298,7 @@ export default function Home({ locale }: any): JSX.Element {
 											<h6 className='font-light uppercase tracking-widest text-primary-500 mb-2'>
 												{t('net-flow-rate')}
 											</h6>
-											{!usdFlowRate && (
+											{usdFlowRateLoading && !usdFlowRate && (
 												<div className='animate-pulse'>
 													<div className='h-4 rounded bg-slate-700'></div>
 												</div>

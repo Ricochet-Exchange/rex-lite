@@ -1,3 +1,5 @@
+import { useTokenHistory } from '@richochet/hooks/useTokenHistory';
+import { getPriceRange } from '@richochet/utils/getPriceRange';
 import { formatCurrency } from '@richochet/utils/helperFunctions';
 import { geckoMapping } from 'constants/coingeckoMapping';
 import { Coin } from 'constants/coins';
@@ -5,17 +7,14 @@ import { NextPage } from 'next';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import coingeckoApi from 'redux/slices/coingecko.slice';
 import { PositionData } from '../positions';
 interface ChartData {
 	name: string;
-	y: string;
 	price: string;
 }
 
 interface Props {
-	from: Coin;
-	to: Coin;
+	pairs: Map<string, Coin[]>;
 	position?: PositionData;
 }
 
@@ -23,29 +22,13 @@ interface Props {
 // const labels = ['1 Month', '3 Weeks', '2 Weeks', '1 Week', 'Now'];
 
 // Get coingecko token history
-export const AreaGraph: NextPage<Props> = ({ from, to, position }) => {
+export const AreaGraph: NextPage<Props> = ({ pairs, position }) => {
 	const { t } = useTranslation('home');
-	const [coingeckoHistoryTrigger] = coingeckoApi.useLazyGetTokenHistoryQuery();
-	const [coingeckoHistory, setCoingeckoHistory] = useState<Map<string, string[]>>(new Map());
+	const history = useTokenHistory(pairs);
 	const [fromPrices, setFromPrices] = useState<string[] | undefined>([]);
 	const [chartData, setChartData] = useState<ChartData[]>([]);
 	const [labels, setLabels] = useState<string[]>([]);
 	const [minMax, setMinMax] = useState<string[]>(['0', '0']);
-
-	//set up board with aver
-	const getPriceRange = (prices: string[]) => {
-		if (!prices || !prices.length) return;
-		//Sorted Array over time
-		const tSort = [...prices].sort((a, b) => +a[0] - +b[0]);
-		const priceSorted = [...tSort].sort((a, b) => +a[1] - +b[1]);
-		setMinMax([priceSorted[0][1], priceSorted[priceSorted.length - 1][1]]);
-		console.log(priceSorted[0]);
-		//Grabbing an element from t==0, 1 week, 2 week, 3 weeks, 1 month
-		//issue is this will only grab those values, we also want the highest price and lowest price of the month
-		// const timeSorted = [tSort[0], tSort[7], tSort[14], tSort[21], tSort[tSort.length - 1]];
-		//To Do, get 1 highest price and 1 Lowest price in tSort array, then push them into the timeSorted in the positions they should be in (time wise)
-		setFromPrices(tSort);
-	};
 
 	const toNiceDate = (date: string) => {
 		let x =
@@ -70,33 +53,45 @@ export const AreaGraph: NextPage<Props> = ({ from, to, position }) => {
 		setLabels(dates);
 	};
 
-	useEffect(() => {
-		if (from !== Coin.SELECT && to !== Coin.SELECT) {
-			const tokenIds = [geckoMapping[from], geckoMapping[to]];
-			console.log({ tokenIds });
-			const priceMap: Map<string, string[]> = new Map();
-			const tokenHistory = tokenIds.map(async (token) => await coingeckoHistoryTrigger(token));
-			Promise.all(tokenHistory).then((tokenHistory) => {
-				tokenHistory.forEach((history) => {
-					if (!history) return;
-					priceMap.set(history?.originalArgs!, history?.data.prices);
-				});
-				setCoingeckoHistory(priceMap);
-			});
-		}
-	}, [from, to]);
-
 	//Set Y axis as non USD value token
 	useEffect(() => {
-		if (coingeckoHistory.size !== 0) {
-			if (from === Coin.USDC || from === Coin.IbAlluoUSD || from === Coin.StIbAlluoUSD || from === Coin.DAI) {
-				getPriceRange(coingeckoHistory.get(geckoMapping[to])!);
-			}
-			if (to === Coin.USDC || to === Coin.IbAlluoUSD || to === Coin.StIbAlluoUSD || to === Coin.DAI) {
-				getPriceRange(coingeckoHistory.get(geckoMapping[from])!);
+		if (history.size > 0 && pairs.size > 0) {
+			for (const [key, value] of pairs) {
+				if (
+					value[0] === Coin.USDC ||
+					value[0] === Coin.IbAlluoUSD ||
+					value[0] === Coin.StIbAlluoUSD ||
+					value[0] === Coin.DAI
+				) {
+					const { tSort, priceSorted } = getPriceRange(history.get(geckoMapping[value[1]])!);
+					if (priceSorted.length && tSort.length) {
+						setMinMax([priceSorted[0][1], priceSorted[priceSorted.length - 1][1]]);
+						//Grabbing an element from t==0, 1 week, 2 week, 3 weeks, 1 month
+						//issue is this will only grab those values, we also want the highest price and lowest price of the month
+						// const timeSorted = [tSort[0], tSort[7], tSort[14], tSort[21], tSort[tSort.length - 1]];
+						//To Do, get 1 highest price and 1 Lowest price in tSort array, then push them into the timeSorted in the positions they should be in (time wise)
+						setFromPrices(tSort);
+					}
+				}
+				if (
+					value[1] === Coin.USDC ||
+					value[1] === Coin.IbAlluoUSD ||
+					value[1] === Coin.StIbAlluoUSD ||
+					value[1] === Coin.DAI
+				) {
+					const { tSort, priceSorted } = getPriceRange(history.get(geckoMapping[value[0]])!);
+					if (priceSorted.length && tSort.length) {
+						setMinMax([priceSorted[0][1], priceSorted[priceSorted.length - 1][1]]);
+						//Grabbing an element from t==0, 1 week, 2 week, 3 weeks, 1 month
+						//issue is this will only grab those values, we also want the highest price and lowest price of the month
+						// const timeSorted = [tSort[0], tSort[7], tSort[14], tSort[21], tSort[tSort.length - 1]];
+						//To Do, get 1 highest price and 1 Lowest price in tSort array, then push them into the timeSorted in the positions they should be in (time wise)
+						setFromPrices(tSort);
+					}
+				}
 			}
 		}
-	}, [coingeckoHistory, from, to]);
+	}, [history, pairs]);
 
 	useEffect(() => {
 		if (fromPrices && fromPrices.length) {
@@ -108,16 +103,14 @@ export const AreaGraph: NextPage<Props> = ({ from, to, position }) => {
 		if (fromPrices && fromPrices.length && labels.length) {
 			const data: ChartData[] = [];
 			labels.map((label, i) => {
-				// console.log(i, fromPrices[i], 'test');
 				data.push({
 					name: label,
-					y: fromPrices[i][1],
 					price: fromPrices[i][1],
 				});
 			});
 			setChartData(data);
 		}
-	}, [labels]);
+	}, [labels, fromPrices]);
 
 	return (
 		<>
@@ -147,7 +140,7 @@ export const AreaGraph: NextPage<Props> = ({ from, to, position }) => {
 				</ResponsiveContainer>
 			</div>
 			{position && (
-				<p className='text-slate-100 my-2'>
+				<p className='text-slate-100 my-2 pl-14'>
 					<span className='text-slate-400'>{t('average-buy-price')}:</span> 1 {position.coinB} ={' '}
 					{((+minMax[0] + +minMax[1]) / 2).toFixed(3)} {position.coinA}
 				</p>
