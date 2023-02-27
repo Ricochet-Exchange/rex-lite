@@ -1,9 +1,20 @@
 import AlertAction from '@richochet/utils/alertAction';
+import { checkForApproval } from '@richochet/utils/checkForApproval';
+import { getShareScaler } from '@richochet/utils/getShareScaler';
+import { getSuperTokenBalances } from '@richochet/utils/getSuperTokenBalances';
+import { polygon } from '@wagmi/chains';
+import { fetchBalance } from '@wagmi/core';
+import { Coin } from 'constants/coins';
+import { FlowTypes, InvestmentFlow } from 'constants/flowConfig';
+import { upgradeTokensList } from 'constants/upgradeConfig';
 import { AlertContext } from 'contexts/AlertContext';
+import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
+import { ethers } from 'ethers';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import streamApi from 'redux/slices/streams.slice';
+import { useAccount } from 'wagmi';
 import { OutlineButton, RoundedButton } from '../button';
 import { PositionData } from './positions';
 
@@ -12,14 +23,165 @@ interface Props {
 	position: PositionData;
 }
 
+enum Action {
+	none = '',
+	change = 'change',
+	deposit = 'deposit',
+}
+
 export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 	const { t } = useTranslation('home');
-	const [action, setAction] = useState('');
+	const { address } = useAccount();
+	const [upgradeConfig, setUpgradeConfig] = useState<{
+		coin: Coin;
+		tokenAddress: string;
+		superTokenAddress: string;
+		multi: number;
+		key:
+			| 'hasIbAlluoUSDApprove'
+			| 'hasIbAlluoETHApprove'
+			| 'hasIbAlluoBTCApprove'
+			| 'hasWethApprove'
+			| 'hasUsdcApprove'
+			| 'hasWbtcApprove'
+			| 'hasDaiApprove'
+			| 'hasMaticApprove';
+	}>();
+	const [action, setAction] = useState<Action>(Action.none);
 	const [amount, setAmount] = useState('');
+	const [depositAmt, setDepositAmt] = useState('');
 	const [state, dispatch] = useContext(AlertContext);
+	const [startStreamTrigger] = streamApi.useLazyStartStreamQuery();
 	const [stopStreamTrigger] = streamApi.useLazyStopStreamQuery();
+	const [walletBalance, setWalletBalance] = useState<string>('');
+	const [upgradeTrigger] = streamApi.useLazyUpgradeQuery();
+	const [approveTrigger] = streamApi.useLazyApproveQuery();
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [hasApprove, setHasApprove] = useState<boolean>(false);
+	const [shareScaler, setShareScaler] = useState(1e3);
+	const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
+		return await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
+	};
+
+	useEffect(() => {
+		if (position) {
+			const upgradeConfig = upgradeTokensList.find((token) => token.coin === position.coinA);
+			checkForApproval(upgradeConfig?.tokenAddress!, upgradeConfig?.superTokenAddress!).then((hasApprove) =>
+				setHasApprove(hasApprove)
+			);
+			setUpgradeConfig(upgradeConfig);
+		}
+	}, [position]);
+
+	useEffect(() => {
+		if (action === Action.deposit && upgradeConfig) {
+			(async () => {
+				const balance = await fetchBalance({
+					address: address!,
+					chainId: polygon.id,
+					token: upgradeConfig?.tokenAddress as `0x${string}`,
+				}).then((res) => res?.formatted);
+				setWalletBalance(balance);
+			})();
+		}
+	}, [action, upgradeConfig]);
+
+	const setMaxValue = () => {
+		if (action === Action.deposit && walletBalance) {
+			setAmount(walletBalance);
+		}
+	};
+
+	const handleDeposit = (event: any) => {
+		event?.preventDefault();
+		if (action === Action.deposit) {
+			getSuperTokenBalances(address!).then((balances) => {
+				if (
+					Number(amount) < 0 ||
+					(Object.keys(balances).length && upgradeConfig && Number(balances[upgradeConfig.tokenAddress]) === 0)
+				) {
+					return;
+				}
+				if (hasApprove) {
+					const bigNumberAmount = ethers.BigNumber.from(amount).toString();
+					setIsLoading(true);
+					const upgrade = upgradeTrigger({ value: bigNumberAmount, tokenAddress: upgradeConfig?.superTokenAddress! });
+					console.log({ upgrade });
+					upgrade
+						.then((response: any) => {
+							console.log({ response });
+							if (response.isSuccess) {
+								dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+							}
+							setIsLoading(response.isLoading);
+							if (response.isError) {
+								dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+							}
+							setTimeout(() => {
+								dispatch(AlertAction.hideAlert());
+							}, 5000);
+						})
+						.catch((error: any) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+				}
+			});
+		}
+	};
+
 	const handleSubmit = (event: any) => {
 		event.preventDefault();
+		if (position && action === Action.change) {
+			console.log({ position });
+			const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
+			fetchShareScaler(exchangeKey, position.tokenA, position.tokenB)
+				.then((res) => {
+					setShareScaler(res);
+					// Need to call hook here to start a new stream.
+					setIsLoading(true);
+					dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
+					if (shareScaler) {
+						const newAmount =
+							position?.type === FlowTypes.market
+								? (
+										((Math.floor(((parseFloat(amount) / 2592000) * 1e18) / shareScaler) * shareScaler) / 1e18) *
+										2592000
+								  ).toString()
+								: amount;
+						console.log({ newAmount, position });
+						const config: InvestmentFlow = {
+							superToken: position.superToken,
+							tokenA: position.tokenA,
+							tokenB: position.tokenB,
+							coinA: position.coinA,
+							coinB: position.coinB,
+							flowKey: position.flowKey,
+							type: position.type,
+						};
+						const stream = startStreamTrigger({ amount: newAmount, config });
+						stream
+							.then((response: any) => {
+								if (response.isSuccess) {
+									dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+								}
+								setIsLoading(response.isLoading);
+								if (response.isError) {
+									dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+								}
+								setTimeout(() => {
+									dispatch(AlertAction.hideAlert());
+								}, 5000);
+							})
+							.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+					}
+				})
+				.catch((error) => console.error(error));
+		} else {
+			dispatch(
+				AlertAction.showErrorAlert('Oops!', 'We were unable to find the selected position. Please try another one.')
+			);
+			setTimeout(() => {
+				dispatch(AlertAction.hideAlert());
+			}, 5000);
+		}
 	};
 	const handleStop = () => {
 		dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
@@ -47,8 +209,16 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 			{!action && (
 				<>
 					<h6 className='text-slate-100'>{t('position-action')}?</h6>
-					<OutlineButton action={`${t('change-swap-amount')}`} type='button' handleClick={() => setAction('change')} />
-					<OutlineButton action={`${t('deposit')} ${position.coinA}`} type='button' />
+					<OutlineButton
+						action={`${t('change-swap-amount')}`}
+						type='button'
+						handleClick={() => setAction(Action.change)}
+					/>
+					<OutlineButton
+						action={`${t('deposit')} ${position.coinA}`}
+						type='button'
+						handleClick={() => setAction(Action.deposit)}
+					/>
 					<RoundedButton action={`${t('stop-position')}`} type='button' handleClick={handleStop} />
 					<hr className='border-slate-500' />
 					<div className='flex justify-end'>
@@ -58,7 +228,50 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 					</div>
 				</>
 			)}
-			{action === 'change' && (
+			{action === Action.deposit && (
+				<form id='change-swap-form' className='flex flex-col space-y-6' onSubmit={handleDeposit}>
+					<label className='text-slate-100'>
+						{t('amount-action')} {t('deposit')}?
+					</label>
+					<div className='relative w-full'>
+						<input
+							type='number'
+							step='any'
+							className='input-outline'
+							value={amount}
+							onChange={(e) => setDepositAmt(e.target.value)}
+							placeholder={`${t('amount')}`}
+						/>
+						<button
+							type='button'
+							className='pr-8 text-primary-500 hover:text-primary-300 hover:font-bold absolute right-2.5 bottom-2.5 font-medium text-sm'
+							onClick={setMaxValue}>
+							Max
+						</button>
+					</div>
+					{action === Action.deposit && (
+						<p>
+							Balance: {walletBalance && upgradeConfig ? parseFloat(walletBalance).toFixed(3) : 0} {position.coinA}
+						</p>
+					)}
+					<div className='flex justify-end space-x-4'>
+						<button
+							type='button'
+							className='outline-none text-slate-100 underline'
+							onClick={() => setAction(Action.none)}>
+							{t('cancel')}
+						</button>
+						<RoundedButton
+							type='submit'
+							action={isLoading ? `${t('confirming')}...` : `${t('confirm')} ${t('deposit')}`}
+							primary={true}
+							loading={isLoading}
+							disabled={!amount || isLoading}
+						/>
+					</div>
+				</form>
+			)}
+			{action === Action.change && (
 				<form id='change-swap-form' className='flex flex-col space-y-6' onSubmit={handleSubmit}>
 					<label className='text-slate-100'>{t('desired-swap-amount')}?</label>
 					<input
@@ -70,10 +283,19 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 						placeholder={`${t('swap-amount')}`}
 					/>
 					<div className='flex justify-end space-x-4'>
-						<button type='button' className='outline-none text-slate-100 underline' onClick={() => setAction('')}>
+						<button
+							type='button'
+							className='outline-none text-slate-100 underline'
+							onClick={() => setAction(Action.none)}>
 							{t('cancel')}
 						</button>
-						<RoundedButton action={`${t('confirm-change')}`} primary={true} disabled={!amount} type='submit' />
+						<RoundedButton
+							type='submit'
+							action={isLoading ? `${t('confirming')}...` : `${t('confirm-change')}`}
+							primary={true}
+							loading={isLoading}
+							disabled={!amount || isLoading}
+						/>
 					</div>
 				</form>
 			)}
