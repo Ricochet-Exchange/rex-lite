@@ -8,6 +8,7 @@ import { flowConfig, FlowTypes, InvestmentFlow } from 'constants/flowConfig';
 import { AlertContext } from 'contexts/AlertContext';
 import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
 import { NextPage } from 'next';
+import Big from 'big.js';
 import { useTranslation } from 'next-i18next';
 import { Fragment, useContext, useEffect, useState } from 'react';
 import streamApi from 'redux/slices/streams.slice';
@@ -84,11 +85,59 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	}, [position]);
 
 	const handleSubmit = (event: any) => {
+		event.preventDefault();
+		if (from === Coin.SELECT || to === Coin.SELECT) return;
+		if (!position) {
+			dispatch(
+				AlertAction.showErrorAlert('Oops!', 'We were unable to find the selected position. Please try another one.')
+			);
+			setTimeout(() => {
+				dispatch(AlertAction.hideAlert());
+			}, 5000);
+			return;
+		}
+		const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
+		fetchShareScaler(exchangeKey, position.tokenA, position.tokenB).then((res) => {
+			setShareScaler(res);
+			setIsLoading(true);
+			dispatch(AlertAction.showErrorAlert('Waiting for your transaction to be confirmed...', ''));
+			if (!shareScaler) return;
+			let newAmount = amount;
+			if (position?.type === FlowTypes.market) {
+				const valueBig = new Big(amount);
+				const resultBig = valueBig
+					.div(2592000)
+					.times(1e18)
+					.div(shareScaler)
+					.round(0, 0)
+					.times(shareScaler)
+					.div(1e18)
+					.times(2592000);
+				newAmount = resultBig.toFixed();
+			}
+			const stream = startStreamTrigger({ amount: newAmount, config: position });
+			stream
+				.then((response) => {
+					if (response.isSuccess) {
+						dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+					}
+					setIsLoading(response.isLoading);
+					if (response.isError) {
+						dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+					}
+					setTimeout(() => {
+						dispatch(AlertAction.hideAlert());
+					}, 5000);
+				})
+				.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+		})
+	}
+
+	/*const handleSubmit = (event: any) => {
 		event?.preventDefault();
 		if (from !== Coin.SELECT && to !== Coin.SELECT) {
 			//to do: figure out how to pass down the correct values.
 			if (position) {
-				console.log({ position });
 				const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
 				fetchShareScaler(exchangeKey, position.tokenA, position.tokenB)
 					.then((res) => {
@@ -132,7 +181,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 				}, 5000);
 			}
 		}
-	};
+	};*/
 
 	return (
 		<>
@@ -207,6 +256,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 					</Listbox>
 				</form>
 				<div className='w-full lg:w-1/2'>
+					{/*@ts-ignore*/}
 					<AreaGraph pairs={coingeckoPairs} />
 				</div>
 				<div className='flex space-x-4 w-full justify-end'>
