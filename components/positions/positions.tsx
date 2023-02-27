@@ -182,19 +182,11 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 			setBalances(balanceMap);
 		});
 	}, [address, isConnected]);
+
 	useEffect(() => {
 		if (address && isConnected && queries.size > 0 && positions.length > 0 && minMax.length > 1) {
-			// const streamEnds = computeStreamEnds(queries, balances);
-			// const avgPrices = positions.map(async (position) => {
-			// 	const sushiPrice = await querySushiPoolPrices(sushiSwapPools[`${position.coinA}-${position.coinB}`]).then(
-			// 		(res: any) => res?.data?.data?.pair?.token0Price
-			// 	);
-			// 	return { position, sushiPrice };
-			// });
-			// Promise.all(avgPrices).then((res) => {
 			const positionss: PositionData[] = [];
 			positions.map((position, i) => {
-				// const timeLeft = getTimeRemaining(streamEnds.get(r?.position?.flowKey)!);
 				positionss.push({
 					...position,
 					positions: queries.get(position?.flowKey)?.totalFlows || 0,
@@ -208,15 +200,7 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 					),
 					input: queries.get(position?.flowKey)?.streamedSoFar || 0,
 					output: queries.get(position?.flowKey)?.placeholder!,
-					// feePercent: position.coinA.includes('IbAlluo') ? '0.5%' : '2%',
-					// timeLeft: timeLeft.days,
-					// endDate: new Date(streamEnds.get(r?.position?.flowKey)!).toLocaleDateString('en-us', {
-					// 	year: 'numeric',
-					// 	month: 'long',
-					// 	day: 'numeric',
-					// }),
 					avgBuyPrice: ((+minMax[i][0] + +minMax[i][1]) / 2).toFixed(3),
-					// avgPrice: r?.sushiPrice || '0',
 				});
 			});
 			setPositionList(positionss);
