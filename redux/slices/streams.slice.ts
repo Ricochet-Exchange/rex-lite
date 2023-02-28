@@ -5,7 +5,6 @@ import { getAccount, getContract } from '@wagmi/core';
 import { idaABI } from 'constants/ABIs/ida';
 import { superTokenABI } from 'constants/ABIs/supertoken';
 import { idaAddress, MATICxAddress } from 'constants/polygon_config';
-import Big from 'big.js';
 import { ethers } from 'ethers';
 import { PositionData } from './../../components/positions/positions';
 import { approve, downgrade, downgradeMatic, stopFlow, upgradeMatic } from './../../pages/api/ethereum';
@@ -41,6 +40,7 @@ const streamApi = createApi({
 					const { amount, config } = payload;
 					// we must initialize a contract address with idaContract: getContract(idaAddress, idaABI, web3);
 					const idaContract = await getContract({ address: idaAddress, abi: idaABI });
+					console.log(idaContract);
 					// We must normalize the payload amount for superfluid function
 					const normalizedAmount = ethers.utils.parseEther(amount);
 					//  Math.round((Number(amount) * 1e18) / 2592000);

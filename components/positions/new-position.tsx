@@ -40,9 +40,19 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	const [shareScaler, setShareScaler] = useState(1e3);
 	const [startStreamTrigger] = streamApi.useLazyStartStreamQuery();
 	const [positionType, setPositionType] = useState(postionTypes[0]);
-	const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
-		return await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
-	};
+
+
+	useEffect(() => {
+		if (!position) return;
+		const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
+		const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
+			const shareScaler = await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
+			console.log(shareScaler);
+			setShareScaler(shareScaler);
+		};
+		fetchShareScaler(exchangeKey, position?.tokenA, position?.tokenB);
+	
+	}, [position?.flowKey, position?.tokenA, position?.tokenB])
 
 	useEffect(() => {
 		if (from !== Coin.SELECT) {
@@ -87,7 +97,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	const handleSubmit = (event: any) => {
 		event.preventDefault();
 		if (from === Coin.SELECT || to === Coin.SELECT) return;
-		if (!position) {
+		if (!position || !shareScaler) {
 			dispatch(
 				AlertAction.showErrorAlert('Oops!', 'We were unable to find the selected position. Please try another one.')
 			);
@@ -96,10 +106,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 			}, 5000);
 			return;
 		}
-		const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
-		fetchShareScaler(exchangeKey, position.tokenA, position.tokenB).then((res) => {
-			setShareScaler(res);
-			setIsLoading(true);
+		setIsLoading(true);
 			dispatch(AlertAction.showErrorAlert('Waiting for your transaction to be confirmed...', ''));
 			if (!shareScaler) return;
 			let newAmount = amount;
@@ -130,7 +137,6 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 					}, 5000);
 				})
 				.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
-		})
 	}
 
 	/*const handleSubmit = (event: any) => {
