@@ -99,43 +99,7 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 		const bal = parseFloat((currentBalances && currentBalances.get(flow?.tokenA || '')) || '0');
 		return endDate(bal, outgoingSum);
 	};
-	const computeStreamEnds = (
-		queries: Map<
-			string,
-			{
-				flowKey: string;
-				flowsReceived: number;
-				flowsOwned: string;
-				totalFlows: number;
-				placeholder: string;
-				subsidyRate: { perso: number; total: number; endDate: string };
-				streamedSoFar?: number;
-				receivedSoFar?: number;
-			}
-		>,
-		currentBalances: Map<string, string>
-	) => {
-		const streamEnds: Map<string, string> = new Map();
-		Object.values(FlowEnum).forEach((flowEnum: FlowEnum) => {
-			streamEnds.set(flowEnum, retrieveEndDate(flowEnum, queries, currentBalances));
-		});
-		return streamEnds;
-	};
-	const getTimeRemaining = (endDate: string) => {
-		const total = Date.parse(endDate) - Date.parse(new Date().toLocaleDateString());
-		const seconds = Math.floor((total / 1000) % 60);
-		const minutes = Math.floor((total / 1000 / 60) % 60);
-		const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
-		const days = Math.floor(total / (1000 * 60 * 60 * 24));
 
-		return {
-			total,
-			days,
-			hours,
-			minutes,
-			seconds,
-		};
-	};
 	useEffect(() => {
 		if (history.size > 0 && coingeckoPairs.size > 0) {
 			const minMaxArr = [];
