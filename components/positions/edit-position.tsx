@@ -4,6 +4,7 @@ import { getShareScaler } from '@richochet/utils/getShareScaler';
 import { getSuperTokenBalances } from '@richochet/utils/getSuperTokenBalances';
 import { polygon } from '@wagmi/chains';
 import { fetchBalance } from '@wagmi/core';
+import Big from 'big.js';
 import { Coin } from 'constants/coins';
 import { FlowTypes, InvestmentFlow } from 'constants/flowConfig';
 import { upgradeTokensList } from 'constants/upgradeConfig';
@@ -13,7 +14,6 @@ import { ethers } from 'ethers';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { useContext, useEffect, useState } from 'react';
-import Big from 'big.js';
 import streamApi from 'redux/slices/streams.slice';
 import { useAccount } from 'wagmi';
 import { OutlineButton, RoundedButton } from '../button';
@@ -59,7 +59,7 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [hasApprove, setHasApprove] = useState<boolean>(false);
 	const [shareScaler, setShareScaler] = useState(1e3);
-	
+
 	useEffect(() => {
 		if (!position) return;
 		const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
@@ -69,8 +69,7 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 			setShareScaler(shareScaler);
 		};
 		fetchShareScaler(exchangeKey, position?.tokenA, position?.tokenB);
-	
-	}, [position?.flowKey, position?.tokenA, position?.tokenB])
+	}, [position?.flowKey, position?.tokenA, position?.tokenB]);
 
 	useEffect(() => {
 		if (position) {
@@ -168,30 +167,30 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 					.times(10);
 				newAmount = resultBig.toFixed();
 			}
-				const config: InvestmentFlow = {
-					superToken: position.superToken,
-					tokenA: position.tokenA,
-					tokenB: position.tokenB,
-					coinA: position.coinA,
-					coinB: position.coinB,
-					flowKey: position.flowKey,
-					type: position.type,
-				};
-				const stream = startStreamTrigger({ amount: newAmount, config });
-				stream
-					.then((response: any) => {
-						if (response.isSuccess) {
-							dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
-						}
-						setIsLoading(response.isLoading);
-						if (response.isError) {
-							dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
-						}
-						setTimeout(() => {
-							dispatch(AlertAction.hideAlert());
-						}, 5000);
-					})
-					.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+			const config: InvestmentFlow = {
+				superToken: position.superToken,
+				tokenA: position.tokenA,
+				tokenB: position.tokenB,
+				coinA: position.coinA,
+				coinB: position.coinB,
+				flowKey: position.flowKey,
+				type: position.type,
+			};
+			const stream = startStreamTrigger({ amount: newAmount, config });
+			stream
+				.then((response: any) => {
+					if (response.isSuccess) {
+						dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+					}
+					setIsLoading(response.isLoading);
+					if (response.isError) {
+						dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+					}
+					setTimeout(() => {
+						dispatch(AlertAction.hideAlert());
+					}, 5000);
+				})
+				.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
 		} else {
 			dispatch(
 				AlertAction.showErrorAlert('Oops!', 'We were unable to find the selected position. Please try another one.')
@@ -202,6 +201,7 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 		}
 	};
 	const handleStop = () => {
+		setIsLoading(true);
 		dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
 		const stopStream = stopStreamTrigger(position);
 		stopStream
@@ -209,6 +209,7 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 				if (response.isSuccess) {
 					dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
 				}
+				setIsLoading(response.isLoading);
 				if (response.isError) {
 					console.log('response', response);
 					dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
@@ -237,7 +238,13 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 						type='button'
 						handleClick={() => setAction(Action.deposit)}
 					/>
-					<RoundedButton action={`${t('stop-position')}`} type='button' handleClick={handleStop} />
+					<RoundedButton
+						action={isLoading ? `${t('stopping')}...` : `${t('stop-position')}`}
+						type='button'
+						loading={isLoading}
+						disabled={isLoading}
+						handleClick={handleStop}
+					/>
 					<hr className='border-slate-500' />
 					<div className='flex justify-end'>
 						<button type='button' className='outline-none text-slate-100 underline' onClick={() => setClose(false)}>

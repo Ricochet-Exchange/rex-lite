@@ -1,4 +1,7 @@
+import { polygon } from '@wagmi/chains';
+import { fetchBalance } from '@wagmi/core';
 import { geckoMapping } from 'constants/coingeckoMapping';
+import { Coin } from 'constants/coins';
 import { upgradeTokensList } from 'constants/upgradeConfig';
 import { colors } from 'enumerations/colors.enum';
 import { NextPage } from 'next';
@@ -17,13 +20,13 @@ interface Props {
 
 export interface TokenData {
 	token: string;
-	// walletAmount: string;
+	walletAmount: string;
 	ricAmount: string;
 	color: string;
 	dollarVal: number;
 }
 
-const headerTitles = ['token', 'ricochet-balance', 'dollar-value'];
+const headerTitles = ['token', 'ricochet-balance', 'wallet-balance', 'dollar-value'];
 
 export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => {
 	const { t } = useTranslation('home');
@@ -40,15 +43,15 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 				if (Object.keys(geckoPriceList).length && Object.keys(balances).length) {
 					await Promise.all(
 						sortedUpgradeTokensList.map(async (token) => {
-							// const balance = await fetchBalance({
-							// 	address: address!,
-							// 	chainId: polygon.id,
-							// 	token: token.coin !== Coin.RIC ? (token.tokenAddress as `0x${string}`) : undefined,
-							// });
+							const balance = await fetchBalance({
+								address: address!,
+								chainId: polygon.id,
+								token: token.coin !== Coin.RIC ? (token.tokenAddress as `0x${string}`) : undefined,
+							});
 							return {
 								token: token.coin,
 								ricAmount: parseFloat(balances[token.superTokenAddress]).toFixed(2),
-								// walletAmount: token.coin === Coin.RIC ? 'N/A' : parseFloat(balance?.formatted).toFixed(2),
+								walletAmount: token.coin === Coin.RIC ? 'N/A' : parseFloat(balance?.formatted).toFixed(2),
 								color: colors[token.coin],
 								dollarVal: parseFloat((geckoPriceList as any)[geckoMapping[token.coin]].usd),
 							};
