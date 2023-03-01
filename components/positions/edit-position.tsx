@@ -13,6 +13,7 @@ import { ethers } from 'ethers';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { useContext, useEffect, useState } from 'react';
+import Big from 'big.js';
 import streamApi from 'redux/slices/streams.slice';
 import { useAccount } from 'wagmi';
 import { OutlineButton, RoundedButton } from '../button';
@@ -55,13 +56,21 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 	const [stopStreamTrigger] = streamApi.useLazyStopStreamQuery();
 	const [walletBalance, setWalletBalance] = useState<string>('');
 	const [upgradeTrigger] = streamApi.useLazyUpgradeQuery();
-	const [approveTrigger] = streamApi.useLazyApproveQuery();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [hasApprove, setHasApprove] = useState<boolean>(false);
 	const [shareScaler, setShareScaler] = useState(1e3);
-	const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
-		return await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
-	};
+	
+	useEffect(() => {
+		if (!position) return;
+		const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
+		const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
+			const shareScaler = await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
+			console.log(shareScaler);
+			setShareScaler(shareScaler);
+		};
+		fetchShareScaler(exchangeKey, position?.tokenA, position?.tokenB);
+	
+	}, [position?.flowKey, position?.tokenA, position?.tokenB])
 
 	useEffect(() => {
 		if (position) {
@@ -130,50 +139,59 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 	const handleSubmit = (event: any) => {
 		event.preventDefault();
 		if (position && action === Action.change) {
-			console.log({ position });
-			const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
-			fetchShareScaler(exchangeKey, position.tokenA, position.tokenB)
-				.then((res) => {
-					setShareScaler(res);
-					// Need to call hook here to start a new stream.
-					setIsLoading(true);
-					dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
-					if (shareScaler) {
-						const newAmount =
-							position?.type === FlowTypes.market
-								? (
-										((Math.floor(((parseFloat(amount) / 2592000) * 1e18) / shareScaler) * shareScaler) / 1e18) *
-										2592000
-								  ).toString()
-								: amount;
-						console.log({ newAmount, position });
-						const config: InvestmentFlow = {
-							superToken: position.superToken,
-							tokenA: position.tokenA,
-							tokenB: position.tokenB,
-							coinA: position.coinA,
-							coinB: position.coinB,
-							flowKey: position.flowKey,
-							type: position.type,
-						};
-						const stream = startStreamTrigger({ amount: newAmount, config });
-						stream
-							.then((response: any) => {
-								if (response.isSuccess) {
-									dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
-								}
-								setIsLoading(response.isLoading);
-								if (response.isError) {
-									dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
-								}
-								setTimeout(() => {
-									dispatch(AlertAction.hideAlert());
-								}, 5000);
-							})
-							.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
-					}
-				})
-				.catch((error) => console.error(error));
+			// Need to call hook here to start a new stream.
+			setIsLoading(true);
+			dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
+			if (!position || !shareScaler) {
+				dispatch(
+					AlertAction.showErrorAlert('Oops!', 'We were unable to find the selected position. Please try another one.')
+				);
+				setTimeout(() => {
+					dispatch(AlertAction.hideAlert());
+				}, 5000);
+				return;
+			}
+			let newAmount = amount;
+			if (position?.type === FlowTypes.market) {
+				const valueBig = new Big(amount);
+				const resultBig = valueBig
+					.div(2592000)
+					.times(1e18)
+					.div(shareScaler)
+					.round(0, 0)
+					.times(shareScaler)
+					.div(1e18)
+					.times(259200)
+					.div(3600)
+					.div(24)
+					.div(30)
+					.times(10);
+				newAmount = resultBig.toFixed();
+			}
+				const config: InvestmentFlow = {
+					superToken: position.superToken,
+					tokenA: position.tokenA,
+					tokenB: position.tokenB,
+					coinA: position.coinA,
+					coinB: position.coinB,
+					flowKey: position.flowKey,
+					type: position.type,
+				};
+				const stream = startStreamTrigger({ amount: newAmount, config });
+				stream
+					.then((response: any) => {
+						if (response.isSuccess) {
+							dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+						}
+						setIsLoading(response.isLoading);
+						if (response.isError) {
+							dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+						}
+						setTimeout(() => {
+							dispatch(AlertAction.hideAlert());
+						}, 5000);
+					})
+					.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
 		} else {
 			dispatch(
 				AlertAction.showErrorAlert('Oops!', 'We were unable to find the selected position. Please try another one.')
