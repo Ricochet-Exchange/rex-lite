@@ -10,6 +10,7 @@ import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
 import { NextPage } from 'next';
 import Big from 'big.js';
 import { useTranslation } from 'next-i18next';
+import { ethers } from 'ethers';
 import { Fragment, useContext, useEffect, useState } from 'react';
 import streamApi from 'redux/slices/streams.slice';
 import { RoundedButton } from '../button';
@@ -119,7 +120,11 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 					.round(0, 0)
 					.times(shareScaler)
 					.div(1e18)
-					.times(2592000);
+					.times(259200)
+					.div(3600)
+					.div(24)
+					.div(30)
+					.times(10);
 				newAmount = resultBig.toFixed();
 			}
 			const stream = startStreamTrigger({ amount: newAmount, config: position });
