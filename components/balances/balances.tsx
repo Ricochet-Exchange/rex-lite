@@ -26,7 +26,7 @@ export interface TokenData {
 	dollarVal: number;
 }
 
-const headerTitles = ['token', 'ricochet-balance', 'wallet-balance', 'dollar-value'];
+const headerTitles = ['token', 'wallet-balance', 'ricochet-balance', 'dollar-value'];
 
 export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => {
 	const { t } = useTranslation('home');
