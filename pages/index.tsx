@@ -206,7 +206,7 @@ export default function Home({ locale }: any): JSX.Element {
 	}, [results, address, isConnected]);
 
 	useEffect(() => {
-		if (isConnected && address) {
+		if (isConnected && address && isMounted) {
 			const positions = flowConfig.filter(({ flowKey }) => parseFloat(queries.get(flowKey)?.placeholder!) > 0);
 			setPositions(positions);
 		}

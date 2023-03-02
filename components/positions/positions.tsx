@@ -148,7 +148,7 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 	}, [address, isConnected]);
 
 	useEffect(() => {
-		if (address && isConnected && queries.size > 0 && positions.length > 0 && minMax.length > 1) {
+		if (address && isConnected && queries.size > 0 && positions.length > 0) {
 			const positionss: PositionData[] = [];
 			positions.map((position, i) => {
 				positionss.push({
@@ -164,7 +164,8 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 					),
 					input: queries.get(position?.flowKey)?.streamedSoFar || 0,
 					output: queries.get(position?.flowKey)?.placeholder!,
-					avgBuyPrice: ((+minMax[i][0] + +minMax[i][1]) / 2).toFixed(3),
+					avgBuyPrice:
+						minMax.length && minMax[i]?.length ? ((+minMax?.[i]?.[0] + +minMax?.[i]?.[1]) / 2).toFixed(3) : '0',
 				});
 			});
 			setPositionList(positionss);
