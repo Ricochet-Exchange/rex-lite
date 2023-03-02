@@ -65,7 +65,7 @@ export const AreaGraph: NextPage<Props> = ({ pairs, position }) => {
 				) {
 					const { tSort, priceSorted } = getPriceRange(history.get(geckoMapping[value[1]])!);
 					if (priceSorted.length && tSort.length) {
-						setMinMax([priceSorted[0][1], priceSorted[priceSorted.length - 1][1]]);
+						setMinMax([priceSorted[0][1]  || '0', priceSorted[priceSorted.length - 1][1]  || '0']);
 						//Grabbing an element from t==0, 1 week, 2 week, 3 weeks, 1 month
 						//issue is this will only grab those values, we also want the highest price and lowest price of the month
 						// const timeSorted = [tSort[0], tSort[7], tSort[14], tSort[21], tSort[tSort.length - 1]];
@@ -81,7 +81,7 @@ export const AreaGraph: NextPage<Props> = ({ pairs, position }) => {
 				) {
 					const { tSort, priceSorted } = getPriceRange(history.get(geckoMapping[value[0]])!);
 					if (priceSorted.length && tSort.length) {
-						setMinMax([priceSorted[0][1], priceSorted[priceSorted.length - 1][1]]);
+						setMinMax([priceSorted[0][1] || '0', priceSorted[priceSorted.length - 1][1]  || '0']);
 						//Grabbing an element from t==0, 1 week, 2 week, 3 weeks, 1 month
 						//issue is this will only grab those values, we also want the highest price and lowest price of the month
 						// const timeSorted = [tSort[0], tSort[7], tSort[14], tSort[21], tSort[tSort.length - 1]];

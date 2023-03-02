@@ -96,14 +96,13 @@ const streamApi = createApi({
 			queryFn: async (payload: any): Promise<any | undefined> => {
 				try {
 					const { tokenAddress, value } = payload;
-					const amount = ethers.utils.parseEther(value);
 					// Math.round(Number(value) * 10e18).toString();
 					const { address } = getAccount();
 					const contract = await getContract({ address: tokenAddress, abi: superTokenABI });
 					const tx =
 						tokenAddress === MATICxAddress
-							? await downgradeMatic(contract, amount, address!)
-							: await downgrade(contract, amount, address!);
+							? await downgradeMatic(contract, value, address!)
+							: await downgrade(contract, value, address!);
 					return tx.wait(1).then((res) => {
 						return {
 							data: res,
@@ -121,11 +120,10 @@ const streamApi = createApi({
 					const { tokenAddress, value } = payload;
 					const { address } = getAccount();
 					const contract = await getContract({ address: tokenAddress, abi: superTokenABI });
-					const amount = ethers.utils.parseEther(value);
 					const tx =
 						tokenAddress === MATICxAddress
-							? await upgradeMatic(contract, amount, address!)
-							: await upgrade(contract, amount, address!);
+							? await upgradeMatic(contract, value, address!)
+							: await upgrade(contract, value, address!);
 					return tx.wait(1).then((res) => {
 						return {
 							data: res,
