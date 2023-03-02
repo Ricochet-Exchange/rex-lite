@@ -17,11 +17,22 @@ import { getSFFramework } from '@richochet/utils/fluidsdkConfig';
 import { getFlowUSDValue } from '@richochet/utils/getFlowUsdValue';
 import { getSuperTokenBalances } from '@richochet/utils/getSuperTokenBalances';
 import { formatCurrency } from '@richochet/utils/helperFunctions';
+import { readContract } from '@wagmi/core';
 import Big, { BigSource } from 'big.js';
 import { ConnectKitButton } from 'connectkit';
+import { streamExchangeABI } from 'constants/ABIs/streamExchange';
 import { geckoMapping } from 'constants/coingeckoMapping';
 import { flowConfig, FlowEnum, FlowTypes, InvestmentFlow } from 'constants/flowConfig';
-import { RICAddress } from 'constants/polygon_config';
+import {
+	RICAddress,
+	twoWayMarketDAIWETHAddress,
+	twoWayMarketibAlluoUSDBTCAddress,
+	twoWayMarketibAlluoUSDETHAddress,
+	twoWayMarketMATICUSDCAddress,
+	twoWayMarketWBTCAddress,
+	twoWayWETHMarketAddress,
+	usdcxibAlluoUSDAddress
+} from 'constants/polygon_config';
 import { upgradeTokensList } from 'constants/upgradeConfig';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -84,7 +95,11 @@ export default function Home({ locale }: any): JSX.Element {
 	const [sortedList, setSortedList] = useState<InvestmentFlow[]>([]);
 	const [positions, setPositions] = useState<InvestmentFlow[]>([]);
 	const [positionTotal, setPositionTotal] = useState<number>(0);
-	const [positionTotalLoading, setpositionTotalLoading] = useState<boolean>(false);
+	const [emissionRateMap, setEmissionRateMap] = useState<Map<string, string>>(new Map());
+	const [aggregatedRewards, setAggregatedRewards] = useState<number[]>([]);
+	const [aggregatedRICRewards, setAggregatedRICRewards] = useState<number>(0);
+	const [ricRewardLoading, setRicRewardLoading] = useState<boolean>(false);
+	const [positionTotalLoading, setPositionTotalLoading] = useState<boolean>(false);
 	const [results, setResults] = useState<{ flowsOwned: Flow[]; flowsReceived: Flow[] }[]>([]);
 	const coingeckoPrices = useCoingeckoPrices();
 	const [queryFlows] = superfluidSubgraphApi.useQueryFlowsMutation();
@@ -169,6 +184,23 @@ export default function Home({ locale }: any): JSX.Element {
 		getFlows(streamedSoFarMap, receivedSoFarMap);
 	};
 
+	const contractAddressAllowed = (address: string) => {
+		const eligibleAddresses = [
+			twoWayMarketibAlluoUSDETHAddress,
+			usdcxibAlluoUSDAddress,
+			twoWayMarketibAlluoUSDBTCAddress,
+			twoWayWETHMarketAddress,
+			twoWayMarketWBTCAddress,
+			twoWayMarketDAIWETHAddress,
+			twoWayMarketMATICUSDCAddress,
+		];
+		if (eligibleAddresses.includes(address)) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
 	useEffect(() => {
 		if (results.length > 0) sweepQueryFlows();
 	}, [results, address]);
@@ -183,7 +215,7 @@ export default function Home({ locale }: any): JSX.Element {
 	useEffect(() => {
 		if (isConnected && tokensIsError) console.error(tokensError);
 		if (isConnected && tokensIsSuccess) {
-			setpositionTotalLoading(true);
+			setPositionTotalLoading(true);
 			const totalInPositions = upgradeTokensList.reduce((total, token) => {
 				const balancess =
 					Object.keys(balanceList).length &&
@@ -197,7 +229,7 @@ export default function Home({ locale }: any): JSX.Element {
 				return total + parseFloat(balancess as any);
 			}, 0);
 			setPositionTotal(totalInPositions);
-			setpositionTotalLoading(false);
+			setPositionTotalLoading(false);
 		}
 	}, [isConnected, address, balanceList, tokens, tokensIsSuccess]);
 
@@ -212,6 +244,56 @@ export default function Home({ locale }: any): JSX.Element {
 			setSortedList(sortList);
 		}
 	}, [queries, coingeckoPrices]);
+
+	useEffect(() => {
+		if (sortedList.length) {
+			setRicRewardLoading(true);
+			const rateMap: Map<string, string> = new Map();
+			(async () =>
+				await Promise.all(
+					sortedList.map(async (market) => {
+						if (contractAddressAllowed(market.superToken)) {
+							await readContract({
+								address: market.superToken as `0x${string}`,
+								abi: streamExchangeABI,
+								functionName: 'getOutputPool',
+								args: [3],
+							})
+								.then((res: any) => {
+									const finRate = ((Number(res.emissionRate) / 1e18) * 2592000).toFixed(4);
+									rateMap.set(market.superToken, finRate.toString());
+								})
+								.catch((error: any) => {
+									console.log('error', error);
+								});
+						}
+					})
+				).then((res) => setEmissionRateMap(rateMap)))();
+		}
+	}, [sortedList]);
+
+	useEffect(() => {
+		if (sortedList.length && queries.size > 0 && emissionRateMap.size > 0) {
+			sortedList.map((market) => {
+				const subsidy_rate =
+					(+queries.get(market.flowKey)?.placeholder! / +queries.get(market.flowKey)?.flowsOwned!) * 100;
+				const received_reward = (+subsidy_rate / 100) * +emissionRateMap.get(market.superToken)!;
+				if (received_reward) {
+					setAggregatedRewards((aggregatedRewards) => [...aggregatedRewards, received_reward]);
+				}
+			});
+		}
+	}, [emissionRateMap]);
+
+	useEffect(() => {
+		if (aggregatedRewards.length) {
+			const aggregated = aggregatedRewards
+				.filter((reward, index, self) => self.indexOf(reward) === index)
+				.reduce((accumulator, reward) => accumulator + reward, 0);
+			setAggregatedRICRewards(aggregated);
+			setRicRewardLoading(false);
+		}
+	}, [aggregatedRewards]);
 
 	useEffect(() => {
 		if (isConnected && tokenPrice && tokenPriceIsSuccess) {
@@ -256,6 +338,7 @@ export default function Home({ locale }: any): JSX.Element {
 			getNetFlowRate();
 		}
 	}, [isConnected, positions, usdPrice]);
+
 	if (!isMounted) {
 		return <></>;
 	}
@@ -286,7 +369,7 @@ export default function Home({ locale }: any): JSX.Element {
 													<div className='h-4 rounded bg-slate-700'></div>
 												</div>
 											)}
-											{(positionTotal || positionTotal === 0) && (
+											{(positionTotal || positionTotal === 0) && !positionTotalLoading && (
 												<p className='text-slate-100 font-light text-2xl'>{formatCurrency(positionTotal)}</p>
 											)}
 										</>
@@ -303,7 +386,7 @@ export default function Home({ locale }: any): JSX.Element {
 													<div className='h-4 rounded bg-slate-700'></div>
 												</div>
 											)}
-											{usdFlowRate && (
+											{usdFlowRate && !usdFlowRateLoading && (
 												<p className='text-slate-100 font-light text-2xl'>
 													{formatCurrency(parseFloat(usdFlowRate!))} / {t('month')}
 												</p>
@@ -327,7 +410,14 @@ export default function Home({ locale }: any): JSX.Element {
 											<h6 className='font-light uppercase tracking-widest text-primary-500 mb-2'>
 												{t('rewards-earned')}
 											</h6>
-											<p className='text-slate-100 font-light text-2xl'>{formatCurrency(0.0)}</p>
+											{ricRewardLoading && !aggregatedRICRewards && (
+												<div className='animate-pulse'>
+													<div className='h-4 rounded bg-slate-700'></div>
+												</div>
+											)}
+											{(aggregatedRICRewards || aggregatedRICRewards === 0) && !ricRewardLoading && (
+												<p className='text-slate-100 font-light text-2xl'>{aggregatedRICRewards.toFixed(2)} RIC / mo</p>
+											)}
 										</>
 									}
 								/>
