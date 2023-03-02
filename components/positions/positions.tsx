@@ -168,9 +168,8 @@ export const Positions: NextPage<Props> = ({ positions, queries }) => {
 				});
 			});
 			setPositionList(positionss);
-			// });
 		}
-	}, [address, isConnected, minMax, positions]);
+	}, [address, isConnected, minMax, positions, queries, coingeckoPrices]);
 	return (
 		<>
 			{newPosition && (
