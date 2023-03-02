@@ -1,6 +1,5 @@
 import { polygon } from '@wagmi/chains';
 import { fetchBalance } from '@wagmi/core';
-import { geckoMapping } from 'constants/coingeckoMapping';
 import { Coin } from 'constants/coins';
 import { upgradeTokensList } from 'constants/upgradeConfig';
 import { colors } from 'enumerations/colors.enum';
@@ -26,7 +25,7 @@ export interface TokenData {
 	dollarVal: number;
 }
 
-const headerTitles = ['token', 'wallet-balance', 'ricochet-balance', 'dollar-value'];
+const headerTitles = ['token', 'ricochet-balance', 'wallet-balance'];
 
 export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => {
 	const { t } = useTranslation('home');
@@ -53,7 +52,7 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 								ricAmount: parseFloat(balances[token.superTokenAddress]).toFixed(2),
 								walletAmount: token.coin === Coin.RIC ? 'N/A' : parseFloat(balance?.formatted).toFixed(2),
 								color: colors[token.coin],
-								dollarVal: parseFloat((geckoPriceList as any)[geckoMapping[token.coin]].usd),
+								// dollarVal: parseFloat((geckoPriceList as any)[geckoMapping[token.coin]].usd),
 							};
 						})
 					).then((tokens) => {

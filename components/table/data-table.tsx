@@ -107,9 +107,9 @@ export const DataTable: NextPage<Props> = ({
 											<td className='flex items-center px-2 py-4 whitespace-nowrap space-x-2'>
 												<CoinChange token={data.token} type={DataType.Balances} />
 											</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{data.walletAmount}</td>
 											<td className='px-6 py-4 whitespace-nowrap'>{data.ricAmount}</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{formatCurrency(data.dollarVal)}</td>
+											<td className='px-6 py-4 whitespace-nowrap'>{data.walletAmount}</td>
+											{/* <td className='px-6 py-4 whitespace-nowrap'>{formatCurrency(data.dollarVal)}</td> */}
 										</>
 									) : (
 										<></>
