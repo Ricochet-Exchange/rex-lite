@@ -22,7 +22,7 @@ export interface TokenData {
 	walletAmount: string;
 	ricAmount: string;
 	color: string;
-	dollarVal: number;
+	// dollarVal: number;
 }
 
 const headerTitles = ['token', 'ricochet-balance', 'wallet-balance'];
