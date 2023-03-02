@@ -203,14 +203,14 @@ export default function Home({ locale }: any): JSX.Element {
 
 	useEffect(() => {
 		if (results.length > 0) sweepQueryFlows();
-	}, [results, address]);
+	}, [results, address, isConnected]);
 
 	useEffect(() => {
-		if (isConnected) {
+		if (isConnected && address) {
 			const positions = flowConfig.filter(({ flowKey }) => parseFloat(queries.get(flowKey)?.placeholder!) > 0);
 			setPositions(positions);
 		}
-	}, [queries, address, isConnected]);
+	}, [queries, address, isConnected, isMounted]);
 
 	useEffect(() => {
 		if (isConnected && tokensIsError) console.error(tokensError);
@@ -283,7 +283,7 @@ export default function Home({ locale }: any): JSX.Element {
 				}
 			});
 		}
-	}, [emissionRateMap]);
+	}, [emissionRateMap, queries, sortedList]);
 
 	useEffect(() => {
 		if (aggregatedRewards.length) {
