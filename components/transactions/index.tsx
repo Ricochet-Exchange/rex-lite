@@ -10,7 +10,7 @@ import { downgradeTokensList } from 'constants/downgradeConfig';
 import { upgradeTokensList } from 'constants/upgradeConfig';
 import { AlertContext } from 'contexts/AlertContext';
 import { BalanceAction } from 'enumerations/balanceActions.enum';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { Fragment, useContext, useEffect, useState } from 'react';
@@ -126,9 +126,9 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 					) {
 						return;
 					}
-					const bigNumberAmount = ethers.BigNumber.from(amount).toString();
+					const bigNumberAmount = ethers.utils.parseEther(amount);
 					setIsLoading(true);
-					const downgrade = downgradeTrigger({ value: bigNumberAmount, tokenAddress: downgradeConfig?.tokenAddress! });
+					const downgrade = downgradeTrigger({ value: bigNumberAmount.toString(), tokenAddress: downgradeConfig?.tokenAddress! });
 					console.log({ downgrade });
 					downgrade
 						.then((response) => {
@@ -154,9 +154,9 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 						return;
 					}
 					if (hasApprove) {
-						const bigNumberAmount = ethers.BigNumber.from(amount).toString();
+						const bigNumberAmount = ethers.utils.parseEther(amount);
 						setIsLoading(true);
-						const upgrade = upgradeTrigger({ value: bigNumberAmount, tokenAddress: upgradeConfig?.superTokenAddress! });
+						const upgrade = upgradeTrigger({ value: bigNumberAmount.toString(), tokenAddress: upgradeConfig?.superTokenAddress! });
 						console.log({ upgrade });
 						upgrade
 							.then((response: any) => {

@@ -1,15 +1,19 @@
-import { fetchFeeData } from '@wagmi/core';
-import { ethers } from 'ethers';
-import { polygon } from 'wagmi/chains';
+import { BigNumber, ethers } from 'ethers';
 
-// Get cost of Polygon transaction gas
+const GAS_STATION_MATIC_URL = 'https://gasstation-mainnet.matic.network/v2';
 export const gas = async () => {
 	try {
-		const gasResponse = await fetchFeeData({ chainId: polygon.id, formatUnits: 'gwei' });
-		const { maxPriorityFeePerGas, maxFeePerGas } = gasResponse.formatted || {};
+		const gasResponse = await fetch(GAS_STATION_MATIC_URL)
+			.then(async (response) => response.json())
+			.catch(() => ({}));
+		const { maxPriorityFee, maxFee } = (gasResponse && gasResponse.fast) || {};
+		const toFixedMaxPriorityFee = maxPriorityFee.toFixed(8);
+		const toFixedMaxFee = maxFee.toFixed(7);
 		return {
-			maxPriorityFeePerGas: ethers.utils.hexlify(ethers.utils.parseUnits(maxPriorityFeePerGas!, 'gwei')?.toNumber()),
-			maxFeePerGas: ethers.utils.hexlify(ethers.utils.parseUnits(maxFeePerGas!, 'gwei')?.toNumber()),
+			gasLimit: BigNumber.from(ethers.utils.hexlify(
+				ethers.utils.parseUnits(toFixedMaxPriorityFee, 'gwei')?.toNumber(),
+			)),
+			gasPrice: BigNumber.from(ethers.utils.hexlify(ethers.utils.parseUnits(toFixedMaxFee, 'wei')?.toNumber())),
 		};
 	} catch (error) {
 		return {};
