@@ -27,13 +27,13 @@ export const Alert = () => {
 		<Transition
 			as={Fragment}
 			show={isOpen}
-			enter='transition-opacity duration-75'
-			enterFrom='opacity-0'
+			enter='transition duration-200 transform ease'
+			enterFrom='opacity-0 scale-90'
 			enterTo='opacity-100'
-			leave='transition-opacity duration-150'
+			leave='transition duration-200 transform ease'
 			leaveFrom='opacity-100'
-			leaveTo='opacity-0'>
-			<div className='max-w-full z-30'>
+			leaveTo='opacity-0 scale-90'>
+			<div className='max-w-screen fixed bottom-10 drop-shadow-2xl mx-auto z-30'>
 				<div
 					className={combineClasses(
 						alertType === AlertTypes.INFO

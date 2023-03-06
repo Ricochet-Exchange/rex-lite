@@ -3,14 +3,13 @@ import { ArrowLongRightIcon, CheckIcon, ChevronUpDownIcon } from '@heroicons/rea
 import AlertAction from '@richochet/utils/alertAction';
 import { getCoingeckoPairs } from '@richochet/utils/getCoingeckoPairs';
 import { getShareScaler } from '@richochet/utils/getShareScaler';
+import Big from 'big.js';
 import { Coin } from 'constants/coins';
 import { flowConfig, FlowTypes, InvestmentFlow } from 'constants/flowConfig';
 import { AlertContext } from 'contexts/AlertContext';
 import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
 import { NextPage } from 'next';
-import Big from 'big.js';
 import { useTranslation } from 'next-i18next';
-import { ethers } from 'ethers';
 import { Fragment, useContext, useEffect, useState } from 'react';
 import streamApi from 'redux/slices/streams.slice';
 import { RoundedButton } from '../button';
@@ -42,7 +41,6 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	const [startStreamTrigger] = streamApi.useLazyStartStreamQuery();
 	const [positionType, setPositionType] = useState(postionTypes[0]);
 
-
 	useEffect(() => {
 		if (!position) return;
 		const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
@@ -52,8 +50,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 			setShareScaler(shareScaler);
 		};
 		fetchShareScaler(exchangeKey, position?.tokenA, position?.tokenB);
-	
-	}, [position?.flowKey, position?.tokenA, position?.tokenB])
+	}, [position?.flowKey, position?.tokenA, position?.tokenB]);
 
 	useEffect(() => {
 		if (from !== Coin.SELECT) {
@@ -108,41 +105,41 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 			return;
 		}
 		setIsLoading(true);
-			dispatch(AlertAction.showErrorAlert('Waiting for your transaction to be confirmed...', ''));
-			if (!shareScaler) return;
-			let newAmount = amount;
-			if (position?.type === FlowTypes.market) {
-				const valueBig = new Big(amount);
-				const resultBig = valueBig
-					.div(2592000)
-					.times(1e18)
-					.div(shareScaler)
-					.round(0, 0)
-					.times(shareScaler)
-					.div(1e18)
-					.times(259200)
-					.div(3600)
-					.div(24)
-					.div(30)
-					.times(10);
-				newAmount = resultBig.toFixed();
-			}
-			const stream = startStreamTrigger({ amount: newAmount, config: position });
-			stream
-				.then((response) => {
-					if (response.isSuccess) {
-						dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
-					}
-					setIsLoading(response.isLoading);
-					if (response.isError) {
-						dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
-					}
-					setTimeout(() => {
-						dispatch(AlertAction.hideAlert());
-					}, 5000);
-				})
-				.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
-	}
+		dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
+		if (!shareScaler) return;
+		let newAmount = amount;
+		if (position?.type === FlowTypes.market) {
+			const valueBig = new Big(amount);
+			const resultBig = valueBig
+				.div(2592000)
+				.times(1e18)
+				.div(shareScaler)
+				.round(0, 0)
+				.times(shareScaler)
+				.div(1e18)
+				.times(259200)
+				.div(3600)
+				.div(24)
+				.div(30)
+				.times(10);
+			newAmount = resultBig.toFixed();
+		}
+		const stream = startStreamTrigger({ amount: newAmount, config: position });
+		stream
+			.then((response) => {
+				if (response.isSuccess) {
+					dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
+				}
+				setIsLoading(response.isLoading);
+				if (response.isError) {
+					dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+				}
+				setTimeout(() => {
+					dispatch(AlertAction.hideAlert());
+				}, 5000);
+			})
+			.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+	};
 
 	/*const handleSubmit = (event: any) => {
 		event?.preventDefault();

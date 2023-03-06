@@ -17,6 +17,7 @@ export const Refer = () => {
 	const [copy, setCopy] = useState('Copy');
 	const [refURL, setRefURL] = useState('app.ricochet.exchange/#/ref/');
 	const [status, setStatus] = useState<AFFILIATE_STATUS | undefined>();
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [validationErrors, setValidationErrors] = useState<string[]>([]);
 	const [currentReferralId, setCurrentReferralId] = useState<string | undefined>();
 	useEffect(() => {
@@ -57,6 +58,7 @@ export const Refer = () => {
 	};
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event?.preventDefault();
+		setIsLoading(true);
 		const config = await prepareWriteContract({
 			address: rexReferralAddress as `0x${string}`,
 			abi: referralABI,
@@ -65,25 +67,32 @@ export const Refer = () => {
 		});
 		const data = await writeContract(config);
 		console.log({ data });
-		if (data) {
-			setStatus(AFFILIATE_STATUS.REGISTERING);
-			(async () => {
-				const config = await prepareWriteContract({
-					address: rexReferralAddress as `0x${string}`,
-					abi: referralABI,
-					functionName: 'applyForAffiliate',
-					args: [currentReferralId, currentReferralId],
-					overrides: {
-						from: address as `0x${string}`,
-					},
-				});
-				const data = await writeContract(config);
-				console.log({ data });
-			})();
-		} else {
-			setStatus(AFFILIATE_STATUS.INACTIVE);
-			setValidationErrors(['Error registering this url: possible duplicate. Please try another url']);
-		}
+		data
+			.wait()
+			.then((res) => {
+				if (res) {
+					setStatus(AFFILIATE_STATUS.REGISTERING);
+					(async () => {
+						const config = await prepareWriteContract({
+							address: rexReferralAddress as `0x${string}`,
+							abi: referralABI,
+							functionName: 'applyForAffiliate',
+							args: [currentReferralId, currentReferralId],
+							overrides: {
+								from: address as `0x${string}`,
+							},
+						});
+						const data = await writeContract(config);
+						console.log({ data });
+						data.wait().then((res) => setIsLoading(false));
+					})();
+				}
+			})
+			.catch((err) => {
+				setStatus(AFFILIATE_STATUS.INACTIVE);
+				setValidationErrors(['Error registering this url: possible duplicate. Please try another url']);
+				console.error(err);
+			});
 	};
 	return (
 		<div className='flex flex-col items-center space-y-4'>
@@ -117,7 +126,13 @@ export const Refer = () => {
 								{t(each)}
 							</p>
 						))}
-						<SolidButton type='submit' primary={true} action={t('register-url')} />
+						<SolidButton
+							type='submit'
+							loading={isLoading}
+							disabled={isLoading}
+							primary={true}
+							action={isLoading ? `${t('registering')}...` : t('register-url')}
+						/>
 					</form>
 				</>
 			)}

@@ -34,10 +34,11 @@ import {
 	usdcxibAlluoUSDAddress
 } from 'constants/polygon_config';
 import { upgradeTokensList } from 'constants/upgradeConfig';
+import { AlertContext } from 'contexts/AlertContext';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import coingeckoApi from 'redux/slices/coingecko.slice';
 import superfluidSubgraphApi from 'redux/slices/superfluidSubgraph.slice';
 import { Flow } from 'types/flow';
@@ -58,6 +59,7 @@ export default function Home({ locale }: any): JSX.Element {
 	const isMounted = useIsMounted();
 	const { t } = useTranslation('home');
 	const { address, isConnected } = useAccount();
+	const [state, dispatch] = useContext(AlertContext);
 	const [usdPrice, setUsdPrice] = useState<Big>(new Big(0));
 	const [usdFlowRate, setUsdFlowRate] = useState<string>('0');
 	const [usdFlowRateLoading, setUsdFlowRateLoading] = useState<boolean>(false);

@@ -1,13 +1,14 @@
 import { RectangleGroupIcon } from '@heroicons/react/24/solid';
 import AlertAction from '@richochet/utils/alertAction';
 import { getShareScaler } from '@richochet/utils/getShareScaler';
+import Big from 'big.js';
 import { Coin } from 'constants/coins';
-import { FlowEnum, FlowTypes } from 'constants/flowConfig';
+import { FlowEnum, FlowTypes, InvestmentFlow } from 'constants/flowConfig';
 import { RICAddress, twoWayMarketRICUSDCAddress, USDCAddress, USDCxAddress } from 'constants/polygon_config';
 import { AlertContext } from 'contexts/AlertContext';
 import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
 import { useTranslation } from 'next-i18next';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import streamApi from 'redux/slices/streams.slice';
 import { useAccount } from 'wagmi';
 import { SolidButton } from './button';
@@ -16,56 +17,79 @@ export const LaunchPad = () => {
 	const { t } = useTranslation('home');
 	const [state, dispatch] = useContext(AlertContext);
 	const { address, isConnected } = useAccount();
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [config, setConfig] = useState<InvestmentFlow>({
+		superToken: twoWayMarketRICUSDCAddress,
+		tokenA: USDCxAddress,
+		tokenB: RICAddress,
+		coinA: Coin.USDC,
+		coinB: Coin.RIC,
+		flowKey: FlowEnum.twoWayUsdcRicFlowQuery,
+		type: FlowTypes.market,
+	});
 	const [shareScaler, setShareScaler] = useState(1e3);
 	const [startStreamTrigger] = streamApi.useLazyStartStreamQuery();
-	const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
-		return await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
-	};
 	const navigateToUniswap = () => {
 		const url = `https://app.uniswap.org/#/swap?theme=dark&inputCurrency=${USDCAddress}&outputCurrency=${RICAddress}&exactAmount=100000&exactField=output`;
 		window.open(url, '_blank');
 	};
-	const handleStartPosition = () => {
-		const config = {
-			superToken: twoWayMarketRICUSDCAddress,
-			tokenA: USDCxAddress,
-			tokenB: RICAddress,
-			coinA: Coin.USDC,
-			coinB: Coin.RIC,
-			flowKey: FlowEnum.twoWayUsdcRicFlowQuery,
-			type: FlowTypes.market,
-		};
-		console.log({ config });
+
+	useEffect(() => {
+		if (!config) return;
 		const exchangeKey = config?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
-		fetchShareScaler(exchangeKey, config.tokenA, config.tokenB)
-			.then((res) => {
-				setShareScaler(res);
-				// Need to call hook here to start a new stream.
-				dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
-				if (shareScaler) {
-					const newAmount =
-						config?.type === FlowTypes.market
-							? ((((Math.floor((20 / 2592000) * 1e18) / shareScaler) * shareScaler) / 1e18) * 2592000).toString()
-							: 20;
-					console.log({ newAmount, config });
-					//@ts-ignore
-					const stream = startStreamTrigger({ amount: newAmount, config });
-					stream
-						.then((response) => {
-							if (response.isSuccess) {
-								dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
-							}
-							if (response.isError) {
-								dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
-							}
-							setTimeout(() => {
-								dispatch(AlertAction.hideAlert());
-							}, 5000);
-						})
-						.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
+		const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
+			const shareScaler = await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
+			console.log(shareScaler);
+			setShareScaler(shareScaler);
+		};
+		fetchShareScaler(exchangeKey, config?.tokenA, config?.tokenB);
+	}, [config]);
+
+	const handleStartPosition = () => {
+		if (!config || !shareScaler) {
+			dispatch(
+				AlertAction.showErrorAlert('Oops!', 'We were unable to find the selected position. Please try another one.')
+			);
+			setTimeout(() => {
+				dispatch(AlertAction.hideAlert());
+			}, 5000);
+			return;
+		}
+		setIsLoading(true);
+		dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
+		if (!shareScaler) return;
+		let newAmount = '20';
+		if (config?.type === FlowTypes.market) {
+			const valueBig = new Big(newAmount);
+			const resultBig = valueBig
+				.div(2592000)
+				.times(1e18)
+				.div(shareScaler)
+				.round(0, 0)
+				.times(shareScaler)
+				.div(1e18)
+				.times(259200)
+				.div(3600)
+				.div(24)
+				.div(30)
+				.times(10);
+			newAmount = resultBig.toFixed();
+		}
+		const stream = startStreamTrigger({ amount: newAmount, config });
+		stream
+			.then((response) => {
+				if (response.isSuccess) {
+					dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
 				}
+				setIsLoading(response.isLoading);
+				if (response.isError) {
+					dispatch(AlertAction.showErrorAlert('Error', `${response?.error}`));
+				}
+				setTimeout(() => {
+					dispatch(AlertAction.hideAlert());
+				}, 5000);
 			})
-			.catch((error) => console.error(error));
+			.catch((error) => dispatch(AlertAction.showErrorAlert('Error', `${error || error?.message}`)));
 	};
 	return (
 		<div className='flex flex-col space-y-4'>
@@ -75,7 +99,14 @@ export const LaunchPad = () => {
 			</div>
 			<p className='text-slate-100'>{t('start-a-position')}</p>
 			{isConnected && (
-				<SolidButton type='button' primary={true} action={t('start-20-position')} handleClick={handleStartPosition} />
+				<SolidButton
+					type='button'
+					primary={true}
+					loading={isLoading}
+					disabled={isLoading}
+					action={isLoading ? `${t('confirming')}...` : t('start-20-position')}
+					handleClick={handleStartPosition}
+				/>
 			)}
 			<SolidButton type='button' primary={false} action={`${t('buy')} 100,000 RIC`} handleClick={navigateToUniswap} />
 		</div>
