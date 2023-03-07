@@ -1,6 +1,7 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import usePagination from '@richochet/hooks/usePagination';
 import { combineClasses, formatCurrency } from '@richochet/utils/helperFunctions';
+import { Coin } from 'constants/coins';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { TokenData } from '../balances';
@@ -108,16 +109,40 @@ export const DataTable: NextPage<Props> = ({
 												<CoinChange token={data.token} type={DataType.Balances} />
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
-												<p>{parseFloat(data.ricAmount).toFixed(2)}</p>
+												<p>
+													{data.token === Coin.WBTC ||
+													data.token === Coin.IbAlluoBTC ||
+													data.token === Coin.StIbAlluoBTC ||
+													data.token === Coin.ETH ||
+													data.token === Coin.IbAlluoETH ||
+													data.token === Coin.StIbAlluoETH
+														? parseFloat(data.ricAmount)
+																.toFixed(20)
+																.match(/^-?\d*\.?0*\d{0,2}/)?.[0]
+																.replace(/(?:\.0+|(\.\d+?)0+)$/, '$1')
+														: parseFloat(data.ricAmount).toFixed(2)}
+												</p>
 												<p className='text-slate-400'>{formatCurrency(parseFloat(data.ricUsdAmount))}</p>
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
 												<p>
-													{data.walletAmount === 'N/A' ? data.walletAmount : parseFloat(data.walletAmount).toFixed(2)}
+													{data.walletAmount === 'N/A'
+														? data.walletAmount
+														: data.token === Coin.WBTC ||
+														  data.token === Coin.IbAlluoBTC ||
+														  data.token === Coin.StIbAlluoBTC ||
+														  data.token === Coin.ETH ||
+														  data.token === Coin.IbAlluoETH ||
+														  data.token === Coin.StIbAlluoETH
+														? parseFloat(data.walletAmount)
+																.toFixed(20)
+																.match(/^-?\d*\.?0*\d{0,2}/)?.[0]
+																.replace(/(?:\.0+|(\.\d+?)0+)$/, '$1')
+														: parseFloat(data.walletAmount).toFixed(2)}
 												</p>
 												<p className='text-slate-400'>
 													{data.walletUsdAmount === 'N/A'
-														? data.walletAmount
+														? data.walletUsdAmount
 														: formatCurrency(parseFloat(data.walletUsdAmount))}
 												</p>
 											</td>
