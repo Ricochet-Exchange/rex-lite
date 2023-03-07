@@ -107,8 +107,20 @@ export const DataTable: NextPage<Props> = ({
 											<td className='flex items-center px-2 py-4 whitespace-nowrap space-x-2'>
 												<CoinChange token={data.token} type={DataType.Balances} />
 											</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{data.ricAmount}</td>
-											<td className='px-6 py-4 whitespace-nowrap'>{data.walletAmount}</td>
+											<td className='px-6 py-4 whitespace-nowrap'>
+												<p>{parseFloat(data.ricAmount).toFixed(2)}</p>
+												<p className='text-slate-400'>{formatCurrency(parseFloat(data.ricUsdAmount))}</p>
+											</td>
+											<td className='px-6 py-4 whitespace-nowrap'>
+												<p>
+													{data.walletAmount === 'N/A' ? data.walletAmount : parseFloat(data.walletAmount).toFixed(2)}
+												</p>
+												<p className='text-slate-400'>
+													{data.walletUsdAmount === 'N/A'
+														? data.walletAmount
+														: formatCurrency(parseFloat(data.walletUsdAmount))}
+												</p>
+											</td>
 											{/* <td className='px-6 py-4 whitespace-nowrap'>{formatCurrency(data.dollarVal)}</td> */}
 										</>
 									) : (
