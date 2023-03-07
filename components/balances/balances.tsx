@@ -1,3 +1,4 @@
+import { useCoingeckoPrices } from '@richochet/hooks/useCoingeckoPrices';
 import { polygon } from '@wagmi/chains';
 import { fetchBalance } from '@wagmi/core';
 import { Coin } from 'constants/coins';
@@ -20,7 +21,9 @@ interface Props {
 export interface TokenData {
 	token: string;
 	walletAmount: string;
+	walletUsdAmount: string;
 	ricAmount: string;
+	ricUsdAmount: string;
 	color: string;
 	// dollarVal: number;
 }
@@ -32,6 +35,7 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 	const { address, isConnected } = useAccount();
 	const [action, setAction] = useState(0);
 	const [tabsClosed, setTabsClosed] = useState(true);
+	const coingeckoPrices = useCoingeckoPrices();
 	const [sortedUpgradeTokensList, setSortedUpgradeTokensList] = useState(upgradeTokensList);
 	const [geckoPriceList, setGeckoPriceList] = useState<Object>({});
 	const [tokenList, setTokenList] = useState<TokenData[]>([]);
@@ -49,8 +53,15 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 							});
 							return {
 								token: token.coin,
-								ricAmount: parseFloat(balances[token.superTokenAddress]).toFixed(2),
-								walletAmount: token.coin === Coin.RIC ? 'N/A' : parseFloat(balance?.formatted).toFixed(2),
+								ricAmount: balances[token.superTokenAddress],
+								ricUsdAmount: (
+									parseFloat(balances[token.superTokenAddress]) * coingeckoPrices.get(token.superTokenAddress)!
+								).toFixed(2),
+								walletAmount: token.coin === Coin.RIC ? 'N/A' : balance?.formatted,
+								walletUsdAmount:
+									token.coin === Coin.RIC
+										? 'N/A'
+										: (parseFloat(balance?.formatted) * coingeckoPrices.get(token.superTokenAddress)!).toFixed(2),
 								color: colors[token.coin],
 								// dollarVal: parseFloat((geckoPriceList as any)[geckoMapping[token.coin]].usd),
 							};
