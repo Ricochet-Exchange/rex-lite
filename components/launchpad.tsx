@@ -4,7 +4,8 @@ import { getShareScaler } from '@richochet/utils/getShareScaler';
 import Big from 'big.js';
 import { Coin } from 'constants/coins';
 import { FlowEnum, FlowTypes, InvestmentFlow } from 'constants/flowConfig';
-import { RICAddress, twoWayMarketRICUSDCAddress, USDCAddress, USDCxAddress } from 'constants/polygon_config';
+import { RICAddress, usdcxRicExchangeAddress, USDCAddress, USDCxAddress } from 'constants/polygon_config';
+import { launchpads } from 'constants/flowConfig';
 import { AlertContext } from 'contexts/AlertContext';
 import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
 import { useTranslation } from 'next-i18next';
@@ -18,32 +19,13 @@ export const LaunchPad = () => {
 	const [state, dispatch] = useContext(AlertContext);
 	const { address, isConnected } = useAccount();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
-	const [config, setConfig] = useState<InvestmentFlow>({
-		superToken: twoWayMarketRICUSDCAddress,
-		tokenA: USDCxAddress,
-		tokenB: RICAddress,
-		coinA: Coin.USDC,
-		coinB: Coin.RIC,
-		flowKey: FlowEnum.twoWayUsdcRicFlowQuery,
-		type: FlowTypes.market,
-	});
-	const [shareScaler, setShareScaler] = useState(1e3);
+	const [config, setConfig] = useState<InvestmentFlow>(launchpads[0]);
+	const [shareScaler, setShareScaler] = useState<number>(1e3);
 	const [startStreamTrigger] = streamApi.useLazyStartStreamQuery();
 	const navigateToUniswap = () => {
 		const url = `https://app.uniswap.org/#/swap?theme=dark&inputCurrency=${USDCAddress}&outputCurrency=${RICAddress}&exactAmount=100000&exactField=output`;
 		window.open(url, '_blank');
 	};
-
-	useEffect(() => {
-		if (!config) return;
-		const exchangeKey = config?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
-		const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
-			const shareScaler = await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
-			console.log(shareScaler);
-			setShareScaler(shareScaler);
-		};
-		fetchShareScaler(exchangeKey, config?.tokenA, config?.tokenB);
-	}, [config]);
 
 	const handleStartPosition = () => {
 		if (!config || !shareScaler) {
@@ -59,7 +41,7 @@ export const LaunchPad = () => {
 		dispatch(AlertAction.showLoadingAlert('Waiting for your transaction to be confirmed...', ''));
 		if (!shareScaler) return;
 		let newAmount = '20';
-		if (config?.type === FlowTypes.market) {
+		if (config?.type === FlowTypes.launchpad) {
 			const valueBig = new Big(newAmount);
 			const resultBig = valueBig
 				.div(2592000)

@@ -461,7 +461,7 @@ const liquidityMarkets: InvestmentFlow[] = [
 	// },
 ];
 
-const launchpads: InvestmentFlow[] = [
+export const launchpads: InvestmentFlow[] = [
 	{
 		superToken: usdcxRicExchangeAddress,
 		tokenA: USDCxAddress,

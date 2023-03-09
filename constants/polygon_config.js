@@ -23,6 +23,8 @@ export const twoWayMarketMATICDAIAddress = '0x9FC28B1887589785CA43C57946dD0d3eD7
 export const twoWayMarketWBTCDAIAddress = '0xaA6BF289A0b3BB71dd7DfABE7A373410d37A4b70';
 export const twoWayMarketibAlluoUSDETHAddress = '0x56aCA122d439365B455cECb14B4A39A9d1B54621';
 export const twoWayMarketibAlluoUSDBTCAddress = '0xbB5C64B929b1E60c085dcDf88dfe41c6b9dcf65B';
+//launchpad
+export const usdcxRicExchangeAddress = '0x98d463A3F29F259E67176482eB15107F364c7E18';
 
 // Ricochet Exchange Tokens //
 
@@ -214,7 +216,7 @@ export const daixMaticxExchangeAddress = '0xA152715dF800dB5926598917A6eF3702308b
 export const maticxDaixExchangeAddress = '0x250efbB94De68dD165bD6c98e804E08153Eb91c6';
 
 //USDC X RIC
-export const usdcxRicExchangeAddress = '0x98d463A3F29F259E67176482eB15107F364c7E18';
+
 
 //USDC X IBALLUOUSD
 export const usdcxibAlluoUSDAddress = '0xE53dd10d49C8072d68d48c163d9e1A219bd6852D';
