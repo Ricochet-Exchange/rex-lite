@@ -455,6 +455,7 @@ export default function Home({ locale }: any): JSX.Element {
 								/>
 							</div>
 							<div className='space-y-10'>
+								<CardWithBackground content={<LaunchPad />} />
 								<Card
 									content={
 										isConnected ? (
@@ -478,7 +479,6 @@ export default function Home({ locale }: any): JSX.Element {
 										)
 									}
 								/>
-								<CardWithBackground content={<LaunchPad />} />
 								<CardWithOutline content={<Refer />} />
 							</div>
 						</div>
