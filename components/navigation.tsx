@@ -7,6 +7,7 @@ import { useTranslation } from 'next-i18next';
 import Link from 'next/link';
 import { useAccount, useBalance, useDisconnect } from 'wagmi';
 import { polygon } from 'wagmi/chains';
+import { AddressButton, RoundedButton } from './button';
 
 export default function Navigation(): JSX.Element {
 	const { disconnect } = useDisconnect();
@@ -55,7 +56,39 @@ export default function Navigation(): JSX.Element {
 									{Number(balance?.formatted).toFixed(2)} {balance?.symbol}
 								</p>
 							)}
-							<ConnectKitButton />
+							<ConnectKitButton.Custom>
+								{({ isConnected, show, unsupported, truncatedAddress, ensName }) => {
+									return (
+										<>
+											{(() => {
+												if (!isConnected) {
+													return (
+														<RoundedButton
+															action={`${t('connect-wallet')}`}
+															handleClick={show}
+															type='button'></RoundedButton>
+													);
+												}
+
+												if (unsupported) {
+													return (
+														<RoundedButton
+															action={`${t('wrong-network')}`}
+															handleClick={show}
+															type='button'></RoundedButton>
+													);
+												}
+
+												return (
+													<button type='button' className='address-link'>
+														{ensName ?? truncatedAddress}
+													</button>
+												);
+											})()}
+										</>
+									);
+								}}
+							</ConnectKitButton.Custom>
 							{isConnected && (
 								<div className='mt-3 space-y-1 px-2'>
 									<Disclosure.Button
@@ -94,7 +127,40 @@ export default function Navigation(): JSX.Element {
 								{Number(balance?.formatted).toFixed(2)} {balance?.symbol}
 							</p>
 						)}
-						<ConnectKitButton />
+						<ConnectKitButton.Custom>
+							{({ isConnected, show, unsupported, truncatedAddress, ensName }) => {
+								return (
+									<>
+										{(() => {
+											if (!isConnected) {
+												return (
+													<RoundedButton
+														action={`${t('connect-wallet')}`}
+														handleClick={show}
+														type='button'></RoundedButton>
+												);
+											}
+
+											if (unsupported) {
+												return (
+													<RoundedButton
+														action={`${t('wrong-network')}`}
+														handleClick={show}
+														type='button'></RoundedButton>
+												);
+											}
+
+											return (
+												<AddressButton
+													action={ensName! ?? truncatedAddress!}
+													handleClick={show}
+													type='button'></AddressButton>
+											);
+										})()}
+									</>
+								);
+							}}
+						</ConnectKitButton.Custom>
 					</div>
 				</>
 			)}

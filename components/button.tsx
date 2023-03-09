@@ -52,6 +52,14 @@ export const RoundedButton: NextPage<Props> = ({
 	);
 };
 
+export const AddressButton: NextPage<Props> = ({ action, type, disabled, handleClick }) => {
+	return (
+		<button type={type} className='address-link' disabled={disabled} onClick={handleClick}>
+			<span>{action}</span>
+		</button>
+	);
+};
+
 export const OutlineButton: NextPage<Props> = ({ action, type, disabled, handleClick }) => {
 	return (
 		<button type={type} className='btn-pill-outline' disabled={disabled} onClick={handleClick}>
