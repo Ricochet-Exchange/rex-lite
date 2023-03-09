@@ -135,6 +135,7 @@ const executeBatchOperations = async (
 	framework: Framework,
 	signer: Signer
 ): Promise<TransactionReceipt> => {
+	console.log('signer issue', signer)
 	const txnResponse = await framework.batchCall(operations).exec(signer);
 	return txnResponse.wait();
 };
@@ -178,7 +179,7 @@ export const startFlow = async (
 			providerOrSigner: provider,
 		});
 		console.log({ userFlow });
-		if (web3Subscription.approved) {
+		if (web3Subscription.approved && exchangeAddress !== usdcxRicExchangeAddress) {
 			try {
 				const transactionData = {
 					superToken: inputTokenAddress,
@@ -206,9 +207,10 @@ export const startFlow = async (
 				exchangeAddress === ricRexShirtLaunchpadAddress ||
 				exchangeAddress == ricRexHatLaunchpadAddress
 			) {
+				console.log('made it to correct area', amount, inputTokenAddress, exchangeAddress);
 				try {
 					const operations = [
-						await framework.idaV1.approveSubscription({
+				/* 		await framework.idaV1.approveSubscription({
 							superToken: outputTokenAddress,
 							indexId: '0',
 							publisher: exchangeAddress,
@@ -216,7 +218,7 @@ export const startFlow = async (
 							overrides: {
 								...(await gas()),
 							}
-						}),
+						}), */
 						await framework.cfaV1.createFlow({
 							superToken: inputTokenAddress,
 							sender: address!,
@@ -238,7 +240,7 @@ export const startFlow = async (
 							...(await gas()),
 						}
 					}),
-						await executeBatchOperations(operations, framework, signer as Signer);
+				  await executeBatchOperations(operations, framework, signer as Signer);
 				} catch (e: any) {
 					console.error(e);
 					throw new Error(e);
