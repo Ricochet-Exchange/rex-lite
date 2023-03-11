@@ -76,16 +76,12 @@ const streamApi = createApi({
 			queryFn: async (payload: any): Promise<any | undefined> => {
 				try {
 					const { superToken, tokenA } = payload;
-					const tx = stopFlow(superToken, tokenA);
-					return tx
-						.then((data) => {
-							return {
-								data,
-							};
-						})
-						.then((error) => {
-							return { error };
-						});
+					const tx = await stopFlow(superToken, tokenA);
+					return tx.wait(1).then((res) => {
+						return {
+							data: res,
+						};
+					});
 				} catch (e) {
 					const error = transformError(e);
 					return { error };

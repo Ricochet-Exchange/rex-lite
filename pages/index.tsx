@@ -400,9 +400,9 @@ export default function Home({ locale }: any): JSX.Element {
 									content={
 										<>
 											<h6 className='font-light uppercase tracking-widest text-primary-500 mb-2'>{t('ric-balance')}</h6>
-											<p className='text-slate-100 font-light text-2xl space-x-1'>
+											<div className='text-slate-100 font-light text-2xl space-x-1'>
 												<BalanceDisplay tokenAddress={RICAddress} showSymbol={true} />
-											</p>
+											</div>
 										</>
 									}
 								/>
