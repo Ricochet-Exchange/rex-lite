@@ -27,7 +27,7 @@ export const downgrade = async (contract: any, amount: BigNumber, address: strin
 		args: [amount],
 		overrides: {
 			...(await gas()),
-		}
+		},
 	});
 	console.log({ config });
 	const data = await writeContract(config);
@@ -43,7 +43,7 @@ export const downgradeMatic = async (contract: any, amount: BigNumber, address: 
 		args: [amount],
 		overrides: {
 			...(await gas()),
-		}
+		},
 	});
 	const data = await writeContract(config);
 	return data;
@@ -67,7 +67,7 @@ export const approve = async (contract: any, address: string, tokenAddress: stri
 		args: [tokenAddress, amount],
 		overrides: {
 			...(await gas()),
-		}
+		},
 	});
 	console.log({ config });
 	const data = await writeContract(config);
@@ -83,7 +83,7 @@ export const upgrade = async (contract: any, amount: BigNumber, address: string)
 		args: [amount],
 		overrides: {
 			...(await gas()),
-		}
+		},
 	});
 	console.log({ config });
 	const data = await writeContract(config);
@@ -98,7 +98,7 @@ export const upgradeMatic = async (contract: any, amount: BigNumber, address: st
 		functionName: 'upgradeByETH',
 		overrides: {
 			...(await gas()),
-		}
+		},
 	});
 	console.log({ config });
 	const data = await writeContract(config);
@@ -114,16 +114,16 @@ export const stopFlow = async (exchangeAddress: string, inputTokenAddress: strin
 		const signer = await fetchSigner({
 			chainId: polygon.id,
 		});
-		await framework.cfaV1
-			.deleteFlow({
-				superToken: inputTokenAddress,
-				sender: address!,
-				receiver: exchangeAddress,
-				overrides: {
-					...(await gas()),
-				}
-			})
-			.exec(signer as Signer);
+		const transactionData = {
+			superToken: inputTokenAddress,
+			sender: address!,
+			receiver: exchangeAddress,
+			overrides: {
+				...(await gas()),
+			},
+		};
+		const tx = await framework.cfaV1.deleteFlow(transactionData).exec(signer as Signer);
+		return tx;
 	} catch (e: any) {
 		console.error(e);
 		throw new Error(e);
@@ -135,7 +135,7 @@ const executeBatchOperations = async (
 	framework: Framework,
 	signer: Signer
 ): Promise<TransactionReceipt> => {
-	console.log('signer issue', signer)
+	console.log('signer issue', signer);
 	const txnResponse = await framework.batchCall(operations).exec(signer);
 	return txnResponse.wait();
 };
@@ -188,7 +188,7 @@ export const startFlow = async (
 					flowRate: amount.toString(),
 					overrides: {
 						...(await gas()),
-					}
+					},
 				};
 				console.log({ transactionData });
 				const tx =
@@ -210,7 +210,7 @@ export const startFlow = async (
 				console.log('made it to correct area', amount, inputTokenAddress, exchangeAddress);
 				try {
 					const operations = [
-				/* 		await framework.idaV1.approveSubscription({
+						/* 		await framework.idaV1.approveSubscription({
 							superToken: outputTokenAddress,
 							indexId: '0',
 							publisher: exchangeAddress,
@@ -227,7 +227,7 @@ export const startFlow = async (
 							userData,
 							overrides: {
 								...(await gas()),
-							}
+							},
 						}),
 					];
 					console.log({
@@ -238,9 +238,9 @@ export const startFlow = async (
 						userData,
 						overrides: {
 							...(await gas()),
-						}
+						},
 					}),
-				  await executeBatchOperations(operations, framework, signer as Signer);
+						await executeBatchOperations(operations, framework, signer as Signer);
 				} catch (e: any) {
 					console.error(e);
 					throw new Error(e);
@@ -255,7 +255,7 @@ export const startFlow = async (
 							userData,
 							overrides: {
 								...(await gas()),
-							}
+							},
 						}),
 						await framework.idaV1.approveSubscription({
 							superToken: RICAddress,
@@ -264,7 +264,7 @@ export const startFlow = async (
 							userData,
 							overrides: {
 								...(await gas()),
-							}
+							},
 						}),
 						/* await framework.idaV1.approveSubscription({
 							superToken: WETHxAddress,
@@ -283,7 +283,7 @@ export const startFlow = async (
 							userData,
 							overrides: {
 								...(await gas()),
-							}
+							},
 						}),
 						await framework.cfaV1.createFlow({
 							superToken: inputTokenAddress,
@@ -293,7 +293,7 @@ export const startFlow = async (
 							userData,
 							overrides: {
 								...(await gas()),
-							}
+							},
 						}),
 					];
 					await executeBatchOperations(operations, framework, signer as Signer);
@@ -311,7 +311,7 @@ export const startFlow = async (
 							userData,
 							overrides: {
 								...(await gas()),
-							}
+							},
 						}),
 						await framework.idaV1.approveSubscription({
 							superToken: config.subsidy,
@@ -320,7 +320,7 @@ export const startFlow = async (
 							userData,
 							overrides: {
 								...(await gas()),
-							}
+							},
 						}),
 						await framework.cfaV1.createFlow({
 							superToken: config.input,
@@ -330,7 +330,7 @@ export const startFlow = async (
 							userData,
 							overrides: {
 								...(await gas()),
-							}
+							},
 						}),
 					];
 					console.log({
@@ -341,7 +341,7 @@ export const startFlow = async (
 						userData,
 						overrides: {
 							...(await gas()),
-						}
+						},
 					}),
 						await executeBatchOperations(operations, framework, signer as Signer);
 				} catch (e: any) {
@@ -358,7 +358,7 @@ export const startFlow = async (
 							userData,
 							overrides: {
 								...(await gas()),
-							}
+							},
 						}),
 						await framework.cfaV1.createFlow({
 							superToken: config.input,
@@ -368,7 +368,7 @@ export const startFlow = async (
 							userData,
 							overrides: {
 								...(await gas()),
-							}
+							},
 						}),
 					];
 					console.log({
@@ -379,7 +379,7 @@ export const startFlow = async (
 						userData,
 						overrides: {
 							...(await gas()),
-						}
+						},
 					}),
 						await executeBatchOperations(operations, framework, signer as Signer);
 				} catch (e: any) {
@@ -415,7 +415,7 @@ export const approveToken = async (accountAddress: string, bankAddress: string, 
 			from: accountAddress,
 			overrides: {
 				...(await gas()),
-			}
+			},
 		})
 		.once('transactionHash', (txHash: string) => {
 			console.log(txHash);
