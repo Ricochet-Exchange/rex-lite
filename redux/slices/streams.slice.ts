@@ -132,17 +132,17 @@ const streamApi = createApi({
 			},
 		}),
 		approve: builder.query<
-			{ tokenAddress: string; superTokenAddress: string } | null,
-			{ tokenAddress: string; superTokenAddress: string }
+			{ tokenAddress: string; superTokenAddress: string; } | null,
+			{ tokenAddress: string; superTokenAddress: string; }
 		>({
 			queryFn: async (payload: any): Promise<any | undefined> => {
 				try {
 					const { tokenAddress, superTokenAddress } = payload;
 					const { address } = getAccount();
 					// Allow max instead of amount
-					const amount = ethers.BigNumber.from('2').pow(ethers.BigNumber.from('256')).sub(ethers.BigNumber.from('1'));
+					const bnAmount = ethers.BigNumber.from('2').pow(ethers.BigNumber.from('256')).sub(ethers.BigNumber.from('1'));
 					const contract = await getContract({ address: tokenAddress, abi: superTokenABI });
-					const tx = await approve(contract, address!, superTokenAddress, amount);
+					const tx = await approve(contract, address!, superTokenAddress, bnAmount);
 					return tx.wait(1).then((res) => {
 						return {
 							data: res,

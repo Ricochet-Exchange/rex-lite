@@ -35,6 +35,7 @@ const coins = [...namesCoin, ...namesCoinX];
 export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceList }) => {
 	const { t } = useTranslation('home');
 	const { address } = useAccount();
+	const [unlimited, setUnlimited] = useState(false);
 	const [state, dispatch] = useContext(AlertContext);
 	const [hasApprove, setHasApprove] = useState<boolean>(false);
 	const [upgradeConfig, setUpgradeConfig] = useState<{
@@ -66,6 +67,7 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 	const [upgradeTrigger] = streamApi.useLazyUpgradeQuery();
 	const [approveTrigger] = streamApi.useLazyApproveQuery();
 	const [downgradeTrigger] = streamApi.useLazyDowngradeQuery();
+
 	useEffect(() => {
 		if (type === BalanceAction.Withdraw && selectedToken !== Coin.SELECT) {
 			const token = downgradeTokensList.find((token) => token.coin === selectedToken);
@@ -78,6 +80,7 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 			setUpgradeConfig(upgradeConfig);
 		}
 	}, [selectedToken]);
+
 	useEffect(() => {
 		if (BalanceAction.Deposit && upgradeConfig) {
 			(async () => {
@@ -90,22 +93,25 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 			})();
 		}
 	}, [upgradeConfig]);
+
 	const handleApprove = () => {
+		console.log('made it to approve', upgradeConfig);
 		if (upgradeConfig) {
 			setIsLoading(true);
 			const approve = approveTrigger({
 				tokenAddress: upgradeConfig?.tokenAddress!,
 				superTokenAddress: upgradeConfig?.superTokenAddress!,
+				//amount: unlimited ? '' : amount,
 			});
 			approve.then((res) => {
-				console.log({ res });
-				setIsLoading(res.isLoading);
+				setIsLoading(false);
 				checkForApproval(upgradeConfig?.tokenAddress!, upgradeConfig?.superTokenAddress!).then((hasApprove) =>
 					setHasApprove(hasApprove)
 				);
 			});
 		}
 	};
+
 	const setMaxValue = () => {
 		if (BalanceAction.Withdraw && balanceList) {
 			setAmount(balanceList?.[downgradeConfig?.tokenAddress!]);
@@ -245,7 +251,16 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 						onClick={setMaxValue}>
 						Max
 					</button>
+					
 				</div>
+				{/* {!hasApprove && type === BalanceAction.Deposit && (
+						<div style={{display:'flex', alignItems: 'center'}}>
+							<label>Unlimited Approval?</label>
+							<input type={"checkbox"} onChange={() => {setUnlimited(!unlimited)}} style={{
+								marginLeft: '1em'
+							}}/>
+						</div>
+					)} */}
 				{type === BalanceAction.Swap && (
 					<>
 						<label className='text-slate-100'>{t('slippage-tolerance')}:</label>
@@ -320,7 +335,7 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 							type='button'
 							loading={isLoading}
 							action={isLoading ? `${t('approving')}...` : `${t('approve')}`}
-							disabled={selectedToken !== Coin.SELECT || isLoading}
+							disabled={selectedToken === Coin.SELECT || isLoading}
 							handleClick={handleApprove}
 						/>
 					)}
