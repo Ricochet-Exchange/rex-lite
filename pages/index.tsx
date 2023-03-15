@@ -34,32 +34,30 @@ import {
 	usdcxibAlluoUSDAddress
 } from 'constants/polygon_config';
 import { upgradeTokensList } from 'constants/upgradeConfig';
-import { AlertContext } from 'contexts/AlertContext';
+import { makeStaticProps } from 'lib/getStatic';
 import { useTranslation } from 'next-i18next';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import coingeckoApi from 'redux/slices/coingecko.slice';
 import superfluidSubgraphApi from 'redux/slices/superfluidSubgraph.slice';
 import { Flow } from 'types/flow';
 import { useAccount, useProvider } from 'wagmi';
 import { polygon } from 'wagmi/chains';
 
-export async function getStaticProps({ locale }: any): Promise<Object> {
+export async function getStaticProps(): Promise<Object> {
 	return {
 		props: {
-			...(await serverSideTranslations(locale, ['home', 'footer'])),
+			...makeStaticProps(['home', 'footer']),
 		},
 	};
 }
 
 const exchangeContractsAddresses = flowConfig.map((f) => f.superToken);
 
-export default function Home({ locale }: any): JSX.Element {
+export default function Home(): JSX.Element {
 	const isMounted = useIsMounted();
 	const { t } = useTranslation('home');
 	const { address, isConnected } = useAccount();
-	const [state, dispatch] = useContext(AlertContext);
 	const [usdPrice, setUsdPrice] = useState<Big>(new Big(0));
 	const [usdFlowRate, setUsdFlowRate] = useState<string>('0');
 	const [usdFlowRateLoading, setUsdFlowRateLoading] = useState<boolean>(false);

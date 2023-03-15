@@ -6,10 +6,11 @@ import { ConnectKitButton } from 'connectkit';
 import { referralABI } from 'constants/ABIs/referralABI';
 import { rexReferralAddress } from 'constants/polygon_config';
 import { useTranslation } from 'next-i18next';
-import Link from 'next/link';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { OutlineButton, SolidButton } from './button';
+import Link from './link';
+;
 
 export const Refer = () => {
 	const { t } = useTranslation('home');

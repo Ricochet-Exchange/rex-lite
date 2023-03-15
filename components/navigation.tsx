@@ -4,10 +4,13 @@ import { ConnectKitButton } from 'connectkit';
 import { RICAddress } from 'constants/polygon_config';
 import RicochetLogo from 'icons/richochet-logo';
 import { useTranslation } from 'next-i18next';
-import Link from 'next/link';
+import router from 'next/router';
 import { useAccount, useBalance, useDisconnect } from 'wagmi';
 import { polygon } from 'wagmi/chains';
+import i18nextConfig from '../next-i18next.config';
 import { AddressButton, RoundedButton } from './button';
+import LanguageSwitchLink from './language-switch-link';
+import Link from './link';
 
 export default function Navigation(): JSX.Element {
 	const { disconnect } = useDisconnect();
@@ -22,6 +25,7 @@ export default function Navigation(): JSX.Element {
 		token: RICAddress,
 	});
 	const { t } = useTranslation('home');
+	const currentLocale = router.query.locale || i18nextConfig.i18n.defaultLocale;
 	return (
 		<Disclosure as='nav' className='navbar'>
 			{({ open }) => (
@@ -30,6 +34,12 @@ export default function Navigation(): JSX.Element {
 						<RicochetLogo width='50' height='25' />
 						<span className='text-xl tracking-wide'>Ricochet</span>
 					</Link>
+					<p className='inline-flex items-center space-x-2'>
+						{i18nextConfig.i18n.locales.map((locale) => {
+							if (locale === currentLocale) return null;
+							return <LanguageSwitchLink locale={locale} key={locale} />;
+						})}
+					</p>
 					<Disclosure.Button className='btn-mobile-menu'>
 						<span className='sr-only'>Open main menu</span>
 						{open ? (

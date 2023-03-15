@@ -1,10 +1,7 @@
-/** @type {import('next').NextConfig} */
-const { i18n } = require('./next-i18next.config');
 const nextConfig = {
 	reactStrictMode: true,
 	swcMinify: true,
-	i18n,
-	output: 'export',
+	output: 'standalone',
 };
 
 module.exports = nextConfig;
