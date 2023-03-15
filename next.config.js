@@ -4,6 +4,7 @@ const nextConfig = {
 	reactStrictMode: true,
 	swcMinify: true,
 	i18n,
+	output: 'export',
 };
 
 module.exports = nextConfig;
