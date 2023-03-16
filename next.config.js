@@ -5,6 +5,7 @@ const nextConfig = {
 		unoptimized: true,
 	},
 	reactStrictMode: true,
+	trailingSlash: true,
 	swcMinify: true,
 	// i18n,
 	// output: 'export',
