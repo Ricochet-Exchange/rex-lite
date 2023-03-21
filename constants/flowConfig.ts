@@ -24,6 +24,16 @@ import {
 	WETHxAddress
 } from './polygon_config';
 
+import {
+	fUSDCxfDAI,
+	fDAIxfUSDC,
+	mumbaiRICAddress,
+	fUSDC,
+	fDAI,
+	fUSDCx,
+	fDAIx,
+} from './mumbai_config';
+
 // To-Do: Refactor this
 
 export enum FlowEnum {
@@ -49,6 +59,9 @@ export enum FlowEnum {
 	ricRexShirtFlowQuery = 'ricRexShirtFlowQuery',
 	ricRexHatFlowQuery = 'ricRexHatFlowQuery',
 	usdcxibAlluoUSDFlowQuery = 'usdcxibAlluoUSDFlowQuery',
+	// MUMBAI
+	fDAIxfUSDC = 'fDAIxfUSDC',
+	fUSDCxfDAI = 'fUSDCxfDAI',
 }
 
 type IndexIDAType = {
@@ -60,6 +73,25 @@ type IndexIDAType = {
 	inputIndex: number;
 	outputIndex: number;
 }[];
+
+export enum FlowTypes {
+	launchpad = 'launchpad',
+	market = 'market',
+	sushiLP = 'sushiLP',
+}
+
+export type InvestmentFlow = {
+	superToken: string;
+	tokenA: string;
+	tokenB: string;
+	coinA: Coin;
+	coinB: Coin;
+	flowKey: FlowEnum;
+	type: FlowTypes;
+};
+
+
+// POLYGON
 
 export const indexIDA: IndexIDAType = [
 	{
@@ -258,22 +290,6 @@ export const indexIDA: IndexIDAType = [
 	 	outputIndex: 0,
 	},
 ];
-
-export enum FlowTypes {
-	launchpad = 'launchpad',
-	market = 'market',
-	sushiLP = 'sushiLP',
-}
-
-export type InvestmentFlow = {
-	superToken: string;
-	tokenA: string;
-	tokenB: string;
-	coinA: Coin;
-	coinB: Coin;
-	flowKey: FlowEnum;
-	type: FlowTypes;
-};
 
 const markets: InvestmentFlow[] = [
 	{
@@ -498,3 +514,47 @@ export const launchpads: InvestmentFlow[] = [
 // };
 
 export const flowConfig: InvestmentFlow[] = [...markets, ...liquidityMarkets, ...launchpads];
+
+// MUMBAI
+
+export const mumbaiIndexIDA: IndexIDAType = [
+	{
+		exchangeAddress: fDAIxfUSDC,
+		input: fDAIx,
+		output: fUSDCx,
+		subsidy: RICAddress,
+		subsidyIndex: 2,
+		inputIndex: 1,
+		outputIndex: 0,
+	},
+	{
+		exchangeAddress: fUSDCxfDAI,
+		input: fUSDCx,
+		output: fDAIx,
+		subsidy: RICAddress,
+		subsidyIndex: 2,
+		inputIndex: 1,
+		outputIndex: 0,
+	},
+]
+
+export const mumbaiMarkets: InvestmentFlow[] = [
+	{
+		superToken: fDAIxfUSDC,
+		tokenA: fDAIx,
+		tokenB: fUSDCx,
+		coinA: Coin.FDAI,
+		coinB: Coin.FUSDC,
+		flowKey: FlowEnum.fDAIxfUSDC,
+		type: FlowTypes.market,
+	},
+	{
+		superToken: fUSDCxfDAI,
+		tokenA: fUSDCx,
+		tokenB: fDAIx,
+		coinA: Coin.FUSDC,
+		coinB: Coin.FDAI,
+		flowKey: FlowEnum.fUSDCxfDAI,
+		type: FlowTypes.market,
+	},
+]
