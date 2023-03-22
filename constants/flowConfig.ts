@@ -28,10 +28,9 @@ import {
 	fUSDCxfDAI,
 	fDAIxfUSDC,
 	mumbaiRICAddress,
-	fUSDC,
-	fDAI,
 	fUSDCx,
 	fDAIx,
+	mumbaiLaunchpad
 } from './mumbai_config';
 
 // To-Do: Refactor this
@@ -522,7 +521,7 @@ export const mumbaiIndexIDA: IndexIDAType = [
 		exchangeAddress: fDAIxfUSDC,
 		input: fDAIx,
 		output: fUSDCx,
-		subsidy: RICAddress,
+		subsidy: mumbaiRICAddress,
 		subsidyIndex: 2,
 		inputIndex: 1,
 		outputIndex: 0,
@@ -531,7 +530,7 @@ export const mumbaiIndexIDA: IndexIDAType = [
 		exchangeAddress: fUSDCxfDAI,
 		input: fUSDCx,
 		output: fDAIx,
-		subsidy: RICAddress,
+		subsidy: mumbaiRICAddress,
 		subsidyIndex: 2,
 		inputIndex: 1,
 		outputIndex: 0,
@@ -558,3 +557,26 @@ export const mumbaiMarkets: InvestmentFlow[] = [
 		type: FlowTypes.market,
 	},
 ]
+
+export const mumbaiLaunchpads: InvestmentFlow[] = [
+	{
+		superToken: mumbaiLaunchpad,
+		tokenA: fUSDCx,
+		tokenB: mumbaiRICAddress,
+		coinA: Coin.USDC,
+		coinB: Coin.RIC,
+		flowKey: FlowEnum.usdcRicFlowQuery,
+		type: FlowTypes.launchpad,
+	},
+]
+
+export const mumbaiFlowConfig: InvestmentFlow[] = [...mumbaiMarkets, ...mumbaiLaunchpads];
+
+export const flowDirectory: { [key: number]: InvestmentFlow[] } = {
+	137: flowConfig,
+	80001: mumbaiFlowConfig,
+}
+
+export const getFlowDirectory = (networkId: number) => {
+	return flowDirectory[networkId];
+}

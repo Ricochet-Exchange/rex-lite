@@ -8,3 +8,19 @@ export const fDAIx = '0x5D8B4C2554aeB7e86F387B4d6c00Ac33499Ed01f'
 
 export const fUSDCxfDAI = '0x4fb7309f1e000d40c0eb074cd5579e14386c1b77';
 export const fDAIxfUSDC = '0xd3b6767173fe6c9d60938713bb7578fbab80947e';
+
+//launchpad
+
+export const mumbaiLaunchpad = '0xd6cf77c9bc69181ab859b5fc963d769cf2e2c2af';
+
+//referral
+
+export const mumbaiReferral = '0x24239b083143759C8920Ba56d76Be36CD70DE490';
+
+export const mumbaiTokenArray = [
+  mumbaiRICAddress,
+  fDAI,
+  fUSDC,
+  fDAIx,
+  fUSDCx,
+]

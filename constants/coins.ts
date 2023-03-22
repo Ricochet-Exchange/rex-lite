@@ -69,6 +69,8 @@ export const namesCoin = [
 	Coin.IbAlluoETH,
 	Coin.IbAlluoUSD,
 	Coin.IbAlluoBTC,
+	Coin.FDAI,
+	Coin.FUSDC,
 ];
 
 export const namesCoinX = [
@@ -84,6 +86,8 @@ export const namesCoinX = [
 	Coin.StIbAlluoETH,
 	Coin.StIbAlluoUSD,
 	Coin.StIbAlluoBTC,
+	Coin.FDAIx,
+	Coin.FUSDCx,
 ];
 
 export const iconsCoin: Partial<Record<Coin, string>> = {
@@ -99,8 +103,12 @@ export const iconsCoin: Partial<Record<Coin, string>> = {
 	[Coin.RIC]: ric,
 	// [Coin.REXSHIRT]: rexshirt,
 	// [Coin.REXHAT]: rexhat,
+	[Coin.FDAI]: dai,
+	[Coin.FUSDC]: usdc,
 	[Coin.WETH]: eth,
 	[Coin.SLP]: slp,
+	[Coin.FDAIx]: dai,
+	[Coin.FUSDCx]: usdc,
 	[Coin.DAIx]: dai,
 	[Coin.MKRx]: mkr,
 	[Coin.USDCx]: usdc,

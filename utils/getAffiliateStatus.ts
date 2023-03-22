@@ -27,6 +27,7 @@ export const filterValidationErrors = (input: string) =>
 	}, []);
 
 export const getAffiliateStatus = async (address: string, setCurrentReferralId = (referralId: string) => {}) => {
+	//note add multi network support here
 	const affiliateId: any = await readContract({
 		address: rexReferralAddress,
 		abi: referralABI,

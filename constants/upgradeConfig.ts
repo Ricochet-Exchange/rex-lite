@@ -20,6 +20,13 @@ import {
 	ZeroAddress,
 } from './polygon_config';
 
+import {
+	fUSDC,
+	fDAI,
+	fUSDCx,
+	fDAIx,
+} from './mumbai_config';
+
 export const upgradeTokensList: {
 	coin: Coin;
 	tokenAddress: string;
@@ -33,6 +40,8 @@ export const upgradeTokensList: {
 		| 'hasUsdcApprove'
 		| 'hasWbtcApprove'
 		| 'hasDaiApprove'
+		| 'hasFUsdcApprove'
+		| 'hasFDaiApprove'
 		| 'hasMaticApprove';
 }[] = [
 	{
@@ -99,3 +108,28 @@ export const upgradeTokensList: {
 		key: 'hasMaticApprove',
 	},
 ];
+
+export const mumbaiUpgradeTokensList: {
+	coin: Coin;
+	tokenAddress: string;
+	superTokenAddress: string;
+	multi: number;
+	key:
+	| 'hasFUsdcApprove'
+	| 'hasFDaiApprove'
+}[] = [
+	{
+		coin: Coin.FUSDC,
+		tokenAddress: fUSDC,
+		superTokenAddress: fUSDCx,
+		multi: 1e6,
+		key: 'hasFUsdcApprove',
+	},
+	{
+		coin: Coin.FDAI,
+		tokenAddress: fDAI,
+		superTokenAddress: fDAIx,
+		multi: 1e18,
+		key: 'hasFDaiApprove',
+	},
+]

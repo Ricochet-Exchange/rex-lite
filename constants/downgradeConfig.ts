@@ -10,6 +10,11 @@ import {
 	StIbAlluoBTCAddress,
 } from './polygon_config';
 
+import {
+	fUSDCx,
+	fDAIx,
+} from './mumbai_config';
+
 export const downgradeTokensList = [
 	{
 		coin: Coin.USDCx,
@@ -42,5 +47,13 @@ export const downgradeTokensList = [
 	{
 		coin: Coin.StIbAlluoBTC,
 		tokenAddress: StIbAlluoBTCAddress,
+	},
+	{
+		coin: Coin.FDAIx,
+		token: fDAIx,
+	},
+	{
+		coin: Coin.FUSDCx,
+		token: fUSDCx,
 	},
 ];
