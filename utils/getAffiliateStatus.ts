@@ -3,6 +3,8 @@ import { referralABI } from 'constants/ABIs/referralABI';
 import { rexReferralAddress } from 'constants/polygon_config';
 import { ethers } from 'ethers';
 
+//TO DO MAKE THIS MULTI CHAIN COMPATIBLE
+
 export enum AFFILIATE_STATUS {
 	'INACTIVE' = 'inactive',
 	'REGISTERING' = 'registering',

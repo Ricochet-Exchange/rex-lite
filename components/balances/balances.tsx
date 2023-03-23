@@ -1,6 +1,5 @@
 import { useCoingeckoPrices } from '@richochet/hooks/useCoingeckoPrices';
 import { fetchBalance } from '@wagmi/core';
-import { polygon, polygonMumbai } from 'wagmi/chains';
 import { Coin } from 'constants/coins';
 import { upgradeTokensList, mumbaiUpgradeTokensList } from 'constants/upgradeConfig';
 import { colors } from 'enumerations/colors.enum';
@@ -25,7 +24,6 @@ export interface TokenData {
 	ricAmount: string;
 	ricUsdAmount: string;
 	color: string;
-	// dollarVal: number;
 }
 
 const headerTitles = ['token', 'ricochet-balance', 'wallet-balance'];
@@ -50,8 +48,6 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 			setSortedUpgradeTokensList(upgradeTokensList);
 		}
 	}, [chain])
-
-	console.log('chain', chain?.id, polygon, polygonMumbai);
 
 	useEffect(() => {
 		if (isConnected && chain) {

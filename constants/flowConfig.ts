@@ -288,6 +288,16 @@ export const indexIDA: IndexIDAType = [
 	 	inputIndex: 0,
 	 	outputIndex: 0,
 	},
+
+	//Mumbai
+	{
+		exchangeAddress: mumbaiLaunchpad,
+		input: fUSDCx,
+		output: mumbaiRICAddress,
+		subsidy: mumbaiRICAddress,
+		inputIndex: 0, // just a placeholder, not used
+		outputIndex: 0,
+	},
 ];
 
 const markets: InvestmentFlow[] = [
