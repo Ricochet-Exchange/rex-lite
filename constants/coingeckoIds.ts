@@ -10,7 +10,14 @@ import {
 	WETHxAddress
 } from 'constants/polygon_config';
 
+import {
+	fDAIx,
+	fUSDCx,
+} from 'constants/mumbai_config';
+
 export const coingeckoIds = new Map<string, string>([
+	[fDAIx, 'dai'],
+	[fUSDCx, 'usd-coin'],
 	[DAIxAddress, 'dai'],
 	[USDCxAddress, 'usd-coin'],
 	[WETHxAddress, 'weth'],

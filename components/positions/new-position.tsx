@@ -5,7 +5,7 @@ import { getCoingeckoPairs } from '@richochet/utils/getCoingeckoPairs';
 import { getShareScaler } from '@richochet/utils/getShareScaler';
 import Big from 'big.js';
 import { Coin } from 'constants/coins';
-import { flowConfig, FlowTypes, InvestmentFlow } from 'constants/flowConfig';
+import { flowConfig, FlowTypes, InvestmentFlow, getFlowDirectory } from 'constants/flowConfig';
 import { AlertContext } from 'contexts/AlertContext';
 import { ExchangeKeys } from 'enumerations/exchangeKeys.enum';
 import { NextPage } from 'next';
@@ -15,6 +15,7 @@ import streamApi from 'redux/slices/streams.slice';
 import { RoundedButton } from '../button';
 import { AreaGraph } from '../graphs';
 import TokenList from '../token-list';
+import { useNetwork } from 'wagmi';
 
 interface Props {
 	close: boolean;
@@ -24,11 +25,14 @@ interface Props {
 export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	const postionTypes = ['continuous'];
 	const { t } = useTranslation('home');
+	const { chain } = useNetwork();
+	const [configs] = useState<InvestmentFlow[]>(getFlowDirectory(chain?.id || 137));
+
 	const [coinsFrom, SetCoinsFrom] = useState<Coin[]>(
-		flowConfig.map((flow) => flow.coinA).filter((coin, index, self) => self.indexOf(coin) === index)
+		configs.map((flow) => flow.coinA).filter((coin, index, self) => self.indexOf(coin) === index)
 	);
 	const [coinsTo, SetCoinsTo] = useState<Coin[]>(
-		flowConfig.map((flow) => flow.coinB).filter((coin, index, self) => self.indexOf(coin) === index)
+		configs.map((flow) => flow.coinB).filter((coin, index, self) => self.indexOf(coin) === index)
 	);
 	const [position, setPosition] = useState<InvestmentFlow>();
 	const [coingeckoPairs, setCoingeckoPairs] = useState<Map<string, Coin[]>>(new Map());
@@ -44,43 +48,44 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	useEffect(() => {
 		if (!position) return;
 		const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
-		const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
-			const shareScaler = await getShareScaler(exchangeKey, tokenA, tokenB).then((res) => res);
+		console.log(position, exchangeKey, 'sharescaler');
+		const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string, chain: number) => {
+			const shareScaler = await getShareScaler(exchangeKey, tokenA, tokenB, chain).then((res) => res);
 			console.log(shareScaler);
 			setShareScaler(shareScaler);
 		};
-		fetchShareScaler(exchangeKey, position?.tokenA, position?.tokenB);
+		fetchShareScaler(exchangeKey, position?.tokenA, position?.tokenB, chain?.id || 137);
 	}, [position?.flowKey, position?.tokenA, position?.tokenB]);
 
 	useEffect(() => {
 		if (from !== Coin.SELECT) {
-			const flows = flowConfig
+			const flows = configs
 				.filter((flow) => flow.coinA === from)
 				.map((flow) => flow.coinB)
 				.filter((coin, index, self) => self.indexOf(coin) === index);
 			SetCoinsTo([Coin.SELECT, ...flows]);
 		} else {
-			const flows = flowConfig.map((flow) => flow.coinB).filter((coin, index, self) => self.indexOf(coin) === index);
+			const flows = configs.map((flow) => flow.coinB).filter((coin, index, self) => self.indexOf(coin) === index);
 			SetCoinsTo([Coin.SELECT, ...flows]);
 		}
 	}, [from]);
 
 	useEffect(() => {
 		if (to !== Coin.SELECT) {
-			const flows = flowConfig
+			const flows = configs
 				.filter((flow) => flow.coinB === to)
 				.map((flow) => flow.coinA)
 				.filter((coin, index, self) => self.indexOf(coin) === index);
 			SetCoinsFrom([Coin.SELECT, ...flows]);
 		} else {
-			const flows = flowConfig.map((flow) => flow.coinB).filter((coin, index, self) => self.indexOf(coin) === index);
+			const flows = configs.map((flow) => flow.coinB).filter((coin, index, self) => self.indexOf(coin) === index);
 			SetCoinsFrom([Coin.SELECT, ...flows]);
 		}
 	}, [to]);
 
 	useEffect(() => {
 		if (from !== Coin.SELECT && to !== Coin.SELECT) {
-			const config = flowConfig.find((flow) => flow.coinA === from && flow.coinB === to);
+			const config = configs.find((flow) => flow.coinA === from && flow.coinB === to);
 			setPosition(config);
 		}
 	}, [from, to]);
@@ -124,9 +129,9 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 				.times(10);
 			newAmount = resultBig.toFixed();
 		}
-		const stream = startStreamTrigger({ amount: newAmount, config: position });
+		const stream = startStreamTrigger({ amount: newAmount, config: position, network: chain?.id || 137 });
 		stream
-			.then((response) => {
+			.then((response: any) => {
 				if (response.isSuccess) {
 					dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
 				}

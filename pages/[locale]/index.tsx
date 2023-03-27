@@ -22,7 +22,7 @@ import Big, { BigSource } from 'big.js';
 import { ConnectKitButton } from 'connectkit';
 import { streamExchangeABI } from 'constants/ABIs/streamExchange';
 import { geckoMapping } from 'constants/coingeckoMapping';
-import { flowConfig, FlowEnum, FlowTypes, InvestmentFlow } from 'constants/flowConfig';
+import { combinedFlowConfig,	FlowEnum, FlowTypes, InvestmentFlow, getFlowDirectory } from 'constants/flowConfig';
 import {
 	RICAddress,
 	twoWayMarketDAIWETHAddress,
@@ -41,10 +41,10 @@ import { useEffect, useState } from 'react';
 import coingeckoApi from 'redux/slices/coingecko.slice';
 import superfluidSubgraphApi from 'redux/slices/superfluidSubgraph.slice';
 import { Flow } from 'types/flow';
-import { useAccount, useProvider } from 'wagmi';
+import { useAccount, useProvider, useNetwork } from 'wagmi';
 import { polygon } from 'wagmi/chains';
 
-const exchangeContractsAddresses = flowConfig.map((f) => f.superToken);
+const exchangeContractsAddresses = combinedFlowConfig.map((f) => f.superToken);
 
 export default function Home(): JSX.Element {
 	const isMounted = useIsMounted();
@@ -53,7 +53,9 @@ export default function Home(): JSX.Element {
 	const [usdPrice, setUsdPrice] = useState<Big>(new Big(0));
 	const [usdFlowRate, setUsdFlowRate] = useState<string>('0');
 	const [usdFlowRateLoading, setUsdFlowRateLoading] = useState<boolean>(false);
-	const provider = useProvider({ chainId: polygon.id });
+	const { chain } = useNetwork();
+	const provider = useProvider({ chainId: chain?.id || polygon.id });
+	const [configs] = useState<InvestmentFlow[]>(getFlowDirectory(chain?.id || polygon.id));
 	const {
 		data: tokenPrice,
 		isLoading: tokenPriceIsLoading,
@@ -97,6 +99,7 @@ export default function Home(): JSX.Element {
 	const [queryFlows] = superfluidSubgraphApi.useQueryFlowsMutation();
 	const [queryStreams] = superfluidSubgraphApi.useQueryStreamsMutation();
 	const [queryReceived] = superfluidSubgraphApi.useQueryReceivedMutation();
+
 	useEffect(() => {
 		if (isConnected) getSuperTokenBalances(address!).then((res) => setBalanceList(res));
 	}, [address, isConnected]);
@@ -199,7 +202,7 @@ export default function Home(): JSX.Element {
 
 	useEffect(() => {
 		if (isConnected && address && isMounted) {
-			const positions = flowConfig.filter(({ flowKey }) => parseFloat(queries.get(flowKey)?.placeholder!) > 0);
+			const positions = configs.filter(({ flowKey }) => parseFloat(queries.get(flowKey)?.placeholder!) > 0);
 			setPositions(positions);
 		}
 	}, [queries, address, isConnected, isMounted]);
@@ -227,7 +230,7 @@ export default function Home(): JSX.Element {
 
 	useEffect(() => {
 		if (coingeckoPrices.size > 0 && queries.size > 0) {
-			let list = flowConfig.filter((each) => each.type === FlowTypes.market);
+			let list = configs.filter((each) => each.type === FlowTypes.market);
 			let sortList = list.sort((a, b) => {
 				const totalVolumeA = parseFloat(getFlowUSDValue(a, queries, coingeckoPrices));
 				const totalVolumeB = parseFloat(getFlowUSDValue(b, queries, coingeckoPrices));
@@ -235,7 +238,7 @@ export default function Home(): JSX.Element {
 			});
 			setSortedList(sortList);
 		}
-	}, [queries, coingeckoPrices]);
+	}, [queries, coingeckoPrices, chain]);
 
 	useEffect(() => {
 		if (sortedList.length) {
@@ -441,7 +444,7 @@ export default function Home(): JSX.Element {
 									}
 								/>
 								<CardContainer
-									content={<Markets coingeckoPrices={coingeckoPrices} sortedList={sortedList} queries={queries} />}
+									content={sortedList && <Markets coingeckoPrices={coingeckoPrices} sortedList={sortedList} queries={queries} />}
 								/>
 							</div>
 							<div className='space-y-10'>

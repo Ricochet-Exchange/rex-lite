@@ -140,13 +140,15 @@ const executeBatchOperations = async (
 	return txnResponse.wait();
 };
 
+//to do, fix network stuff
 export const startFlow = async (
 	idaContract: any,
 	exchangeAddress: string,
 	inputTokenAddress: string,
 	outputTokenAddress: string,
 	amount: BigNumber,
-	referralId?: string
+	network: number,
+	referralId?: string,
 ) => {
 	try {
 		const { address } = await getAccount();
@@ -162,8 +164,8 @@ export const startFlow = async (
 				`No config found for this pair: , ${inputTokenAddress}, ${outputTokenAddress}, ${exchangeAddress}`
 			);
 		}
-		const provider = getProvider({ chainId: polygon.id });
-		const signer = await fetchSigner({ chainId: polygon.id });
+		const provider = getProvider({ chainId: network });
+		const signer = await fetchSigner({ chainId: network });
 		const web3Subscription = await framework.idaV1.getSubscription({
 			superToken: config.output,
 			publisher: exchangeAddress,
@@ -195,6 +197,7 @@ export const startFlow = async (
 					Number(userFlow.flowRate) !== 0
 						? await framework.cfaV1.updateFlow(transactionData).exec(signer as Signer)
 						: await framework.cfaV1.createFlow(transactionData).exec(signer as Signer);
+						console.log(tx, 'sharescaler');
 				return tx;
 			} catch (e: any) {
 				console.error(e);
@@ -356,9 +359,7 @@ export const startFlow = async (
 							indexId: config.outputIndex.toString(),
 							publisher: exchangeAddress,
 							userData,
-							overrides: {
-								...(await gas()),
-							},
+					
 						}),
 						await framework.cfaV1.createFlow({
 							superToken: config.input,
@@ -366,9 +367,7 @@ export const startFlow = async (
 							receiver: exchangeAddress,
 							flowRate: amount.toString(),
 							userData,
-							overrides: {
-								...(await gas()),
-							},
+				
 						}),
 					];
 					console.log({

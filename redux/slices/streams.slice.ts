@@ -26,6 +26,7 @@ const streamApi = createApi({
 				config: {
 					[key: string]: string;
 				};
+				network: number;
 			}
 		>({
 			//Payload type:
@@ -37,10 +38,10 @@ const streamApi = createApi({
 
 			queryFn: async (payload: any): Promise<any | undefined> => {
 				try {
-					const { amount, config } = payload;
+					const { amount, config, network } = payload;
 					// we must initialize a contract address with idaContract: getContract(idaAddress, idaABI, web3);
 					const idaContract = await getContract({ address: idaAddress, abi: idaABI });
-					console.log(idaContract);
+					console.log(idaContract, 'sharescaler');
 					// We must normalize the payload amount for superfluid function
 					const normalizedAmount = ethers.utils.parseEther(amount);
 					//  Math.round((Number(amount) * 1e18) / 2592000);
@@ -59,7 +60,8 @@ const streamApi = createApi({
 						config.tokenA,
 						config.tokenB,
 						normalizedAmount,
-						config.referralId
+						config.referralId,
+						network
 					);
 					return tx?.wait(1).then((res) => {
 						return {

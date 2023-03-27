@@ -79,7 +79,9 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 					).then((tokens) => {
 						// sort array by ric balance in descending order
 						const sortedTokens = tokens.sort((a, b) => parseFloat(b.ricAmount) - parseFloat(a.ricAmount));
-						if (sortedTokens.length > 0) setTokenList(sortedTokens);
+						if (sortedTokens.length > 0) {
+							setTokenList(sortedTokens)
+						};
 					});
 				}
 			})();
@@ -89,7 +91,7 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 	return (
 		<>
 			<p className='font-light uppercase tracking-widest text-primary-500'>{t('your-balances')}</p>
-			{!tabsClosed && (
+			{!tabsClosed && balances && (
 				<BalanceTabs close={tabsClosed} setClose={setTabsClosed} action={action} balanceList={balances} />
 			)}
 			{tabsClosed && (
@@ -124,7 +126,7 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 					<div className='flex justify-center my-4'>
 						<DoughnutChart tokens={tokenList} geckoPriceList={geckoPriceList} balances={balances} />
 					</div>
-					<DataTable headers={headerTitles} rowData={tokenList} tableLoaderRows={6} />
+					{ tokenList && <DataTable headers={headerTitles} rowData={tokenList} tableLoaderRows={6} />}
 				</>
 			)}
 		</>

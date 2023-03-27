@@ -41,22 +41,22 @@ export const Refer = () => {
 
 	useEffect(() => {
 		(async () => {
-			if (address && isConnected) {
-				const affiliateStatus = await getAffiliateStatus(address);
+			if (address && isConnected && referral) {
+				const affiliateStatus = await getAffiliateStatus(address, referral);
 				setStatus(affiliateStatus);
 			}
 		})();
-	}, [address, isConnected]);
+	}, [address, isConnected, referral]);
 
 	useEffect(() => {
-		if (status === AFFILIATE_STATUS.REGISTERING && address && isConnected) {
+		if (status === AFFILIATE_STATUS.REGISTERING && address && isConnected && referral) {
 			const interval = setInterval(async () => {
-				const affiliateStatus = await getAffiliateStatus(address, setCurrentReferralId);
+				const affiliateStatus = await getAffiliateStatus(address, referral, setCurrentReferralId);
 				setStatus(affiliateStatus);
 			}, 5000);
 			return () => clearInterval(interval);
 		}
-	}, [status, address, isConnected]);
+	}, [status, address, isConnected, referral]);
 
 	const handleCopy = () => {
 		navigator.clipboard

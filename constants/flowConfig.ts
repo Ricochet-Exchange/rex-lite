@@ -298,6 +298,22 @@ export const indexIDA: IndexIDAType = [
 		inputIndex: 0, // just a placeholder, not used
 		outputIndex: 0,
 	},
+	{
+		exchangeAddress: fUSDCxfDAI,
+		input: fUSDCx,
+		output: fDAIx,
+		subsidy: mumbaiRICAddress,
+		inputIndex: 0, // just a placeholder, not used
+		outputIndex: 0,
+	},
+	{
+		exchangeAddress: fDAIxfUSDC,
+		input: fDAIx,
+		output: fUSDCx,
+		subsidy: mumbaiRICAddress,
+		inputIndex: 0, // just a placeholder, not used
+		outputIndex: 0,
+	},
 ];
 
 const markets: InvestmentFlow[] = [
@@ -581,6 +597,8 @@ export const mumbaiLaunchpads: InvestmentFlow[] = [
 ]
 
 export const mumbaiFlowConfig: InvestmentFlow[] = [...mumbaiMarkets, ...mumbaiLaunchpads];
+
+export const combinedFlowConfig: InvestmentFlow[] = [...flowConfig, ...mumbaiFlowConfig];
 
 export const flowDirectory: { [key: number]: InvestmentFlow[] } = {
 	137: flowConfig,

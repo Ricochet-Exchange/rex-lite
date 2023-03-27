@@ -50,10 +50,10 @@ export const downgradeTokensList = [
 	},
 	{
 		coin: Coin.FDAIx,
-		token: fDAIx,
+		tokenAddress: fDAIx,
 	},
 	{
 		coin: Coin.FUSDCx,
-		token: fUSDCx,
+		tokenAddress: fUSDCx,
 	},
 ];

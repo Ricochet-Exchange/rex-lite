@@ -40,9 +40,9 @@ export const upgradeTokensList: {
 		| 'hasUsdcApprove'
 		| 'hasWbtcApprove'
 		| 'hasDaiApprove'
-		| 'hasFUsdcApprove'
+		| 'hasMaticApprove'
 		| 'hasFDaiApprove'
-		| 'hasMaticApprove';
+		| 'hasFUsdcApprove';
 }[] = [
 	{
 		coin: Coin.RIC,

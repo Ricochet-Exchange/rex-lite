@@ -1,3 +1,5 @@
+import { fUSDCxfDAI, fDAIxfUSDC } from "./mumbai_config";
+
 // Config addresses //
 
 export const chainId = 137;
@@ -181,6 +183,8 @@ export const exchangeAddresses = {
 	twoWayIbEthIbUsd: twoWayMarketibAlluoUSDETHAddress,
 	twoWayIbUsdIbBTC: twoWayMarketibAlluoUSDBTCAddress,
 	twoWayIbBTCIbUsd: twoWayMarketibAlluoUSDBTCAddress,
+	fUSDCxfDAI: fUSDCxfDAI,
+	fDAIxfUSDC: fDAIxfUSDC,
 };
 
 // V1 Markets Deprecated //
