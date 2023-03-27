@@ -135,7 +135,7 @@ const executeBatchOperations = async (
 	framework: Framework,
 	signer: Signer
 ): Promise<TransactionReceipt> => {
-	console.log('signer issue', signer);
+	console.log('signer issue', signer, operations);
 	const txnResponse = await framework.batchCall(operations).exec(signer);
 	return txnResponse.wait();
 };
@@ -352,6 +352,7 @@ export const startFlow = async (
 					throw new Error(e);
 				}
 			} else {
+				console.log(config, exchangeAddress, 'important');
 				try {
 					const operations = [
 						await framework.idaV1.approveSubscription({
@@ -359,7 +360,9 @@ export const startFlow = async (
 							indexId: config.outputIndex.toString(),
 							publisher: exchangeAddress,
 							userData,
-					
+							overrides: {
+								gasLimit: 10000000,
+							},
 						}),
 						await framework.cfaV1.createFlow({
 							superToken: config.input,
@@ -367,7 +370,9 @@ export const startFlow = async (
 							receiver: exchangeAddress,
 							flowRate: amount.toString(),
 							userData,
-				
+							overrides: {
+								gasLimit: 10000000,
+							},
 						}),
 					];
 					console.log({
