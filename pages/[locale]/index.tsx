@@ -301,7 +301,7 @@ export default function Home(): JSX.Element {
 
 	const getNetFlowRate = async () => {
 		setUsdFlowRateLoading(true);
-		await getSFFramework()
+		await getSFFramework(chain?.id!)
 			.then(async (framework) => {
 				if (positions.length > 0) {
 					const flowRates = positions.map(

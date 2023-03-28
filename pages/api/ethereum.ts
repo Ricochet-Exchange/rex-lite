@@ -3,7 +3,7 @@ import { TransactionReceipt } from '@ethersproject/providers';
 import { getSFFramework } from '@richochet/utils/fluidsdkConfig';
 import { Framework } from '@superfluid-finance/sdk-core';
 import Operation from '@superfluid-finance/sdk-core/dist/main/Operation';
-import { fetchSigner, getAccount, getProvider, prepareWriteContract, readContract, writeContract } from '@wagmi/core';
+import { fetchSigner, getAccount, getProvider, prepareWriteContract, readContract, writeContract, getNetwork } from '@wagmi/core';
 import { erc20ABI } from 'constants/ABIs/ERC20';
 import { superTokenABI } from 'constants/ABIs/supertoken';
 import { indexIDA } from 'constants/flowConfig';
@@ -109,10 +109,11 @@ export const upgradeMatic = async (contract: any, amount: BigNumber, address: st
 export const stopFlow = async (exchangeAddress: string, inputTokenAddress: string) => {
 	try {
 		const { address } = await getAccount();
-		const provider = await getProvider({ chainId: polygon.id });
-		const framework = await getSFFramework();
+		const { chain } = await getNetwork();
+		const provider = await getProvider({ chainId: chain?.id! });
+		const framework = await getSFFramework(chain?.id!);
 		const signer = await fetchSigner({
-			chainId: polygon.id,
+			chainId: chain?.id!,
 		});
 		const transactionData = {
 			superToken: inputTokenAddress,
@@ -147,12 +148,12 @@ export const startFlow = async (
 	inputTokenAddress: string,
 	outputTokenAddress: string,
 	amount: BigNumber,
-	network: number,
 	referralId?: string,
 ) => {
 	try {
 		const { address } = await getAccount();
-		const framework = await getSFFramework();
+		const { chain } = await getNetwork();
+		const framework = await getSFFramework(chain?.id!);
 		const config = indexIDA.find(
 			(data: any) =>
 				data.input === inputTokenAddress &&
@@ -164,8 +165,8 @@ export const startFlow = async (
 				`No config found for this pair: , ${inputTokenAddress}, ${outputTokenAddress}, ${exchangeAddress}`
 			);
 		}
-		const provider = getProvider({ chainId: network });
-		const signer = await fetchSigner({ chainId: network });
+		const provider = getProvider({ chainId: chain?.id! });
+		const signer = await fetchSigner({ chainId: chain?.id! });
 		const web3Subscription = await framework.idaV1.getSubscription({
 			superToken: config.output,
 			publisher: exchangeAddress,
@@ -360,9 +361,7 @@ export const startFlow = async (
 							indexId: config.outputIndex.toString(),
 							publisher: exchangeAddress,
 							userData,
-							overrides: {
-								gasLimit: 10000000,
-							},
+							overrides: {gasLimit: 10000000}
 						}),
 						await framework.cfaV1.createFlow({
 							superToken: config.input,
@@ -370,9 +369,7 @@ export const startFlow = async (
 							receiver: exchangeAddress,
 							flowRate: amount.toString(),
 							userData,
-							overrides: {
-								gasLimit: 10000000,
-							},
+							overrides: {gasLimit: 10000000}
 						}),
 					];
 					console.log({
@@ -381,9 +378,7 @@ export const startFlow = async (
 						receiver: exchangeAddress,
 						flowRate: amount.toString(),
 						userData,
-						overrides: {
-							...(await gas()),
-						},
+						overrides: {gasLimit: 10000000}
 					}),
 						await executeBatchOperations(operations, framework, signer as Signer);
 				} catch (e: any) {
@@ -418,7 +413,7 @@ export const approveToken = async (accountAddress: string, bankAddress: string, 
 		.send({
 			from: accountAddress,
 			overrides: {
-				...(await gas()),
+				gasLimit: 10000000,
 			},
 		})
 		.once('transactionHash', (txHash: string) => {

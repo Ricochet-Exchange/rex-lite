@@ -43,8 +43,6 @@ export const getAffiliateStatus = async (address: string, referral: string, setC
 		args: [affiliateId],
 	});
 
-	console.log(affiliateId, res, 'res')
-
 	if (ethers.BigNumber.from(res.addr).isZero()) {
 		return AFFILIATE_STATUS.INACTIVE;
 	}

@@ -29,6 +29,7 @@ export interface TokenData {
 const headerTitles = ['token', 'ricochet-balance', 'wallet-balance'];
 
 export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => {
+	console.log('balances', balances, tokens);
 	const { t } = useTranslation('home');
 	const { address, isConnected } = useAccount();
 	const { chain } = useNetwork()
@@ -47,7 +48,7 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 		if (chain?.id === 137) {
 			setSortedUpgradeTokensList(upgradeTokensList);
 		}
-	}, [chain])
+	}, [chain, balances])
 
 	useEffect(() => {
 		if (isConnected && chain) {

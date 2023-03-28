@@ -51,7 +51,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 		console.log(position, exchangeKey, 'sharescaler');
 		const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string, chain: number) => {
 			const shareScaler = await getShareScaler(exchangeKey, tokenA, tokenB, chain).then((res) => res);
-			console.log(shareScaler);
+			console.log(shareScaler, 'sharescaler');
 			setShareScaler(shareScaler);
 		};
 		fetchShareScaler(exchangeKey, position?.tokenA, position?.tokenB, chain?.id || 137);
@@ -129,7 +129,7 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 				.times(10);
 			newAmount = resultBig.toFixed();
 		}
-		const stream = startStreamTrigger({ amount: newAmount, config: position, network: chain?.id || 137 });
+		const stream = startStreamTrigger({ amount: newAmount, config: position });
 		stream
 			.then((response: any) => {
 				if (response.isSuccess) {
