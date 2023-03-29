@@ -51,7 +51,7 @@ interface Props {
 	>;
 }
 
-const positionTitles = ['your markets', 'average buy price', 'stream rate', 'total streamed'];
+const positionTitles = ['your markets', 'stream rate', 'total streamed'];
 
 export const Positions: NextPage<Props> = ({ positions, queries }) => {
 	const { t } = useTranslation('home');
