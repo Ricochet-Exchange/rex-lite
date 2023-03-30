@@ -33,6 +33,8 @@ import {
 	mumbaiLaunchpad
 } from './mumbai_config';
 
+import { optimismLaunchpad, optimismRICAddress, optimismUSDCx, optimismUSDC } from './optimism_config'
+
 // To-Do: Refactor this
 
 export enum FlowEnum {
@@ -314,6 +316,15 @@ export const indexIDA: IndexIDAType = [
 		inputIndex: 0, // just a placeholder, not used
 		outputIndex: 0,
 	},
+	//Optimism
+	{
+		exchangeAddress: optimismLaunchpad,
+		input: optimismUSDCx,
+		output: optimismRICAddress,
+		subsidy: optimismRICAddress,
+		inputIndex: 0, // just a placeholder, not used
+		outputIndex: 0,
+	},
 ];
 
 const markets: InvestmentFlow[] = [
@@ -589,6 +600,18 @@ export const mumbaiLaunchpads: InvestmentFlow[] = [
 		superToken: mumbaiLaunchpad,
 		tokenA: fUSDCx,
 		tokenB: mumbaiRICAddress,
+		coinA: Coin.USDC,
+		coinB: Coin.RIC,
+		flowKey: FlowEnum.usdcRicFlowQuery,
+		type: FlowTypes.launchpad,
+	},
+]
+
+export const optimismLaunchpads: InvestmentFlow[] = [
+	{
+		superToken: optimismLaunchpad,
+		tokenA: optimismUSDCx,
+		tokenB: optimismRICAddress,
 		coinA: Coin.USDC,
 		coinB: Coin.RIC,
 		flowKey: FlowEnum.usdcRicFlowQuery,

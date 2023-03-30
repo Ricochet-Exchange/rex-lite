@@ -3,7 +3,7 @@ import AlertAction from '@richochet/utils/alertAction';
 import Big from 'big.js';
 import { FlowTypes, InvestmentFlow } from 'constants/flowConfig';
 import { RICAddress, USDCAddress } from 'constants/polygon_config';
-import { launchpads, mumbaiLaunchpads } from 'constants/flowConfig';
+import { launchpads, mumbaiLaunchpads, optimismLaunchpads } from 'constants/flowConfig';
 import { AlertContext } from 'contexts/AlertContext';
 import { useTranslation } from 'next-i18next';
 import { useContext, useEffect, useState } from 'react';
@@ -29,6 +29,9 @@ export const LaunchPad = () => {
 		if (!chain) return;
 		if (chain.id === 80001) {
 			setConfig(mumbaiLaunchpads[0]);
+		}
+		if (chain.id === 10) {
+			setConfig(optimismLaunchpads[0])
 		}
 	}, [chain])
 

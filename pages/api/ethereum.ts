@@ -6,7 +6,7 @@ import Operation from '@superfluid-finance/sdk-core/dist/main/Operation';
 import { fetchSigner, getAccount, getProvider, prepareWriteContract, readContract, writeContract, getNetwork } from '@wagmi/core';
 import { erc20ABI } from 'constants/ABIs/ERC20';
 import { superTokenABI } from 'constants/ABIs/supertoken';
-import { indexIDA } from 'constants/flowConfig';
+import { indexIDA, optimismLaunchpads } from 'constants/flowConfig';
 import {
 	MATICxAddress,
 	rexLPETHAddress,
@@ -15,9 +15,10 @@ import {
 	ricRexShirtLaunchpadAddress,
 	usdcxRicExchangeAddress
 } from 'constants/polygon_config';
+import { optimismLaunchpad } from 'constants/optimism_config';
 import { BigNumber, ethers } from 'ethers';
-import { polygon } from 'wagmi/chains';
 import { gas } from './gasEstimator';
+import { mumbaiLaunchpad } from 'constants/mumbai_config';
 
 export const downgrade = async (contract: any, amount: BigNumber, address: string) => {
 	const config = await prepareWriteContract({
@@ -209,7 +210,9 @@ export const startFlow = async (
 			if (
 				exchangeAddress === usdcxRicExchangeAddress ||
 				exchangeAddress === ricRexShirtLaunchpadAddress ||
-				exchangeAddress == ricRexHatLaunchpadAddress
+				exchangeAddress === ricRexHatLaunchpadAddress ||
+				exchangeAddress === optimismLaunchpad ||
+				exchangeAddress === mumbaiLaunchpad
 			) {
 				console.log('made it to correct area', amount, inputTokenAddress, exchangeAddress);
 				try {
@@ -305,7 +308,8 @@ export const startFlow = async (
 					console.error(e);
 					throw new Error(e);
 				}
-			} else if (config.subsidy) {
+				//to do remove the ! and figure out if the mumbai contracts have a subsidy
+			} else if (!config.subsidy) {
 				try {
 					const operations = [
 						await framework.idaV1.approveSubscription({
@@ -314,7 +318,7 @@ export const startFlow = async (
 							publisher: exchangeAddress,
 							userData,
 							overrides: {
-								...(await gas()),
+								gasLimit: 10000000,
 							},
 						}),
 						await framework.idaV1.approveSubscription({
@@ -323,7 +327,7 @@ export const startFlow = async (
 							publisher: exchangeAddress,
 							userData,
 							overrides: {
-								...(await gas()),
+								gasLimit: 10000000,
 							},
 						}),
 						await framework.cfaV1.createFlow({
@@ -333,7 +337,7 @@ export const startFlow = async (
 							flowRate: amount.toString(),
 							userData,
 							overrides: {
-								...(await gas()),
+								gasLimit: 10000000,
 							},
 						}),
 					];
@@ -353,7 +357,7 @@ export const startFlow = async (
 					throw new Error(e);
 				}
 			} else {
-				console.log(config, exchangeAddress, 'important');
+				console.log('important 3');
 				try {
 					const operations = [
 						await framework.idaV1.approveSubscription({
@@ -361,7 +365,6 @@ export const startFlow = async (
 							indexId: config.outputIndex.toString(),
 							publisher: exchangeAddress,
 							userData,
-							overrides: {gasLimit: 10000000}
 						}),
 						await framework.cfaV1.createFlow({
 							superToken: config.input,
@@ -369,20 +372,11 @@ export const startFlow = async (
 							receiver: exchangeAddress,
 							flowRate: amount.toString(),
 							userData,
-							overrides: {gasLimit: 10000000}
 						}),
 					];
-					console.log({
-						superToken: inputTokenAddress,
-						sender: address!,
-						receiver: exchangeAddress,
-						flowRate: amount.toString(),
-						userData,
-						overrides: {gasLimit: 10000000}
-					}),
-						await executeBatchOperations(operations, framework, signer as Signer);
+					await executeBatchOperations(operations, framework, signer as Signer);
 				} catch (e: any) {
-					console.error(e);
+					console.error(e, 'here');
 					throw new Error(e);
 				}
 			}

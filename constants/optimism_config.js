@@ -21,7 +21,7 @@ export const optimismETHx = '0x4ac8bd1bdae47beef2d1c6aa62229509b962aa0d';
 
 //Launchpad
 
-export const optimismLaunchpad = '';
+export const optimismLaunchpad = '0x5c2e1a331678e1a9c6f8c156b5d48a5cc7e50cda';
 
 //Referral
 
