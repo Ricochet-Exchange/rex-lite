@@ -309,7 +309,7 @@ export const startFlow = async (
 					throw new Error(e);
 				}
 				//to do remove the ! and figure out if the mumbai contracts have a subsidy
-			} else if (!config.subsidy) {
+			} else if (config.subsidy) {
 				try {
 					const operations = [
 						await framework.idaV1.approveSubscription({

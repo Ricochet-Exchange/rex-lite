@@ -305,6 +305,7 @@ export const indexIDA: IndexIDAType = [
 		input: fUSDCx,
 		output: fDAIx,
 		subsidy: mumbaiRICAddress,
+		subsidyIndex: 1,
 		inputIndex: 0, // just a placeholder, not used
 		outputIndex: 0,
 	},
@@ -313,6 +314,7 @@ export const indexIDA: IndexIDAType = [
 		input: fDAIx,
 		output: fUSDCx,
 		subsidy: mumbaiRICAddress,
+		subsidyIndex: 1,
 		inputIndex: 0, // just a placeholder, not used
 		outputIndex: 0,
 	},

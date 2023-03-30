@@ -33,6 +33,17 @@ export const buildFlowQuery = (
 	getSubsidyRate(flowKey, tokenAtokenBPlaceholder, flowsOwned)
 		.then((p) => { subsidyRate = p; });
 	*/
+	console.log('fc', {
+		flowKey,
+		flowsReceived: tokenAtokenBFlowsReceived,
+		flowsOwned,
+		totalFlows: tokenAtokenBFlows?.flowsReceived.length,
+		placeholder: tokenAtokenBPlaceholder,
+		streamedSoFar,
+		receivedSoFar,
+		subsidyRate, // await getSubsidyRate(FlowEnum.daiMkrFlowQuery,
+		// usdcRicPlaceholder, flowsOwned),
+	})
 	return {
 		flowKey,
 		flowsReceived: tokenAtokenBFlowsReceived,
