@@ -15,7 +15,11 @@ import {
 	fUSDCx,
 } from 'constants/mumbai_config';
 
+import { optimismUSDCx, optimismDAIx } from './optimism_config';
+
 export const coingeckoIds = new Map<string, string>([
+	[optimismUSDCx, 'usd-coin'],
+	[optimismDAIx, 'dai'],
 	[fDAIx, 'dai'],
 	[fUSDCx, 'usd-coin'],
 	[DAIxAddress, 'dai'],

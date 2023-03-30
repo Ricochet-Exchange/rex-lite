@@ -201,11 +201,11 @@ export default function Home(): JSX.Element {
 	}, [results, address, isConnected]);
 
 	useEffect(() => {
-		if (isConnected && address && isMounted) {
+		if (isConnected && address && isMounted && configs) {
 			const positions = configs.filter(({ flowKey }) => parseFloat(queries.get(flowKey)?.placeholder!) > 0);
 			setPositions(positions);
 		}
-	}, [queries, address, isConnected, isMounted]);
+	}, [queries, address, isConnected, isMounted, configs]);
 
 	useEffect(() => {
 		if (isConnected && tokensIsError) console.error(tokensError);
@@ -229,7 +229,7 @@ export default function Home(): JSX.Element {
 	}, [isConnected, address, balanceList, tokens, tokensIsSuccess]);
 
 	useEffect(() => {
-		if (coingeckoPrices.size > 0 && queries.size > 0) {
+		if (coingeckoPrices.size > 0 && queries.size > 0 && configs) {
 			let list = configs.filter((each) => each.type === FlowTypes.market);
 			let sortList = list.sort((a, b) => {
 				const totalVolumeA = parseFloat(getFlowUSDValue(a, queries, coingeckoPrices));
@@ -238,7 +238,7 @@ export default function Home(): JSX.Element {
 			});
 			setSortedList(sortList);
 		}
-	}, [queries, coingeckoPrices, chain]);
+	}, [queries, coingeckoPrices, chain, configs]);
 
 	useEffect(() => {
 		if (sortedList.length) {

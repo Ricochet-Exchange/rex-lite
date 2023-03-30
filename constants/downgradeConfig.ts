@@ -14,6 +14,7 @@ import {
 	fUSDCx,
 	fDAIx,
 } from './mumbai_config';
+import { optimismDAIx, optimismUSDCx } from './optimism_config';
 
 export const downgradeTokensList = [
 	{
@@ -56,4 +57,12 @@ export const downgradeTokensList = [
 		coin: Coin.FUSDCx,
 		tokenAddress: fUSDCx,
 	},
+	{
+		coin: Coin.OPUSDCx,
+		tokenAddress: optimismUSDCx,
+	},
+	{
+		coin: Coin.OPDAIx,
+		tokenAddress: optimismDAIx,
+	}
 ];

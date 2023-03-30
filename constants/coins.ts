@@ -51,11 +51,17 @@ export enum Coin {
 	StIbAlluoUSD = 'StIbAlluoUSD',
 	StIbAlluoBTC = 'StIbAlluoBTC',
 	IbAlluoBTC = 'IbAlluoBTC',
+	OPUSDC = 'USDC',
+	OPDAI = 'DAI',
+	OPUSDCx = 'USDCx',
+	OPDAIx = 'DAIx',
 	// REXSHIRT = 'REXSHIRT',
 	// REXHAT = 'REXHAT',
 }
 
 export const namesCoin = [
+	Coin.OPUSDC,
+	Coin.DAI,
 	Coin.USDC,
 	Coin.DAI,
 	Coin.MKR,
@@ -88,9 +94,15 @@ export const namesCoinX = [
 	Coin.StIbAlluoBTC,
 	Coin.FDAIx,
 	Coin.FUSDCx,
+	Coin.OPUSDCx,
+	Coin.DAIx,
 ];
 
 export const iconsCoin: Partial<Record<Coin, string>> = {
+	[Coin.OPUSDC]: usdc,
+	[Coin.OPDAI]: dai,
+	[Coin.OPDAIx]: dai,
+	[Coin.OPUSDCx]: usdc,
 	[Coin.USDC]: usdc,
 	[Coin.WBTC]: wbtc,
 	[Coin.ETH]: eth,

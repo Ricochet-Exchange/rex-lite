@@ -1,7 +1,7 @@
 import { useCoingeckoPrices } from '@richochet/hooks/useCoingeckoPrices';
 import { fetchBalance } from '@wagmi/core';
 import { Coin } from 'constants/coins';
-import { upgradeTokensList, mumbaiUpgradeTokensList } from 'constants/upgradeConfig';
+import { upgradeTokensList, mumbaiUpgradeTokensList, optimismUpgradeTokensList } from 'constants/upgradeConfig';
 import { colors } from 'enumerations/colors.enum';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
@@ -47,6 +47,9 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 		}
 		if (chain?.id === 137) {
 			setSortedUpgradeTokensList(upgradeTokensList);
+		}
+		if (chain?.id === 10) {
+			setSortedUpgradeTokensList(optimismUpgradeTokensList);
 		}
 	}, [chain, balances])
 

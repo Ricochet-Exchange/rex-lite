@@ -51,7 +51,10 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 			| 'hasDaiApprove'
 			| 'hasMaticApprove'
 			| 'hasFDaiApprove'
-			| 'hasFUsdcApprove';
+			| 'hasFUsdcApprove'
+			| 'hasOpUsdcApprove'
+			| 'hasOpDaiApprove'
+			| 'hasOpEthApprove';
 	}>();
 	const [downgradeConfig, setDowngradeConfig] = useState<{
 		coin: Coin;
@@ -89,6 +92,16 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 			const upgradeTokenArr = upgradeTokensList.map(
 				(token) => token.coin
 			).filter((coin) => coin !== Coin.RIC && coin === Coin.FDAI || coin === Coin.FUSDC);
+			setDowngradeTokens(downgradeTokenArr);
+			setUpgradeTokens(upgradeTokenArr);
+		}
+		if (chain.id === 10) {
+			const downgradeTokenArr = downgradeTokensList.map(
+				(token) => token.coin
+			).filter((coin) => coin !== Coin.RIC && coin === Coin.OPDAIx || coin === Coin.OPUSDCx);
+			const upgradeTokenArr = upgradeTokensList.map(
+				(token) => token.coin
+			).filter((coin) => coin !== Coin.RIC && coin === Coin.OPDAI || coin === Coin.OPUSDC);
 			setDowngradeTokens(downgradeTokenArr);
 			setUpgradeTokens(upgradeTokenArr);
 		}

@@ -32,7 +32,6 @@ export const getSuperTokenBalances = (address: string) => {
 			}
 			balances[r.tokenAddress] = fromWei(r.balance, 18);
 		});
-		console.log(balances, 'balances');
 		return balances;
 	});
 };

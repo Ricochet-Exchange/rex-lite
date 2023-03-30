@@ -11,6 +11,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { useAccount, useNetwork } from 'wagmi';
 import { OutlineButton, SolidButton } from './button';
 import Link from './link';
+import { optimismReferral } from 'constants/optimism_config';
 ;
 
 export const Refer = () => {
@@ -36,6 +37,9 @@ export const Refer = () => {
 		}
 		if (chain.id === 137) {
 			setReferral(rexReferralAddress);
+		}
+		if (chain.id === 10) {
+			setReferral(optimismReferral);
 		}
 	}, [chain])
 
