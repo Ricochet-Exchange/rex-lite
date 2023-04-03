@@ -46,7 +46,9 @@ export const Refer = () => {
 	useEffect(() => {
 		(async () => {
 			if (address && isConnected && referral) {
-				const affiliateStatus = await getAffiliateStatus(address, referral);
+				//to-do: line 50 was put there because I have a bug calling address on non matic chains, need to check this
+				if (chain?.id !== 137) return;
+				const affiliateStatus = await getAffiliateStatus(address, referral, setCurrentReferralId);
 				setStatus(affiliateStatus);
 			}
 		})();

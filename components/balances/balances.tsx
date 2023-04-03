@@ -60,11 +60,13 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 				if (Object.keys(geckoPriceList).length && Object.keys(balances).length) {
 					await Promise.all(
 						sortedUpgradeTokensList.map(async (token: any) => {
+							if (!address) return;
 							const balance = await fetchBalance({
-								address: address!,
+								address: address,
 								chainId: chain.id,
 								token: token.coin !== Coin.RIC ? (token.tokenAddress as `0x${string}`) : undefined,
 							});
+							console.log(address, balance, 'res')
 							return {
 								token: token.coin,
 								ricAmount: balances[token.superTokenAddress],
@@ -90,7 +92,7 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 				}
 			})();
 		}
-	}, [isConnected, tokens, balances, geckoPriceList, sortedUpgradeTokensList, chain]);
+	}, [isConnected, tokens, balances, geckoPriceList, sortedUpgradeTokensList, chain?.id]);
 
 	return (
 		<>

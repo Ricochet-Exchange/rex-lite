@@ -47,11 +47,7 @@ export const upgradeTokensList: {
 		| 'hasUsdcApprove'
 		| 'hasWbtcApprove'
 		| 'hasDaiApprove'
-		| 'hasMaticApprove'
-		| 'hasFDaiApprove'
-		| 'hasFUsdcApprove'
-		| 'hasOpUsdcApprove'
-		| 'hasOpDaiApprove';
+		| 'hasMaticApprove';
 }[] = [
 	{
 		coin: Coin.RIC,
@@ -115,36 +111,6 @@ export const upgradeTokensList: {
 		superTokenAddress: MATICxAddress,
 		multi: 1e18,
 		key: 'hasMaticApprove',
-	},
-	//Mumbai
-	{
-		coin: Coin.FUSDC,
-		tokenAddress: fUSDC,
-		superTokenAddress: fUSDCx,
-		multi: 1e6,
-		key: 'hasFUsdcApprove',
-	},
-	{
-		coin: Coin.FDAI,
-		tokenAddress: fDAI,
-		superTokenAddress: fDAIx,
-		multi: 1e18,
-		key: 'hasFDaiApprove',
-	},
-	//Optimism
-	{
-		coin: Coin.OPUSDC,
-		tokenAddress: optimismUSDC,
-		superTokenAddress: optimismUSDCx,
-		multi: 1e6,
-		key: 'hasOpUsdcApprove',
-	},
-	{
-		coin: Coin.OPDAI,
-		tokenAddress: optimismDAI,
-		superTokenAddress: optimismDAIx,
-		multi: 1e18,
-		key: 'hasOpDaiApprove',
 	},
 ];
 

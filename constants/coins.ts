@@ -45,6 +45,8 @@ export enum Coin {
 	FDAI = 'FDAI',
 	FUSDCx = 'FUSDCx',
 	FUSDC = 'FUSDC',
+	MumbaiRIC = 'RIC',
+	OpRIC = 'RIC',
 	IbAlluoETH = 'IbAlluoETH',
 	IbAlluoUSD = 'IbAlluoUSD',
 	StIbAlluoETH = 'StIbAlluoETH',
