@@ -68,9 +68,9 @@ export const DataTable: NextPage<Props> = ({
 												</div>
 											</td>
 											{/* <td className='px-6 py-4 whitespace-nowrap'>{data.positions}</td> */}
-											<td className='px-6 py-4 whitespace-nowrap'>
+{/* 											<td className='px-6 py-4 whitespace-nowrap'>
 												{data.avgBuyPrice} {data.coinA}
-											</td>
+											</td> */}
 											<td className='px-6 py-4 whitespace-nowrap'>
 												<p>{formatCurrency(parseFloat(data.rateUsdValue))}</p>
 												<p className='text-slate-400'>
