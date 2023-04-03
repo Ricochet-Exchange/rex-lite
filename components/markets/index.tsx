@@ -3,6 +3,7 @@ import { getFlowUSDValue } from '@richochet/utils/getFlowUsdValue';
 import { InvestmentFlow } from 'constants/flowConfig';
 import { NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
+import { useNetwork } from 'wagmi';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { CardTitle } from '../cards/card-title';
 import { DataTable } from '../table/data-table';
@@ -38,8 +39,11 @@ export const Markets: NextPage<Props> = ({ coingeckoPrices, sortedList, queries 
 	const [search, setSearch] = useState('');
 	const [marketList, setMarketList] = useState<MarketData[]>([]);
 	const [filteredList, setFilteredList] = useState<MarketData[]>([]);
+	const { chain } = useNetwork();
+
 	useEffect(() => {
 		if (sortedList.length > 0 && queries.size > 0) {
+			console.log(sortedList, 'res');
 			const marketData: MarketData[] = [];
 			sortedList.map((item) =>
 				marketData.push({
@@ -54,6 +58,7 @@ export const Markets: NextPage<Props> = ({ coingeckoPrices, sortedList, queries 
 			setMarketList(sortedData);
 		}
 	}, [queries, coingeckoPrices, sortedList]);
+
 	const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
 		const { value } = event.target;
 		setSearch(value);
@@ -61,8 +66,8 @@ export const Markets: NextPage<Props> = ({ coingeckoPrices, sortedList, queries 
 			(el) =>
 				el.coinA.toUpperCase().includes(value.toUpperCase()) || el.coinB.toUpperCase().includes(value.toUpperCase())
 		);
-		setFilteredList(filtered);
 	};
+
 	return (
 		<>
 			<CardTitle
@@ -86,7 +91,9 @@ export const Markets: NextPage<Props> = ({ coingeckoPrices, sortedList, queries 
 					</div>
 				}
 			/>
-			<DataTable headers={marketTitles} rowData={search ? filteredList : marketList} tableLoaderRows={12} />
+			{
+				chain && <DataTable headers={marketTitles} rowData={search ? filteredList : marketList} tableLoaderRows={12} />
+			}
 		</>
 	);
 };

@@ -3,10 +3,10 @@ import { TransactionReceipt } from '@ethersproject/providers';
 import { getSFFramework } from '@richochet/utils/fluidsdkConfig';
 import { Framework } from '@superfluid-finance/sdk-core';
 import Operation from '@superfluid-finance/sdk-core/dist/main/Operation';
-import { fetchSigner, getAccount, getProvider, prepareWriteContract, readContract, writeContract } from '@wagmi/core';
+import { fetchSigner, getAccount, getProvider, prepareWriteContract, readContract, writeContract, getNetwork } from '@wagmi/core';
 import { erc20ABI } from 'constants/ABIs/ERC20';
 import { superTokenABI } from 'constants/ABIs/supertoken';
-import { indexIDA } from 'constants/flowConfig';
+import { indexIDA, optimismLaunchpads } from 'constants/flowConfig';
 import {
 	MATICxAddress,
 	rexLPETHAddress,
@@ -15,9 +15,10 @@ import {
 	ricRexShirtLaunchpadAddress,
 	usdcxRicExchangeAddress
 } from 'constants/polygon_config';
+import { optimismLaunchpad } from 'constants/optimism_config';
 import { BigNumber, ethers } from 'ethers';
-import { polygon } from 'wagmi/chains';
 import { gas } from './gasEstimator';
+import { mumbaiLaunchpad } from 'constants/mumbai_config';
 
 export const downgrade = async (contract: any, amount: BigNumber, address: string) => {
 	const config = await prepareWriteContract({
@@ -109,10 +110,11 @@ export const upgradeMatic = async (contract: any, amount: BigNumber, address: st
 export const stopFlow = async (exchangeAddress: string, inputTokenAddress: string) => {
 	try {
 		const { address } = await getAccount();
-		const provider = await getProvider({ chainId: polygon.id });
-		const framework = await getSFFramework();
+		const { chain } = await getNetwork();
+		const provider = await getProvider({ chainId: chain?.id! });
+		const framework = await getSFFramework(chain?.id!);
 		const signer = await fetchSigner({
-			chainId: polygon.id,
+			chainId: chain?.id!,
 		});
 		const transactionData = {
 			superToken: inputTokenAddress,
@@ -135,22 +137,24 @@ const executeBatchOperations = async (
 	framework: Framework,
 	signer: Signer
 ): Promise<TransactionReceipt> => {
-	console.log('signer issue', signer);
+	console.log('signer issue', signer, operations);
 	const txnResponse = await framework.batchCall(operations).exec(signer);
 	return txnResponse.wait();
 };
 
+//to do, fix network stuff
 export const startFlow = async (
 	idaContract: any,
 	exchangeAddress: string,
 	inputTokenAddress: string,
 	outputTokenAddress: string,
 	amount: BigNumber,
-	referralId?: string
+	referralId?: string,
 ) => {
 	try {
 		const { address } = await getAccount();
-		const framework = await getSFFramework();
+		const { chain } = await getNetwork();
+		const framework = await getSFFramework(chain?.id!);
 		const config = indexIDA.find(
 			(data: any) =>
 				data.input === inputTokenAddress &&
@@ -162,8 +166,8 @@ export const startFlow = async (
 				`No config found for this pair: , ${inputTokenAddress}, ${outputTokenAddress}, ${exchangeAddress}`
 			);
 		}
-		const provider = getProvider({ chainId: polygon.id });
-		const signer = await fetchSigner({ chainId: polygon.id });
+		const provider = getProvider({ chainId: chain?.id! });
+		const signer = await fetchSigner({ chainId: chain?.id! });
 		const web3Subscription = await framework.idaV1.getSubscription({
 			superToken: config.output,
 			publisher: exchangeAddress,
@@ -195,6 +199,7 @@ export const startFlow = async (
 					Number(userFlow.flowRate) !== 0
 						? await framework.cfaV1.updateFlow(transactionData).exec(signer as Signer)
 						: await framework.cfaV1.createFlow(transactionData).exec(signer as Signer);
+						console.log(tx, 'sharescaler');
 				return tx;
 			} catch (e: any) {
 				console.error(e);
@@ -205,7 +210,9 @@ export const startFlow = async (
 			if (
 				exchangeAddress === usdcxRicExchangeAddress ||
 				exchangeAddress === ricRexShirtLaunchpadAddress ||
-				exchangeAddress == ricRexHatLaunchpadAddress
+				exchangeAddress === ricRexHatLaunchpadAddress ||
+				exchangeAddress === optimismLaunchpad ||
+				exchangeAddress === mumbaiLaunchpad
 			) {
 				console.log('made it to correct area', amount, inputTokenAddress, exchangeAddress);
 				try {
@@ -301,6 +308,7 @@ export const startFlow = async (
 					console.error(e);
 					throw new Error(e);
 				}
+				//to do remove the ! and figure out if the mumbai contracts have a subsidy
 			} else if (config.subsidy) {
 				try {
 					const operations = [
@@ -310,7 +318,7 @@ export const startFlow = async (
 							publisher: exchangeAddress,
 							userData,
 							overrides: {
-								...(await gas()),
+								gasLimit: 10000000,
 							},
 						}),
 						await framework.idaV1.approveSubscription({
@@ -319,7 +327,7 @@ export const startFlow = async (
 							publisher: exchangeAddress,
 							userData,
 							overrides: {
-								...(await gas()),
+								gasLimit: 10000000,
 							},
 						}),
 						await framework.cfaV1.createFlow({
@@ -329,7 +337,7 @@ export const startFlow = async (
 							flowRate: amount.toString(),
 							userData,
 							overrides: {
-								...(await gas()),
+								gasLimit: 10000000,
 							},
 						}),
 					];
@@ -349,6 +357,7 @@ export const startFlow = async (
 					throw new Error(e);
 				}
 			} else {
+				console.log('important 3');
 				try {
 					const operations = [
 						await framework.idaV1.approveSubscription({
@@ -356,9 +365,6 @@ export const startFlow = async (
 							indexId: config.outputIndex.toString(),
 							publisher: exchangeAddress,
 							userData,
-							overrides: {
-								...(await gas()),
-							},
 						}),
 						await framework.cfaV1.createFlow({
 							superToken: config.input,
@@ -366,24 +372,11 @@ export const startFlow = async (
 							receiver: exchangeAddress,
 							flowRate: amount.toString(),
 							userData,
-							overrides: {
-								...(await gas()),
-							},
 						}),
 					];
-					console.log({
-						superToken: inputTokenAddress,
-						sender: address!,
-						receiver: exchangeAddress,
-						flowRate: amount.toString(),
-						userData,
-						overrides: {
-							...(await gas()),
-						},
-					}),
-						await executeBatchOperations(operations, framework, signer as Signer);
+					await executeBatchOperations(operations, framework, signer as Signer);
 				} catch (e: any) {
-					console.error(e);
+					console.error(e, 'here');
 					throw new Error(e);
 				}
 			}
@@ -414,7 +407,7 @@ export const approveToken = async (accountAddress: string, bankAddress: string, 
 		.send({
 			from: accountAddress,
 			overrides: {
-				...(await gas()),
+				gasLimit: 10000000,
 			},
 		})
 		.once('transactionHash', (txHash: string) => {

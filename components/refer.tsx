@@ -5,11 +5,13 @@ import { prepareWriteContract, writeContract } from '@wagmi/core';
 import { ConnectKitButton } from 'connectkit';
 import { referralABI } from 'constants/ABIs/referralABI';
 import { rexReferralAddress } from 'constants/polygon_config';
+import { mumbaiReferral } from 'constants/mumbai_config';
 import { useTranslation } from 'next-i18next';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useNetwork } from 'wagmi';
 import { OutlineButton, SolidButton } from './button';
 import Link from './link';
+import { optimismReferral } from 'constants/optimism_config';
 ;
 
 export const Refer = () => {
@@ -21,26 +23,47 @@ export const Refer = () => {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [validationErrors, setValidationErrors] = useState<string[]>([]);
 	const [currentReferralId, setCurrentReferralId] = useState<string | undefined>();
+	const [referral, setReferral] = useState<string>(rexReferralAddress);
+	const { chain } = useNetwork();
+
 	useEffect(() => {
 		setCurrentReferralId(address?.toLowerCase().slice(0, 10));
 	}, [address, isConnected]);
+
+	useEffect(() => {
+		if (!chain) return;
+		if (chain.id === 80001) {
+			setReferral(mumbaiReferral);
+		}
+		if (chain.id === 137) {
+			setReferral(rexReferralAddress);
+		}
+		if (chain.id === 10) {
+			setReferral(optimismReferral);
+		}
+	}, [chain])
+
 	useEffect(() => {
 		(async () => {
-			if (address && isConnected) {
-				const affiliateStatus = await getAffiliateStatus(address);
+			if (address && isConnected && referral) {
+				//to-do: line 50 was put there because I have a bug calling address on non matic chains, need to check this
+				if (chain?.id !== 137) return;
+				const affiliateStatus = await getAffiliateStatus(address, referral, setCurrentReferralId);
 				setStatus(affiliateStatus);
 			}
 		})();
-	}, [address, isConnected]);
+	}, [address, isConnected, referral]);
+
 	useEffect(() => {
-		if (status === AFFILIATE_STATUS.REGISTERING && address && isConnected) {
+		if (status === AFFILIATE_STATUS.REGISTERING && address && isConnected && referral) {
 			const interval = setInterval(async () => {
-				const affiliateStatus = await getAffiliateStatus(address, setCurrentReferralId);
+				const affiliateStatus = await getAffiliateStatus(address, referral, setCurrentReferralId);
 				setStatus(affiliateStatus);
 			}, 5000);
 			return () => clearInterval(interval);
 		}
-	}, [status, address, isConnected]);
+	}, [status, address, isConnected, referral]);
+
 	const handleCopy = () => {
 		navigator.clipboard
 			.writeText(`${refURL}${currentReferralId}`)
@@ -61,7 +84,7 @@ export const Refer = () => {
 		event?.preventDefault();
 		setIsLoading(true);
 		const config = await prepareWriteContract({
-			address: rexReferralAddress as `0x${string}`,
+			address: referral as `0x${string}`,
 			abi: referralABI,
 			functionName: 'applyForAffiliate',
 			args: [currentReferralId, currentReferralId],
@@ -75,7 +98,7 @@ export const Refer = () => {
 					setStatus(AFFILIATE_STATUS.REGISTERING);
 					(async () => {
 						const config = await prepareWriteContract({
-							address: rexReferralAddress as `0x${string}`,
+							address: referral as `0x${string}`,
 							abi: referralABI,
 							functionName: 'applyForAffiliate',
 							args: [currentReferralId, currentReferralId],

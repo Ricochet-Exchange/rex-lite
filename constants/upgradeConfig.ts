@@ -20,6 +20,20 @@ import {
 	ZeroAddress,
 } from './polygon_config';
 
+import {
+	fUSDC,
+	fDAI,
+	fUSDCx,
+	fDAIx,
+} from './mumbai_config';
+
+import {
+	optimismUSDC,
+	optimismUSDCx,
+	optimismDAI, 
+	optimismDAIx,
+} from './optimism_config';
+
 export const upgradeTokensList: {
 	coin: Coin;
 	tokenAddress: string;
@@ -99,3 +113,54 @@ export const upgradeTokensList: {
 		key: 'hasMaticApprove',
 	},
 ];
+
+export const mumbaiUpgradeTokensList: {
+	coin: Coin;
+	tokenAddress: string;
+	superTokenAddress: string;
+	multi: number;
+	key:
+	| 'hasFUsdcApprove'
+	| 'hasFDaiApprove'
+}[] = [
+	{
+		coin: Coin.FUSDC,
+		tokenAddress: fUSDC,
+		superTokenAddress: fUSDCx,
+		multi: 1e6,
+		key: 'hasFUsdcApprove',
+	},
+	{
+		coin: Coin.FDAI,
+		tokenAddress: fDAI,
+		superTokenAddress: fDAIx,
+		multi: 1e18,
+		key: 'hasFDaiApprove',
+	},
+]
+
+export const optimismUpgradeTokensList: {
+	coin: Coin;
+	tokenAddress: string;
+	superTokenAddress: string;
+	multi: number;
+	key:
+	| 'hasOpUsdcApprove'
+	| 'hasOpDaiApprove'
+	| 'hasOpEthApprove'
+}[] = [
+	{
+		coin: Coin.OPUSDC,
+		tokenAddress: optimismUSDC,
+		superTokenAddress: optimismUSDCx,
+		multi: 1e6,
+		key: 'hasOpUsdcApprove',
+	},
+	{
+		coin: Coin.OPDAI,
+		tokenAddress: optimismDAI,
+		superTokenAddress: optimismDAIx,
+		multi: 1e18,
+		key: 'hasOpDaiApprove',
+	},
+]
