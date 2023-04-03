@@ -17,7 +17,7 @@ export const optimismETHx = '0x4ac8bd1bdae47beef2d1c6aa62229509b962aa0d';
 
 //Markets
 
-
+export const opUSDCxopDAI = '0xd16DAc3C32498D231eA80a1D93Aea7A016762b91';
 
 //Launchpad
 

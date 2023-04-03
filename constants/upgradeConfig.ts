@@ -49,7 +49,9 @@ export const upgradeTokensList: {
 		| 'hasDaiApprove'
 		| 'hasMaticApprove'
 		| 'hasFDaiApprove'
-		| 'hasFUsdcApprove';
+		| 'hasFUsdcApprove'
+		| 'hasOpUsdcApprove'
+		| 'hasOpDaiApprove';
 }[] = [
 	{
 		coin: Coin.RIC,
@@ -114,6 +116,36 @@ export const upgradeTokensList: {
 		multi: 1e18,
 		key: 'hasMaticApprove',
 	},
+	//Mumbai
+	{
+		coin: Coin.FUSDC,
+		tokenAddress: fUSDC,
+		superTokenAddress: fUSDCx,
+		multi: 1e6,
+		key: 'hasFUsdcApprove',
+	},
+	{
+		coin: Coin.FDAI,
+		tokenAddress: fDAI,
+		superTokenAddress: fDAIx,
+		multi: 1e18,
+		key: 'hasFDaiApprove',
+	},
+	//Optimism
+	{
+		coin: Coin.OPUSDC,
+		tokenAddress: optimismUSDC,
+		superTokenAddress: optimismUSDCx,
+		multi: 1e6,
+		key: 'hasOpUsdcApprove',
+	},
+	{
+		coin: Coin.OPDAI,
+		tokenAddress: optimismDAI,
+		superTokenAddress: optimismDAIx,
+		multi: 1e18,
+		key: 'hasOpDaiApprove',
+	},
 ];
 
 export const mumbaiUpgradeTokensList: {
@@ -147,22 +179,22 @@ export const optimismUpgradeTokensList: {
 	superTokenAddress: string;
 	multi: number;
 	key:
-	| 'hasUsdcApprove'
-	| 'hasDaiApprove'
-	| 'hasEthApprove'
+	| 'hasOpUsdcApprove'
+	| 'hasOpDaiApprove'
+	| 'hasOpEthApprove'
 }[] = [
 	{
 		coin: Coin.OPUSDC,
 		tokenAddress: optimismUSDC,
 		superTokenAddress: optimismUSDCx,
 		multi: 1e6,
-		key: 'hasUsdcApprove',
+		key: 'hasOpUsdcApprove',
 	},
 	{
 		coin: Coin.OPDAI,
 		tokenAddress: optimismDAI,
 		superTokenAddress: optimismDAIx,
 		multi: 1e18,
-		key: 'hasDaiApprove',
+		key: 'hasOpDaiApprove',
 	},
 ]

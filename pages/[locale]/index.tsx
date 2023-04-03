@@ -42,6 +42,7 @@ import coingeckoApi from 'redux/slices/coingecko.slice';
 import superfluidSubgraphApi from 'redux/slices/superfluidSubgraph.slice';
 import { Flow } from 'types/flow';
 import { useAccount, useProvider, useNetwork } from 'wagmi';
+import { getSubgraphUrl } from '@richochet/utils/getSubgraphUrl';
 import { polygon } from 'wagmi/chains';
 
 const exchangeContractsAddresses = combinedFlowConfig.map((f) => f.superToken);
@@ -106,10 +107,13 @@ export default function Home(): JSX.Element {
 
 	useEffect(() => {
 		const results = exchangeContractsAddresses.map(
-			async (addr) => await queryFlows(addr).then((res: any) => res?.data?.data?.account)
+			async (addr) => await queryFlows({queryAddress: addr, network: getSubgraphUrl(chain?.id! || 137)})
+				.then((res: any) => {
+					return res?.data?.data?.account
+				})
 		);
 		Promise.all(results).then((res) => setResults(res));
-	}, [isMounted, address, isConnected]);
+	}, [isMounted, address, isConnected, chain]);
 
 	const getStreams = (streams: any[], streamedSoFarMap: Record<string, number>) => {
 		(streams || []).forEach((stream: any) => {
@@ -138,13 +142,14 @@ export default function Home(): JSX.Element {
 	};
 
 	const getFlows = (streamedSoFarMap: Record<string, number>, receivedSoFarMap: Record<string, number>) => {
-		const flows: Map<string, { flowsOwned: Flow[]; flowsReceived: Flow[] }> = new Map();
+		const flows: Map<string, { inflows: Flow[]; outflows: Flow[] }> = new Map();
 		exchangeContractsAddresses.forEach((el, i) => {
 			if (results.length > 0) {
 				if (results[i] !== null) {
+					//@ts-ignore
 					flows.set(el, results[i]);
 				} else {
-					flows.set(el, { flowsOwned: [], flowsReceived: [] });
+					flows.set(el, { inflows: [], outflows: [] });
 				}
 			}
 		});
@@ -166,6 +171,7 @@ export default function Home(): JSX.Element {
 				flowQueries.set(value, buildFlowQuery(value, address!, flows, streamedSoFarMap, receivedSoFarMap));
 			}
 		}
+		console.log('res', flowQueries);
 		setQueries(flowQueries);
 	};
 
@@ -173,8 +179,14 @@ export default function Home(): JSX.Element {
 		const streamedSoFarMap: Record<string, number> = {};
 		const receivedSoFarMap: Record<string, number> = {};
 		if (address) {
-			await queryStreams(address).then((res: any) => getStreams(res?.data?.data?.streams, streamedSoFarMap));
-			await queryReceived(address).then((res: any) => getReceived(res?.data?.data?.streams, receivedSoFarMap));
+			await queryStreams({address, network: getSubgraphUrl(chain?.id!)})
+				.then((res: any) => {
+					getStreams(res?.data?.data?.streams, streamedSoFarMap)
+				});
+			await queryReceived({receiver: address, network: getSubgraphUrl(chain?.id!)})
+				.then((res: any) => {
+					getReceived(res?.data?.data?.streams, receivedSoFarMap)
+				});
 		}
 		getFlows(streamedSoFarMap, receivedSoFarMap);
 	};
@@ -205,13 +217,14 @@ export default function Home(): JSX.Element {
 			const positions = configs.filter(({ flowKey }) => parseFloat(queries.get(flowKey)?.placeholder!) > 0);
 			setPositions(positions);
 		}
-	}, [queries, address, isConnected, isMounted, configs]);
+	}, [queries, address, isConnected, isMounted, configs, chain]);
 
 	useEffect(() => {
 		if (isConnected && tokensIsError) console.error(tokensError);
 		if (isConnected && tokensIsSuccess) {
 			setPositionTotalLoading(true);
 			const totalInPositions = upgradeTokensList.reduce((total, token) => {
+				console.log(balanceList, geckoMapping, tokens, 'res res res')
 				const balancess =
 					Object.keys(balanceList).length &&
 					tokens &&
@@ -220,13 +233,15 @@ export default function Home(): JSX.Element {
 						parseFloat(balanceList[token.superTokenAddress]) *
 						parseFloat((tokens as any)[(geckoMapping as any)[token.coin]].usd)
 					).toFixed(6);
-
-				return total + parseFloat(balancess as any);
+					if (isNaN(+balancess))  return total + 0;
+					console.log(total, balancess, 'res');
+				return total + parseFloat(balancess);
 			}, 0);
+			console.log(totalInPositions, 'res res')
 			setPositionTotal(totalInPositions);
 			setPositionTotalLoading(false);
 		}
-	}, [isConnected, address, balanceList, tokens, tokensIsSuccess]);
+	}, [isConnected, address, balanceList, tokens, tokensIsSuccess, chain]);
 
 	useEffect(() => {
 		if (coingeckoPrices.size > 0 && queries.size > 0 && configs) {
@@ -265,7 +280,7 @@ export default function Home(): JSX.Element {
 					})
 				).then((res) => setEmissionRateMap(rateMap)))();
 		}
-	}, [sortedList]);
+	}, [sortedList, chain]);
 
 	useEffect(() => {
 		if (sortedList.length && queries.size > 0 && emissionRateMap.size > 0) {
@@ -278,7 +293,7 @@ export default function Home(): JSX.Element {
 				}
 			});
 		}
-	}, [emissionRateMap, queries, sortedList]);
+	}, [emissionRateMap, queries, sortedList, chain]);
 
 	useEffect(() => {
 		if (aggregatedRewards.length) {
@@ -288,7 +303,7 @@ export default function Home(): JSX.Element {
 			setAggregatedRICRewards(aggregated);
 			setRicRewardLoading(false);
 		}
-	}, [aggregatedRewards]);
+	}, [aggregatedRewards, chain]);
 
 	useEffect(() => {
 		if (isConnected && tokenPrice && tokenPriceIsSuccess) {
@@ -297,7 +312,7 @@ export default function Home(): JSX.Element {
 		if (tokenPriceIsError) {
 			console.error(tokenPriceError);
 		}
-	}, [isConnected, address, tokenPrice, tokenPriceIsSuccess]);
+	}, [isConnected, address, tokenPrice, tokenPriceIsSuccess, chain]);
 
 	const getNetFlowRate = async () => {
 		setUsdFlowRateLoading(true);
