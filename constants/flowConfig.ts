@@ -44,6 +44,7 @@ import {
 	OPxUSDC,
 	OPx,
 	opDAIxopUSDC,
+	USDCxOP
 } from './optimism_config'
 
 // To-Do: Refactor this
@@ -72,6 +73,7 @@ export enum FlowEnum {
 	opUSDCxopDAI = 'opUSDCxopDAI',
 	opDAIxopUSDC = 'opDAIxopUSDC',
 	OPxUSDC = 'OPxUSDC',
+	USDCxOP = 'USDCxOP'
 }
 
 type IndexIDAType = {
@@ -322,6 +324,15 @@ export const indexIDA: IndexIDAType = [
 		exchangeAddress: OPxUSDC,
 		input: OPx,
 		output: optimismUSDCx,
+		subsidy: optimismRICAddress,
+		subsidyIndex: 1,
+		inputIndex: 0, // just a placeholder, not used
+		outputIndex: 0,
+	},
+	{
+		exchangeAddress: USDCxOP,
+		input: optimismUSDCx,
+		output: OPx,
 		subsidy: optimismRICAddress,
 		subsidyIndex: 1,
 		inputIndex: 0, // just a placeholder, not used
@@ -608,12 +619,12 @@ export const optimismMarkets: InvestmentFlow[] = [
 		type: FlowTypes.market,
 	},
 	{
-		superToken: OPxUSDC,
+		superToken: USDCxOP,
 		tokenA: optimismUSDCx,
 		tokenB: OPx,
 		coinA: Coin.OPUSDC,
 		coinB: Coin.OP,
-		flowKey: FlowEnum.OPxUSDC,
+		flowKey: FlowEnum.USDCxOP,
 		type: FlowTypes.market,
 	},
 ]

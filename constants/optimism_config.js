@@ -23,6 +23,7 @@ export const OPx = '0x1828Bff08BD244F7990edDCd9B19cc654b33cDB4';
 export const opUSDCxopDAI = '0xd16DAc3C32498D231eA80a1D93Aea7A016762b91';
 export const opDAIxopUSDC = '0x5f4919B2ed93b7d0Ae686d42AA8A94d372640F78';
 export const OPxUSDC = '0xd139afb20e3c98472c82a992b6b1548280c41d3b';
+export const USDCxOP = '0x9e5d41aab1Db526eBb74e393A0D3bEa25E7583ed';
 
 //Launchpad
 
