@@ -15,9 +15,14 @@ export const optimismDAIx = '0x7d342726b69c28d942ad8bfe6ac81b972349d524';
 export const optimismETH = '';
 export const optimismETHx = '0x4ac8bd1bdae47beef2d1c6aa62229509b962aa0d';
 
+export const OPToken = '0x4200000000000000000000000000000000000042';
+export const OPx = '0x1828Bff08BD244F7990edDCd9B19cc654b33cDB4';
+
 //Markets
 
 export const opUSDCxopDAI = '0xd16DAc3C32498D231eA80a1D93Aea7A016762b91';
+export const opDAIxopUSDC = '0x5f4919B2ed93b7d0Ae686d42AA8A94d372640F78';
+export const OPxUSDC = '0xd139afb20e3c98472c82a992b6b1548280c41d3b';
 
 //Launchpad
 
@@ -35,4 +40,6 @@ export const optimismTokenArray = [
   optimismETHx,
   optimismUSDC,
   optimismUSDCx,
+  OPToken,
+  OPx,
 ]

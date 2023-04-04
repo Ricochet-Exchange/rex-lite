@@ -66,7 +66,6 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 		const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
 		const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string) => {
 			const shareScaler = await getShareScaler(exchangeKey, tokenA, tokenB, chain?.id!).then((res) => res);
-			console.log(shareScaler);
 			setShareScaler(shareScaler);
 		};
 		fetchShareScaler(exchangeKey, position?.tokenA, position?.tokenB);
@@ -115,7 +114,6 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 					const bigNumberAmount = ethers.BigNumber.from(amount).toString();
 					setIsLoading(true);
 					const upgrade = upgradeTrigger({ value: bigNumberAmount, tokenAddress: upgradeConfig?.superTokenAddress! });
-					console.log({ upgrade });
 					upgrade
 						.then((response: any) => {
 							console.log({ response });

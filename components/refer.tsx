@@ -90,7 +90,6 @@ export const Refer = () => {
 			args: [currentReferralId, currentReferralId],
 		});
 		const data = await writeContract(config);
-		console.log({ data });
 		data
 			.wait()
 			.then((res) => {
@@ -107,7 +106,6 @@ export const Refer = () => {
 							},
 						});
 						const data = await writeContract(config);
-						console.log({ data });
 						data.wait().then((res) => setIsLoading(false));
 					})();
 				}

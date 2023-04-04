@@ -39,7 +39,11 @@ import {
 	optimismUSDCx,
 	optimismUSDC,
 	opUSDCxopDAI,
-	optimismDAIx
+	optimismDAIx,
+	OPToken,
+	OPxUSDC,
+	OPx,
+	opDAIxopUSDC,
 } from './optimism_config'
 
 // To-Do: Refactor this
@@ -66,6 +70,8 @@ export enum FlowEnum {
 	fDAIxfUSDC = 'fDAIxfUSDC',
 	fUSDCxfDAI = 'fUSDCxfDAI',
 	opUSDCxopDAI = 'opUSDCxopDAI',
+	opDAIxopUSDC = 'opDAIxopUSDC',
+	OPxUSDC = 'OPxUSDC',
 }
 
 type IndexIDAType = {
@@ -298,6 +304,24 @@ export const indexIDA: IndexIDAType = [
 		exchangeAddress: opUSDCxopDAI,
 		input: optimismUSDCx,
 		output: optimismDAIx,
+		subsidy: optimismRICAddress,
+		subsidyIndex: 1,
+		inputIndex: 0, // just a placeholder, not used
+		outputIndex: 0,
+	},
+	{
+		exchangeAddress: opDAIxopUSDC,
+		input: optimismDAIx,
+		output: optimismUSDCx,
+		subsidy: optimismRICAddress,
+		subsidyIndex: 1,
+		inputIndex: 0, // just a placeholder, not used
+		outputIndex: 0,
+	},
+	{
+		exchangeAddress: OPxUSDC,
+		input: OPx,
+		output: optimismUSDCx,
 		subsidy: optimismRICAddress,
 		subsidyIndex: 1,
 		inputIndex: 0, // just a placeholder, not used
@@ -566,12 +590,30 @@ export const optimismMarkets: InvestmentFlow[] = [
 		type: FlowTypes.market,
 	},
 	{
-		superToken: opUSDCxopDAI,
+		superToken: opDAIxopUSDC,
 		tokenA: optimismDAIx,
 		tokenB: optimismUSDCx,
 		coinA: Coin.OPDAI,
 		coinB: Coin.OPUSDC,
-		flowKey: FlowEnum.opUSDCxopDAI,
+		flowKey: FlowEnum.opDAIxopUSDC,
+		type: FlowTypes.market,
+	},
+	{
+		superToken: OPxUSDC,
+		tokenA: OPx,
+		tokenB: optimismUSDCx,
+		coinA: Coin.OP,
+		coinB: Coin.OPUSDC,
+		flowKey: FlowEnum.OPxUSDC,
+		type: FlowTypes.market,
+	},
+	{
+		superToken: OPxUSDC,
+		tokenA: optimismUSDCx,
+		tokenB: OPx,
+		coinA: Coin.OPUSDC,
+		coinB: Coin.OP,
+		flowKey: FlowEnum.OPxUSDC,
 		type: FlowTypes.market,
 	},
 ]

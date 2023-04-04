@@ -32,6 +32,8 @@ import {
 	optimismUSDCx,
 	optimismDAI, 
 	optimismDAIx,
+	OPToken,
+	OPx,
 } from './optimism_config';
 
 export const upgradeTokensList: {
@@ -148,6 +150,7 @@ export const optimismUpgradeTokensList: {
 	| 'hasOpUsdcApprove'
 	| 'hasOpDaiApprove'
 	| 'hasOpEthApprove'
+	| 'hasOPApprove'
 }[] = [
 	{
 		coin: Coin.OPUSDC,
@@ -162,5 +165,12 @@ export const optimismUpgradeTokensList: {
 		superTokenAddress: optimismDAIx,
 		multi: 1e18,
 		key: 'hasOpDaiApprove',
+	},
+	{
+		coin: Coin.OP,
+		tokenAddress: OPToken,
+		superTokenAddress: OPx,
+		multi: 1e18,
+		key: 'hasOPApprove',
 	},
 ]

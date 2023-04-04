@@ -29,7 +29,6 @@ export interface TokenData {
 const headerTitles = ['token', 'ricochet-balance', 'wallet-balance'];
 
 export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => {
-	console.log('balances', balances, tokens);
 	const { t } = useTranslation('home');
 	const { address, isConnected } = useAccount();
 	const { chain } = useNetwork()
@@ -66,7 +65,6 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 								chainId: chain.id,
 								token: token.coin !== Coin.RIC ? (token.tokenAddress as `0x${string}`) : undefined,
 							});
-							console.log(address, balance, 'res')
 							return {
 								token: token.coin,
 								ricAmount: balances[token.superTokenAddress],
