@@ -281,7 +281,7 @@ export default function Home(): JSX.Element {
 								address: market.superToken as `0x${string}`,
 								abi: streamExchangeABI,
 								functionName: chain?.id === 137 ? 'getOutputPool' : 'outputPools',
-								args: [3],
+								args: chain?.id === 137 ? [3] : [1],
 							})
 								.then((res: any) => {
 									const finRate = ((Number(res.emissionRate) / 1e18) * 2592000).toFixed(4);
