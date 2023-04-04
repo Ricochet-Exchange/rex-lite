@@ -24,7 +24,6 @@ import { streamExchangeABI } from 'constants/ABIs/streamExchange';
 import { geckoMapping } from 'constants/coingeckoMapping';
 import { combinedFlowConfig,	FlowEnum, FlowTypes, InvestmentFlow, getFlowDirectory } from 'constants/flowConfig';
 import {
-	RICAddress,
 	twoWayMarketDAIWETHAddress,
 	twoWayMarketibAlluoUSDBTCAddress,
 	twoWayMarketibAlluoUSDETHAddress,
@@ -92,7 +91,7 @@ export default function Home(): JSX.Element {
 	const [positions, setPositions] = useState<InvestmentFlow[]>([]);
 	const [positionTotal, setPositionTotal] = useState<number>(0);
 	const [emissionRateMap, setEmissionRateMap] = useState<Map<string, string>>(new Map());
-	const [aggregatedRewards, setAggregatedRewards] = useState<number[]>([]);
+	const [aggregatedRewards, setAggregatedRewards] = useState<number[]>([0]);
 	const [aggregatedRICRewards, setAggregatedRICRewards] = useState<number>(0);
 	const [ricRewardLoading, setRicRewardLoading] = useState<boolean>(false);
 	const [positionTotalLoading, setPositionTotalLoading] = useState<boolean>(false);
@@ -281,8 +280,8 @@ export default function Home(): JSX.Element {
 							await readContract({
 								address: market.superToken as `0x${string}`,
 								abi: streamExchangeABI,
-								functionName: 'getOutputPool',
-								args: [3],
+								functionName: chain?.id === 137 ? 'getOutputPool' : 'outputPools',
+								args: chain?.id === 137 ? [3] : [1],
 							})
 								.then((res: any) => {
 									const finRate = ((Number(res.emissionRate) / 1e18) * 2592000).toFixed(4);

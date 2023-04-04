@@ -43,7 +43,6 @@ export const Markets: NextPage<Props> = ({ coingeckoPrices, sortedList, queries 
 
 	useEffect(() => {
 		if (sortedList.length > 0 && queries.size > 0) {
-			console.log(sortedList, 'res');
 			const marketData: MarketData[] = [];
 			sortedList.map((item) =>
 				marketData.push({

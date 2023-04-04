@@ -14,6 +14,7 @@ import slp from '@richochet/assets/images/coins/slp.svg';
 import sushi from '@richochet/assets/images/coins/sushiswap.svg';
 import usdt from '@richochet/assets/images/coins/tetherUsdt.svg';
 import usdc from '@richochet/assets/images/coins/usdCoin.svg';
+import op from '@richochet/assets/images/coins/op.svg';
 
 export enum Coin {
 	SELECT = 'Select Coin',
@@ -57,11 +58,14 @@ export enum Coin {
 	OPDAI = 'DAI',
 	OPUSDCx = 'USDCx',
 	OPDAIx = 'DAIx',
+	OP = 'OP',
+	OPx = 'OPx',
 	// REXSHIRT = 'REXSHIRT',
 	// REXHAT = 'REXHAT',
 }
 
 export const namesCoin = [
+	Coin.OP,
 	Coin.OPUSDC,
 	Coin.DAI,
 	Coin.USDC,
@@ -82,6 +86,7 @@ export const namesCoin = [
 ];
 
 export const namesCoinX = [
+	Coin.OPx,
 	Coin.DAIx,
 	Coin.MKRx,
 	Coin.USDCx,
@@ -101,6 +106,7 @@ export const namesCoinX = [
 ];
 
 export const iconsCoin: Partial<Record<Coin, string>> = {
+	[Coin.OP]: op,
 	[Coin.OPUSDC]: usdc,
 	[Coin.OPDAI]: dai,
 	[Coin.OPDAIx]: dai,
