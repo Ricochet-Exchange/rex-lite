@@ -24,7 +24,7 @@ export const DoughnutChart: NextPage<Props> = ({ tokens, geckoPriceList, balance
 	const { t } = useTranslation('home');
 	const [total, setTotal] = useState<number>(0);
 	const [chartData, setChartData] = useState<ChartData[]>([]);
-	const [tokenList, setTokenList] = useState<any>();
+	const [tokenList, setTokenList] = useState<any>([]);
 	const { chain } = useNetwork()
 
 	useEffect(() => {
