@@ -435,12 +435,14 @@ export default function Home(): JSX.Element {
 												{t('rewards-earned')}
 											</h6>
 											{ricRewardLoading && !aggregatedRICRewards && (
-												<div className='animate-pulse'>
-													<div className='h-4 rounded bg-slate-700'></div>
-												</div>
+												<p className='text-slate-100 font-light text-2xl'>
+													 0 RIC / mo
+												</p>
 											)}
 											{(aggregatedRICRewards || aggregatedRICRewards === 0) && !ricRewardLoading && (
-												<p className='text-slate-100 font-light text-2xl'>{aggregatedRICRewards.toFixed(2)} RIC / mo</p>
+												<p className='text-slate-100 font-light text-2xl'>
+													{aggregatedRICRewards.toFixed(2)} RIC / mo
+												</p>
 											)}
 										</>
 									}
