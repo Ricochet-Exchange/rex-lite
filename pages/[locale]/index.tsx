@@ -118,7 +118,7 @@ export default function Home(): JSX.Element {
 
 	useEffect(() => {
 		if (isConnected) getSuperTokenBalances(address!).then((res) => setBalanceList(res));
-	}, [address, isConnected]);
+	}, [address, isConnected, chain?.id]);
 
 	useEffect(() => {
 		const results = exchangeContractsAddresses.map(
@@ -224,7 +224,7 @@ export default function Home(): JSX.Element {
 
 	useEffect(() => {
 		if (results.length > 0) sweepQueryFlows();
-	}, [results, address, isConnected]);
+	}, [results, address, isConnected, chain?.id]);
 
 	useEffect(() => {
 		if (isConnected && address && isMounted && configs) {
@@ -238,7 +238,6 @@ export default function Home(): JSX.Element {
 		if (isConnected && tokensIsSuccess && upgradeList) {
 			setPositionTotalLoading(true);
 			const totalInPositions = upgradeList.reduce((total: any, token: any) => {
-				console.log(balanceList, geckoMapping, tokens, 'res res res')
 				const balancess =
 					Object.keys(balanceList).length &&
 					tokens &&
@@ -248,10 +247,8 @@ export default function Home(): JSX.Element {
 						parseFloat((tokens as any)[(geckoMapping as any)[token.coin]].usd)
 					).toFixed(6);
 					if (isNaN(+balancess))  return total + 0;
-					console.log(total, balancess, 'res');
 				return total + parseFloat(balancess);
 			}, 0);
-			console.log(totalInPositions, 'res res')
 			setPositionTotal(totalInPositions);
 			setPositionTotalLoading(false);
 		}
@@ -330,19 +327,22 @@ export default function Home(): JSX.Element {
 
 	const getNetFlowRate = async () => {
 		setUsdFlowRateLoading(true);
-		await getSFFramework(chain?.id!)
+		await getSFFramework(chain?.id || 137)
 			.then(async (framework) => {
 				if (positions.length > 0) {
 					const flowRates = positions.map(
-						async (position) =>
+						async (position) => {
 							await framework.cfaV1.getNetFlow({
 								superToken: position.tokenA,
 								account: address!,
 								providerOrSigner: provider,
 							})
+						}							
 					);
 					Promise.all(flowRates).then((rates) => {
+						//@ts-ignore
 						const totalRate = rates.reduce((acc, curr) => acc + parseFloat(curr), 0).toFixed(0);
+						if (isNaN(+totalRate)) return;
 						const flowRateBigNumber = new Big(totalRate);
 						const usdFlowRate = flowRateBigNumber
 							.times(new Big('2592000'))
@@ -358,10 +358,10 @@ export default function Home(): JSX.Element {
 			.catch((e) => setUsdFlowRateLoading(false));
 	};
 	useEffect(() => {
-		if (isConnected && usdPrice) {
+		if (isConnected && usdPrice && chain?.id && positions) {
 			getNetFlowRate();
 		}
-	}, [isConnected, positions, usdPrice, chain?.id]);
+	}, [isConnected]);
 
 	if (!isMounted) {
 		return <></>;

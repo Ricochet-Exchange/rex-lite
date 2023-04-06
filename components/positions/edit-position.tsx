@@ -116,7 +116,6 @@ export const EditPosition: NextPage<Props> = ({ setClose, position }) => {
 					const upgrade = upgradeTrigger({ value: bigNumberAmount, tokenAddress: upgradeConfig?.superTokenAddress! });
 					upgrade
 						.then((response: any) => {
-							console.log({ response });
 							if (response.isSuccess) {
 								dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
 							}

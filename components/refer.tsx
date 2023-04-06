@@ -18,7 +18,7 @@ export const Refer = () => {
 	const { t } = useTranslation('home');
 	const { address, isConnected } = useAccount();
 	const [copy, setCopy] = useState('Copy');
-	const [refURL, setRefURL] = useState('app.ricochet.exchange/#/ref/');
+	const [refURL, setRefURL] = useState('pro.ricochet-exchange.eth.limo/#/ref/');
 	const [status, setStatus] = useState<AFFILIATE_STATUS | undefined>();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -41,13 +41,13 @@ export const Refer = () => {
 		if (chain.id === 10) {
 			setReferral(optimismReferral);
 		}
-	}, [chain])
+	}, [chain?.id])
 
 	useEffect(() => {
 		(async () => {
 			if (address && isConnected && referral) {
 				//to-do: line 50 was put there because I have a bug calling address on non matic chains, need to check this
-				if (chain?.id !== 137) return;
+				if (chain?.id !== 137) return setStatus(AFFILIATE_STATUS.INACTIVE);
 				const affiliateStatus = await getAffiliateStatus(address, referral, setCurrentReferralId);
 				setStatus(affiliateStatus);
 			}
@@ -75,11 +75,13 @@ export const Refer = () => {
 			})
 			.catch();
 	};
+
 	const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const { value } = event.target;
 		setCurrentReferralId(value);
 		setValidationErrors(filterValidationErrors(value));
 	};
+
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event?.preventDefault();
 		setIsLoading(true);
@@ -109,6 +111,8 @@ export const Refer = () => {
 						data.wait().then((res) => setIsLoading(false));
 					})();
 				}
+				setIsLoading(false);
+				return;
 			})
 			.catch((err) => {
 				setStatus(AFFILIATE_STATUS.INACTIVE);
@@ -116,6 +120,7 @@ export const Refer = () => {
 				console.error(err);
 			});
 	};
+
 	return (
 		<div className='flex flex-col items-center space-y-4'>
 			<div className='flex items-center justify-center text-slate-100 space-x-3'>
