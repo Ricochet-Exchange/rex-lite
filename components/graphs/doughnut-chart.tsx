@@ -40,8 +40,6 @@ export const DoughnutChart: NextPage<Props> = ({ tokens, geckoPriceList, balance
 		}
 	}, [chain])
 
-	console.log(tokens, geckoPriceList, balances, 'don')
-
 	useEffect(() => {
 		const data: ChartData[] = [];
 		tokens

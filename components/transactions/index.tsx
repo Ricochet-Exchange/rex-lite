@@ -134,7 +134,6 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 	}, [upgradeConfig]);
 
 	const handleApprove = () => {
-		console.log('made it to approve', upgradeConfig);
 		if (upgradeConfig) {
 			setIsLoading(true);
 			const approve = approveTrigger({
@@ -174,7 +173,6 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 					const bigNumberAmount = ethers.utils.parseEther(amount);
 					setIsLoading(true);
 					const downgrade = downgradeTrigger({ value: bigNumberAmount.toString(), tokenAddress: downgradeConfig?.tokenAddress! });
-					console.log({ downgrade });
 					downgrade
 						.then((response) => {
 							if (response.isSuccess) {
@@ -202,10 +200,8 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 						const bigNumberAmount = ethers.utils.parseEther(amount);
 						setIsLoading(true);
 						const upgrade = upgradeTrigger({ value: bigNumberAmount.toString(), tokenAddress: upgradeConfig?.superTokenAddress! });
-						console.log({ upgrade });
 						upgrade
 							.then((response: any) => {
-								console.log({ response });
 								if (response.isSuccess) {
 									dispatch(AlertAction.showSuccessAlert('Success', 'Transaction confirmed 👌'));
 								}

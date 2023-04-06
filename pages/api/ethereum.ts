@@ -30,9 +30,7 @@ export const downgrade = async (contract: any, amount: BigNumber, address: strin
 			...(await gas()),
 		},
 	});
-	console.log({ config });
 	const data = await writeContract(config);
-	console.log({ data });
 	return data;
 };
 
@@ -70,9 +68,7 @@ export const approve = async (contract: any, address: string, tokenAddress: stri
 			...(await gas()),
 		},
 	});
-	console.log({ config });
 	const data = await writeContract(config);
-	console.log({ data });
 	return data;
 };
 
@@ -86,9 +82,7 @@ export const upgrade = async (contract: any, amount: BigNumber, address: string)
 			...(await gas()),
 		},
 	});
-	console.log({ config });
 	const data = await writeContract(config);
-	console.log({ data });
 	return data;
 };
 
@@ -101,9 +95,7 @@ export const upgradeMatic = async (contract: any, amount: BigNumber, address: st
 			...(await gas()),
 		},
 	});
-	console.log({ config });
 	const data = await writeContract(config);
-	console.log({ data });
 	return data;
 };
 
@@ -137,7 +129,6 @@ const executeBatchOperations = async (
 	framework: Framework,
 	signer: Signer
 ): Promise<TransactionReceipt> => {
-	console.log('signer issue', signer, operations);
 	const txnResponse = await framework.batchCall(operations).exec(signer);
 	return txnResponse.wait();
 };
@@ -175,14 +166,12 @@ export const startFlow = async (
 			subscriber: address!,
 			providerOrSigner: provider,
 		});
-		console.log({ web3Subscription });
 		const userFlow = await framework.cfaV1.getFlow({
 			superToken: inputTokenAddress,
 			sender: address!,
 			receiver: exchangeAddress,
 			providerOrSigner: provider,
 		});
-		console.log({ userFlow });
 		if (web3Subscription.approved && exchangeAddress !== usdcxRicExchangeAddress) {
 			try {
 				const transactionData = {
@@ -194,12 +183,10 @@ export const startFlow = async (
 						...(await gas()),
 					},
 				};
-				console.log({ transactionData });
 				const tx =
 					Number(userFlow.flowRate) !== 0
 						? await framework.cfaV1.updateFlow(transactionData).exec(signer as Signer)
 						: await framework.cfaV1.createFlow(transactionData).exec(signer as Signer);
-						console.log(tx, 'sharescaler');
 				return tx;
 			} catch (e: any) {
 				console.error(e);
@@ -214,7 +201,6 @@ export const startFlow = async (
 				exchangeAddress === optimismLaunchpad ||
 				exchangeAddress === mumbaiLaunchpad
 			) {
-				console.log('made it to correct area', amount, inputTokenAddress, exchangeAddress);
 				try {
 					const operations = [
 						/* 		await framework.idaV1.approveSubscription({
@@ -237,17 +223,7 @@ export const startFlow = async (
 							},
 						}),
 					];
-					console.log({
-						superToken: inputTokenAddress,
-						sender: address!,
-						receiver: exchangeAddress,
-						flowRate: amount.toString(),
-						userData,
-						overrides: {
-							...(await gas()),
-						},
-					}),
-						await executeBatchOperations(operations, framework, signer as Signer);
+					await executeBatchOperations(operations, framework, signer as Signer);
 				} catch (e: any) {
 					console.error(e);
 					throw new Error(e);
@@ -341,23 +317,12 @@ export const startFlow = async (
 							},
 						}),
 					];
-					console.log({
-						superToken: inputTokenAddress,
-						sender: address!,
-						receiver: exchangeAddress,
-						flowRate: amount.toString(),
-						userData,
-						overrides: {
-							...(await gas()),
-						},
-					}),
 						await executeBatchOperations(operations, framework, signer as Signer);
 				} catch (e: any) {
 					console.error(e);
 					throw new Error(e);
 				}
 			} else {
-				console.log('important 3');
 				try {
 					const operations = [
 						await framework.idaV1.approveSubscription({

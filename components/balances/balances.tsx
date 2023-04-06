@@ -40,6 +40,7 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 	const [tokenList, setTokenList] = useState<TokenData[]>([]);
 
 	useEffect(() => {
+		setSortedUpgradeTokensList([])
 		if (!chain) return;
 		if (chain?.id === 80001) {
 			setSortedUpgradeTokensList(mumbaiUpgradeTokensList);
@@ -50,10 +51,10 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 		if (chain?.id === 10) {
 			setSortedUpgradeTokensList(optimismUpgradeTokensList);
 		}
-	}, [chain, balances])
+	}, [chain?.id, balances])
 
 	useEffect(() => {
-		if (isConnected && chain) {
+		if (isConnected && chain?.id) {
 			if (tokens) setGeckoPriceList(tokens);
 			(async () => {
 				if (Object.keys(geckoPriceList).length && Object.keys(balances).length) {
@@ -63,7 +64,7 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 							const balance = await fetchBalance({
 								address: address,
 								chainId: chain.id,
-								token: token.coin !== Coin.RIC ? (token.tokenAddress as `0x${string}`) : undefined,
+								token: token.coin !== Coin.RIC && token.coin !== Coin.OpRIC ? (token.tokenAddress as `0x${string}`) : undefined,
 							});
 							return {
 								token: token.coin,
@@ -90,7 +91,7 @@ export const Balances: NextPage<Props> = ({ tokens, balances }): JSX.Element => 
 				}
 			})();
 		}
-	}, [isConnected, tokens, balances, geckoPriceList, sortedUpgradeTokensList, chain?.id]);
+	}, [isConnected, tokens, balances, geckoPriceList, sortedUpgradeTokensList]);
 
 	return (
 		<>

@@ -19,7 +19,7 @@ export const useTokenHistory = (coins: Map<string, Coin[]>) => {
 						.then((tokenHistory) => {
 							tokenHistory.map((history) => {
 								if (!history) return;
-								priceMap.set(history?.originalArgs!, history?.data.prices);
+								priceMap.set(history?.originalArgs!, history?.data.prices || '');
 							});
 						})
 						.finally(() => {

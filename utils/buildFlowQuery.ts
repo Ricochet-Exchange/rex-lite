@@ -31,17 +31,6 @@ export const buildFlowQuery = (
 	const subsidyRate = { perso: 0, total: 0, endDate: 'unknown' };
 	const totalFlows = tokenAtokenBFlows?.inflows.filter((inflow) => inflow.currentFlowRate !== "0")
 
-	console.log('fc', {
-		flowKey,
-		flowsReceived: tokenAtokenBFlowsReceived,
-		flowsOwned,
-		totalFlows: totalFlows?.length || 0,
-		placeholder: tokenAtokenBPlaceholder,
-		streamedSoFar,
-		receivedSoFar,
-		subsidyRate, // await getSubsidyRate(FlowEnum.daiMkrFlowQuery,
-		// usdcRicPlaceholder, flowsOwned),
-	})
 	return {
 		flowKey,
 		flowsReceived: tokenAtokenBFlowsReceived,

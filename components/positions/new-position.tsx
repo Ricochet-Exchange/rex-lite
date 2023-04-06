@@ -28,8 +28,6 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	const { chain } = useNetwork();
 	const [configs] = useState<InvestmentFlow[]>(getFlowDirectory(chain?.id || 137));
 
-	console.log(configs);
-
 	const [coinsFrom, SetCoinsFrom] = useState<Coin[]>(
 		configs.map((flow) => flow.coinA).filter((coin, index, self) => self.indexOf(coin) === index)
 	);
@@ -50,10 +48,8 @@ export const NewPosition: NextPage<Props> = ({ close, setClose }) => {
 	useEffect(() => {
 		if (!position) return;
 		const exchangeKey = position?.flowKey?.replace('FlowQuery', '') as ExchangeKeys;
-		console.log(position, exchangeKey, 'sharescaler');
 		const fetchShareScaler = async (exchangeKey: ExchangeKeys, tokenA: string, tokenB: string, chain: number) => {
 			const shareScaler = await getShareScaler(exchangeKey, tokenA, tokenB, chain).then((res) => res);
-			console.log(shareScaler, 'sharescaler');
 			setShareScaler(shareScaler);
 		};
 		fetchShareScaler(exchangeKey, position?.tokenA, position?.tokenB, chain?.id || 137);
