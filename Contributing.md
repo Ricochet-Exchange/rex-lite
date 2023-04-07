@@ -65,7 +65,7 @@ Before creating bug reports, please include as many details as possible and chec
 
 ### Suggesting Enhancements
 
-This section guides you through submitting an enhancement suggestion for Alluo, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion :pencil: and find related suggestions :mag_right:.
+This section guides you through submitting an enhancement suggestion for Ricochet, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion :pencil: and find related suggestions :mag_right:.
 
 Before creating enhancement suggestions, please check our [dework and roadmap](https://app.dework.xyz/ricochet-exchange-da) as you might find out that you don't need to create one. When you are creating an enhancement suggestion, please be descriptive and fill in [the template](https://github.com/Ricochet-Exchange/ricochet-frontend/blob/v2/.github/ISSUE_TEMPLATE/feature_request.md), including the steps that you imagine you would take if the feature you're requesting existed.
 
