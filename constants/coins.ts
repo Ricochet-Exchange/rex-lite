@@ -107,6 +107,7 @@ export const namesCoinX = [
 
 export const iconsCoin: Partial<Record<Coin, string>> = {
 	[Coin.OP]: op,
+	[Coin.OPx]: op,
 	[Coin.OPUSDC]: usdc,
 	[Coin.OPDAI]: dai,
 	[Coin.OPDAIx]: dai,
