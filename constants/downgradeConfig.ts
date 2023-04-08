@@ -49,6 +49,9 @@ export const downgradeTokensList = [
 		coin: Coin.StIbAlluoBTC,
 		tokenAddress: StIbAlluoBTCAddress,
 	},
+];
+
+export const mumbaiDowngradeList = [
 	{
 		coin: Coin.FDAIx,
 		tokenAddress: fDAIx,
@@ -57,6 +60,9 @@ export const downgradeTokensList = [
 		coin: Coin.FUSDCx,
 		tokenAddress: fUSDCx,
 	},
+]
+
+export const optimismDowngradeList = [
 	{
 		coin: Coin.OPUSDCx,
 		tokenAddress: optimismUSDCx,
@@ -69,4 +75,4 @@ export const downgradeTokensList = [
 		coin: Coin.OPx,
 		tokenAddress: OPx,
 	}
-];
+]

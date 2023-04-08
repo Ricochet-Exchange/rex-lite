@@ -5,8 +5,8 @@ import { checkForApproval } from '@richochet/utils/checkForApproval';
 import { getSuperTokenBalances } from '@richochet/utils/getSuperTokenBalances';
 import { fetchBalance } from '@wagmi/core';
 import { Coin, namesCoin, namesCoinX } from 'constants/coins';
-import { downgradeTokensList } from 'constants/downgradeConfig';
-import { upgradeTokensList } from 'constants/upgradeConfig';
+import { downgradeTokensList, optimismDowngradeList, mumbaiDowngradeList } from 'constants/downgradeConfig';
+import { upgradeTokensList, optimismUpgradeTokensList, mumbaiUpgradeTokensList } from 'constants/upgradeConfig';
 import { AlertContext } from 'contexts/AlertContext';
 import { BalanceAction } from 'enumerations/balanceActions.enum';
 import { BigNumber, ethers } from 'ethers';
@@ -72,47 +72,44 @@ export const Transactions: NextPage<Props> = ({ type, close, setClose, balanceLi
 	const [downgradeTrigger] = streamApi.useLazyDowngradeQuery();
 	const [downgradeTokens, setDowngradeTokens] = useState<Coin[]>();
 	const [upgradeTokens, setUpgradeTokens] = useState<Coin[]>();
+	const [downgradeTokenList, setDowngradeTokenList] = useState<any[]>();
+	const [upgradeTokenList, setUpgradeTokenList] = useState<any[]>();
 
+	//to-do:refactor this
 	useEffect(() => {
 		if (!chain) return;
 		if (chain.id === 137) {
-			const downgradeTokenArr = downgradeTokensList.map(
-				(token) => token.coin
-			).filter((coin) => coin !== Coin.RIC && coin !== Coin.FDAIx && coin !== Coin.FUSDCx);
-			const upgradeTokenArr = upgradeTokensList.map(
-				(token) => token.coin
-			).filter((coin) => coin !== Coin.RIC && coin !== Coin.FDAI && coin !== Coin.FUSDC);
+			const downgradeTokenArr = downgradeTokensList.map((coin) => {return coin.coin})
+			const upgradeTokenArr = upgradeTokensList.map((coin) => {return coin.coin})
 			setDowngradeTokens(downgradeTokenArr);
 			setUpgradeTokens(upgradeTokenArr);
+			setUpgradeTokenList(upgradeTokensList);
+			setDowngradeTokenList(downgradeTokensList);
 		} 
 		if (chain.id === 80001) {
-			const downgradeTokenArr = downgradeTokensList.map(
-				(token) => token.coin
-			).filter((coin) => coin !== Coin.RIC && coin === Coin.FDAIx || coin === Coin.FUSDCx);
-			const upgradeTokenArr = upgradeTokensList.map(
-				(token) => token.coin
-			).filter((coin) => coin !== Coin.RIC && coin === Coin.FDAI || coin === Coin.FUSDC);
+			const downgradeTokenArr = mumbaiDowngradeList.map((coin) => {return coin.coin})
+			const upgradeTokenArr = mumbaiUpgradeTokensList.map((coin) => {return coin.coin})
 			setDowngradeTokens(downgradeTokenArr);
 			setUpgradeTokens(upgradeTokenArr);
+			setUpgradeTokenList(mumbaiUpgradeTokensList);
+			setDowngradeTokenList(mumbaiDowngradeList);
 		}
 		if (chain.id === 10) {
-			const downgradeTokenArr = downgradeTokensList.map(
-				(token) => token.coin
-			).filter((coin) => coin !== Coin.RIC && coin === Coin.OPDAIx || coin === Coin.OPUSDCx);
-			const upgradeTokenArr = upgradeTokensList.map(
-				(token) => token.coin
-			).filter((coin) => coin !== Coin.RIC && coin === Coin.OPDAI || coin === Coin.OPUSDC);
+			const downgradeTokenArr = optimismDowngradeList.map((coin) => {return coin.coin})
+			const upgradeTokenArr = optimismUpgradeTokensList.map((coin) => {return coin.coin})
 			setDowngradeTokens(downgradeTokenArr);
 			setUpgradeTokens(upgradeTokenArr);
+			setUpgradeTokenList(optimismUpgradeTokensList);
+			setDowngradeTokenList(optimismDowngradeList);
 		}
 	}, [chain])
 
 	useEffect(() => {
 		if (type === BalanceAction.Withdraw && selectedToken !== Coin.SELECT) {
-			const token = downgradeTokensList.find((token) => token.coin === selectedToken);
+			const token = downgradeTokenList?.find((token) => token.coin === selectedToken);
 			setDowngradeConfig(token);
 		} else if (type === BalanceAction.Deposit && selectedToken !== Coin.SELECT) {
-			const upgradeConfig = upgradeTokensList.find((token) => token.coin === selectedToken);
+			const upgradeConfig = upgradeTokenList?.find((token) => token.coin === selectedToken);
 			checkForApproval(upgradeConfig?.tokenAddress!, upgradeConfig?.superTokenAddress!).then((hasApprove) =>
 				setHasApprove(hasApprove)
 			);
